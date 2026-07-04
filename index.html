@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bastien Agus — Directeur Artistique · Producteur Audiovisuel</title>
+<meta name="description" content="Bastien Agus — Directeur Artistique et Producteur Audiovisuel basé entre Lyon et Genève. Direction artistique, production vidéo, photographie, motion design.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<!-- Domaine de prod à confirmer : ajusté ici et dans js/project-page.js (SITE_URL) si différent de bastienagus.com -->
+<link rel="canonical" href="https://bastienagus.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bastien Agus">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:url" content="https://bastienagus.com/">
+<meta property="og:title" content="Bastien Agus — Directeur Artistique · Producteur Audiovisuel">
+<meta property="og:description" content="Bastien Agus — Directeur Artistique et Producteur Audiovisuel basé entre Lyon et Genève. Direction artistique, production vidéo, photographie, motion design.">
+<meta property="og:image" content="https://bastienagus.com/assets/img/hero-1.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bastien Agus — Directeur Artistique · Producteur Audiovisuel">
+<meta name="twitter:description" content="Bastien Agus — Directeur Artistique et Producteur Audiovisuel basé entre Lyon et Genève. Direction artistique, production vidéo, photographie, motion design.">
+<meta name="twitter:image" content="https://bastienagus.com/assets/img/hero-1.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Aller au contenu</a>
+
+<!-- GRAIN OVERLAY -->
+<div class="grain" aria-hidden="true">
+  <div class="grain__noise"></div>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a href="#hero" class="nav__brand">
+    <span class="dot"></span>
+    BASTIEN AGUS
+  </a>
+  <div class="nav__links">
+    <a href="#projets" class="nav__link">PROJETS</a>
+    <a href="#about" class="nav__link">À PROPOS</a>
+    <a href="#services" class="nav__link">SERVICES</a>
+    <a href="#contact" class="nav__cta">
+      PRENDRE RDV
+      <span class="nav__cta-arrow">↗</span>
+    </a>
+  </div>
+  <button class="nav__burger" id="navBurger" type="button" aria-expanded="false" aria-controls="navMobilePanel" aria-label="Ouvrir le menu">
+    <span class="nav__burger-bar"></span>
+    <span class="nav__burger-bar"></span>
+    <span class="nav__burger-bar"></span>
+  </button>
+</nav>
+<div class="nav__mobile-panel" id="navMobilePanel">
+  <a href="#projets" class="nav__mobile-link">PROJETS</a>
+  <a href="#about" class="nav__mobile-link">À PROPOS</a>
+  <a href="#services" class="nav__mobile-link">SERVICES</a>
+  <a href="#contact" class="nav__mobile-link">PRENDRE RDV ↗</a>
+</div>
+
+<main id="main-content">
+<!-- ============================== HERO ============================== -->
+<section id="hero" class="hero">
+  <div class="hero__ghost" id="heroGhost" aria-hidden="true">DA</div>
+
+  <div class="hero__video-wrap">
+    <video class="hero__video" id="heroVideo" poster="assets/img/hero-1.jpg" autoplay muted loop playsinline aria-hidden="true">
+      <source src="assets/video/hero_slideshow.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="hero__scrim"></div>
+
+  <div class="hero__content">
+    <div class="hero__inner">
+      <div class="hero__eyebrow" data-reveal data-d="0">
+        <span class="hero__eyebrow-line"></span>
+        <span class="hero__eyebrow-text">DIRECTION ARTISTIQUE · PRODUCTION AUDIOVISUELLE</span>
+      </div>
+      <h1 class="hero__title" data-reveal data-d="100">
+        <span class="hero__script">l'art de</span>CRÉER. PRODUIRE<span class="red">.</span><br>DIFFUSER<span class="red">.</span>
+      </h1>
+      <p class="hero__lead" data-reveal data-d="200">De la stratégie de marque à l'exécution technique — campagnes nationales TV, cinéma, affichage urbain et digital.</p>
+      <div class="hero__actions" data-reveal data-d="300">
+        <a href="#contact" class="btn-primary btn-primary--lg">
+          PRENDRE RENDEZ-VOUS
+          <span class="btn-primary__arrow">↗</span>
+        </a>
+        <a href="#projets" class="hero__link">VOIR LES PROJETS ↓</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero__scroll">
+    <span class="hero__scroll-label">SCROLL</span>
+    <div class="hero__scroll-track"><div class="hero__scroll-dot"></div></div>
+  </div>
+
+  <div class="hero__baseline"></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span class="marquee__item">DIRECTION ARTISTIQUE</span>
+    <span class="marquee__sep">✦</span>
+    <span class="marquee__item">PRODUCTION AUDIOVISUELLE</span>
+    <span class="marquee__sep">✦</span>
+    <span class="marquee__script">Photographie</span>
+    <span class="marquee__sep">✦</span>
+    <span class="marquee__item">LYON · GENÈVE</span>
+    <span class="marquee__sep">✦</span>
+    <span class="marquee__item">DIRECTION ARTISTIQUE</span>
+    <span class="marquee__sep">✦</span>
+    <span class="marquee__item">PRODUCTION AUDIOVISUELLE</span>
+    <span class="marquee__sep">✦</span>
+    <span class="marquee__script">Photographie</span>
+    <span class="marquee__sep">✦</span>
+    <span class="marquee__item">LYON · GENÈVE</span>
+    <span class="marquee__sep">✦</span>
+  </div>
+</div>
+
+<!-- ============================== PROJETS — 3D CAROUSEL ============================== -->
+<section id="projets" class="projets">
+  <div class="carousel-outer" id="carouselOuter">
+    <div class="carousel-sticky">
+
+      <!-- header -->
+      <div class="carousel-header">
+        <div>
+          <div class="eyebrow" data-reveal data-d="0">
+            <span class="eyebrow__line"></span>
+            <span class="eyebrow__text">SÉLECTION DE PROJETS</span>
+          </div>
+          <div class="carousel-header__titles">
+            <h2 class="section-title section-title--dark" data-reveal data-d="80">TRAVAUX<span class="red">.</span></h2>
+            <span class="script script--muted" data-reveal data-d="120">une sélection</span>
+          </div>
+        </div>
+        <div class="carousel-nav" data-reveal data-d="160">
+          <span class="carousel-nav__count" id="carouselCount">01 / 06</span>
+          <button class="carousel-nav__btn" id="prevBtn" aria-label="Projet précédent">←</button>
+          <button class="carousel-nav__btn" id="nextBtn" aria-label="Projet suivant">→</button>
+        </div>
+      </div>
+
+      <!-- 3D perspective track -->
+      <div class="carousel-stage">
+        <div class="carousel-track" id="carouselTrack">
+          <!-- Cartes générées automatiquement depuis js/projects.js -->
+        </div>
+      </div>
+
+      <!-- progress bar -->
+      <div class="carousel-progress">
+        <div class="carousel-progress__fill" id="carouselProgress"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== ABOUT ============================== -->
+<section id="about" class="about">
+  <div class="about__bgword" aria-hidden="true">AGUS</div>
+  <div class="about__grid">
+    <div data-reveal data-d="0">
+      <div class="about__portrait-wrap">
+        <div class="about__portrait"></div>
+        <div class="about__badge">
+          <div class="about__badge-num">+10 ANS</div>
+          <div class="about__badge-label">d'expérience en<br>direction artistique</div>
+        </div>
+        <div class="about__corner"></div>
+      </div>
+    </div>
+    <div>
+      <div class="eyebrow" data-reveal data-d="80">
+        <span class="eyebrow__line"></span>
+        <span class="eyebrow__text">À PROPOS</span>
+      </div>
+      <div class="script about__firstname" data-reveal data-d="130">Bastien</div>
+      <h2 class="about__title" data-reveal data-d="150">BASTIEN<br>AGUS<span class="red">.</span></h2>
+      <p class="about__text" data-reveal data-d="220">Directeur Artistique et Producteur Audiovisuel basé entre Lyon et Genève. Autodidacte sur les logiciels de création dès 13 ans, formé en Chef de Projet Web &amp; Multimédia puis en Direction Artistique Audiovisuelle (Master 2).</p>
+      <p class="about__text" data-reveal data-d="280">Je dirige le Pôle Créa de Wellness Sport Club — campagnes vidéo nationales diffusées TV, cinéma, affichage urbain, digital. Photographie de la campagne d'affichage annuelle en France et en Suisse.</p>
+      <div class="about__stats" data-reveal data-d="340">
+        <div>
+          <div class="about__stat-num">TV</div>
+          <div class="about__stat-label">CINÉMA · DIGITAL</div>
+        </div>
+        <div>
+          <div class="about__stat-num">2</div>
+          <div class="about__stat-label">PAYS · FR / CH</div>
+        </div>
+        <div>
+          <div class="about__stat-num">360°</div>
+          <div class="about__stat-label">STRATÉGIE → EXÉCUTION</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== SERVICES ============================== -->
+<section id="services" class="services">
+  <div class="services__bgword" aria-hidden="true">CRAFT</div>
+  <div class="services__inner">
+    <div class="eyebrow" data-reveal data-d="0">
+      <span class="eyebrow__line"></span>
+      <span class="eyebrow__text">EXPERTISES</span>
+    </div>
+    <h2 class="section-title section-title--dark services__title" data-reveal data-d="80">CE QUE JE FAIS<span class="red">.</span></h2>
+    <div class="script script--muted services__script" data-reveal data-d="120">l'expertise</div>
+    <div class="services__grid">
+      <div class="svc" data-reveal data-d="0">
+        <div class="svc__head">
+          <span class="svc__num">01</span>
+          <h3 class="svc__title">DIRECTION ARTISTIQUE</h3>
+        </div>
+        <p class="svc__text">Identité visuelle, stratégie de marque, direction créative globale — de la conception au déploiement sur tous les points de contact.</p>
+      </div>
+      <div class="svc" data-reveal data-d="70">
+        <div class="svc__head">
+          <span class="svc__num">02</span>
+          <h3 class="svc__title">PRODUCTION VIDÉO</h3>
+        </div>
+        <p class="svc__text">Spots TV &amp; cinéma, films corporate, captation événementielle. Pré-production, tournage, post-production et livraison multi-format.</p>
+      </div>
+      <div class="svc" data-reveal data-d="0">
+        <div class="svc__head">
+          <span class="svc__num">03</span>
+          <h3 class="svc__title">PHOTOGRAPHIE</h3>
+        </div>
+        <p class="svc__text">Direction photo, campagnes d'affichage, shooting produit et lifestyle. Du concept à la retouche, optimisé pour impression et digital.</p>
+      </div>
+      <div class="svc" data-reveal data-d="70">
+        <div class="svc__head">
+          <span class="svc__num">04</span>
+          <h3 class="svc__title">MOTION DESIGN</h3>
+        </div>
+        <p class="svc__text">Animation graphique, habillage vidéo, titrage broadcast. Motion adapté aux formats TV, digital et événementiel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CONTACT ============================== -->
+<section id="contact" class="contact">
+  <div class="contact__bgword" aria-hidden="true">CONTACT</div>
+  <div class="contact__grid">
+    <div>
+      <div class="eyebrow" data-reveal data-d="0">
+        <span class="eyebrow__line"></span>
+        <span class="eyebrow__text">CONTACT</span>
+      </div>
+      <h2 class="contact__title" data-reveal data-d="80"><span class="contact__script">discutons</span>DISCUTONS DE<br>VOTRE PROJET<span class="red">.</span></h2>
+      <p class="contact__lead" data-reveal data-d="160">Que ce soit pour une campagne nationale, une direction photo ou un film — planifions un rendez-vous pour définir vos besoins et objectifs.</p>
+      <div class="contact__details" data-reveal data-d="240">
+        <div class="contact__detail">
+          <span class="contact__icon">@</span>
+          <div>
+            <div class="contact__detail-label">EMAIL</div>
+            <a href="mailto:contact@bastienagus.com" class="contact__detail-value">contact@bastienagus.com</a>
+          </div>
+        </div>
+        <div class="contact__detail">
+          <span class="contact__icon">⌖</span>
+          <div>
+            <div class="contact__detail-label">LOCALISATION</div>
+            <span class="contact__detail-value">Lyon · Genève</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <form class="contact__card" id="contactForm" action="https://formspree.io/f/xbdvqbor" method="POST" data-reveal data-d="120" novalidate>
+      <h3 class="contact__card-title">PRENDRE RENDEZ-VOUS<span class="red">.</span></h3>
+      <div class="contact__fields">
+        <div class="field">
+          <label class="field__label" for="f-name">NOM / ENTREPRISE</label>
+          <input class="field__input" id="f-name" name="name" type="text" placeholder="Votre nom ou raison sociale" required>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-email">EMAIL</label>
+          <input class="field__input" id="f-email" name="email" type="email" placeholder="votre@email.com" required>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-type">TYPE DE PROJET</label>
+          <select class="field__input field__select" id="f-type" name="type" required>
+            <option value="" disabled selected>Sélectionner</option>
+            <option>Direction artistique</option>
+            <option>Production vidéo</option>
+            <option>Photographie</option>
+            <option>Motion design</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-msg">MESSAGE</label>
+          <textarea class="field__input field__textarea" id="f-msg" name="message" placeholder="Décrivez brièvement votre projet…" required></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="contactSubmit">
+          ENVOYER MA DEMANDE
+          <span class="btn-submit__arrow">↗</span>
+        </button>
+        <p class="field__status" id="contactStatus" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer__top">
+    <div>
+      <div class="footer__brand">
+        <span class="dot"></span>
+        BASTIEN AGUS
+      </div>
+      <div class="footer__tagline">Directeur Artistique<br>Producteur Audiovisuel<br>Lyon · Genève</div>
+    </div>
+    <div class="footer__cols">
+      <div>
+        <div class="footer__col-title">NAVIGATION</div>
+        <div class="footer__col-links">
+          <a href="#projets">Projets</a>
+          <a href="#about">À propos</a>
+          <a href="#services">Services</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__col-title">RÉSEAUX</div>
+        <div class="footer__col-links">
+          <a href="#">LinkedIn</a>
+          <a href="#">Instagram</a>
+          <a href="#">Vimeo</a>
+        </div>
+      </div>
+    </div>
+    <div>
+      <a href="#contact" class="btn-primary">
+        PRENDRE RDV
+        <span class="btn-primary__arrow btn-primary__arrow--sm">↗</span>
+      </a>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <span>© 2026 BASTIEN AGUS — TOUS DROITS RÉSERVÉS</span>
+    <span>DESIGN &amp; CODE · BASTIEN AGUS</span>
+  </div>
+</footer>
+
+<script src="js/projects.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

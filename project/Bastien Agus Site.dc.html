@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:#0a0a0a; color:#f5f5f5; font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  ::selection { background:#d90429; color:#fff; }
+  a { text-decoration:none; color:inherit; }
+  @keyframes k-pulse { 0%,100% { opacity:.4; } 50% { opacity:1; } }
+  @keyframes k-slide { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+  @keyframes k-grain {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -10%); }
+    20% { transform: translate(-15%, 5%); }
+    30% { transform: translate(7%, -25%); }
+    40% { transform: translate(-5%, 25%); }
+    50% { transform: translate(-15%, 10%); }
+    60% { transform: translate(15%, 0); }
+    70% { transform: translate(0, 15%); }
+    80% { transform: translate(3%, 35%); }
+    90% { transform: translate(-10%, 10%); }
+  }
+</style>
+</helmet>
+
+<!-- GRAIN OVERLAY -->
+<div style="position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.035">
+  <div style="position:absolute;inset:-50%;width:200%;height:200%;background-image:url('data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.85%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E');animation:k-grain 8s steps(10) infinite"></div>
+</div>
+
+<!-- NAV -->
+<nav ref="{{ navRef }}" style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 56px;height:72px;transition:background .4s ease, backdrop-filter .4s ease, box-shadow .4s ease">
+  <a href="#hero" style="font-family:'Bebas Neue';font-size:26px;letter-spacing:.06em;color:#f5f5f5;display:flex;align-items:center;gap:10px">
+    <span style="width:8px;height:8px;background:#d90429;display:inline-block"></span>
+    BASTIEN AGUS
+  </a>
+  <div style="display:flex;align-items:center;gap:40px">
+    <a href="#projets" style="font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.6);transition:color .3s ease" style-hover="color:#f5f5f5">PROJETS</a>
+    <a href="#about" style="font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.6);transition:color .3s ease" style-hover="color:#f5f5f5">À PROPOS</a>
+    <a href="#services" style="font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.6);transition:color .3s ease" style-hover="color:#f5f5f5">SERVICES</a>
+    <a href="#contact" style="display:inline-flex;align-items:center;gap:10px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#fff;background:#d90429;padding:10px 20px;transition:background .3s ease,transform .3s ease" style-hover="background:#b80324;transform:translateY(-2px)">
+      PRENDRE RDV
+      <span style="font-size:13px">↗</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================== HERO ============================== -->
+<section id="hero" ref="{{ heroRef }}" style="position:relative;height:100vh;min-height:700px;overflow:hidden;background:#0a0a0a">
+  <div ref="{{ heroGhostRef }}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue';font-size:min(42vw,620px);line-height:.78;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.06);pointer-events:none;user-select:none;white-space:nowrap;z-index:1">DA</div>
+  <div ref="{{ slidesRef }}" style="position:absolute;inset:0;z-index:2">
+    <div data-slide="0" style="position:absolute;inset:0;opacity:1;transition:opacity 1.2s ease">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#111 0 16px,#161616 16px 32px);display:flex;align-items:center;justify-content:center">
+        <span style="font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.25)">[ VIDÉO FULLBLEED 01 · 16:9 ]</span>
+      </div>
+    </div>
+    <div data-slide="1" style="position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,#101010 0 16px,#171717 16px 32px);display:flex;align-items:center;justify-content:center">
+        <span style="font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.25)">[ VIDÉO FULLBLEED 02 · 16:9 ]</span>
+      </div>
+    </div>
+    <div data-slide="2" style="position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(160deg,#0f0f0f 0 16px,#181818 16px 32px);display:flex;align-items:center;justify-content:center">
+        <span style="font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.25)">[ VIDÉO FULLBLEED 03 · 16:9 ]</span>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute;inset:0;z-index:3;background:linear-gradient(135deg,rgba(10,10,10,.75) 0%,rgba(10,10,10,.4) 50%,rgba(10,10,10,.2) 100%);pointer-events:none"></div>
+  <div style="position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;padding:0 56px">
+    <div style="max-width:720px">
+      <div data-reveal data-d="0" style="opacity:0;transform:translateY(30px);display:flex;align-items:center;gap:14px;margin-bottom:28px">
+        <span style="width:36px;height:2px;background:#d90429"></span>
+        <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.28em;color:#d90429">DIRECTION ARTISTIQUE · PRODUCTION AUDIOVISUELLE</span>
+      </div>
+      <h1 data-reveal data-d="100" style="opacity:0;transform:translateY(40px);font-family:'Bebas Neue';font-size:min(10vw,128px);line-height:.84;letter-spacing:.01em;color:#f5f5f5;margin-bottom:20px">
+        <span style="font-family:'Ms Madi',cursive;font-size:min(6vw,76px);color:#d90429;display:block;margin-bottom:4px;line-height:1;letter-spacing:.02em">l'art de</span>CRÉER. PRODUIRE<span style="color:#d90429">.</span><br>DIFFUSER<span style="color:#d90429">.</span>
+      </h1>
+      <p data-reveal data-d="200" style="opacity:0;transform:translateY(30px);font:400 17px/1.7 'Inter';color:rgba(245,245,245,.65);max-width:440px;margin-bottom:40px">De la stratégie de marque à l'exécution technique — campagnes nationales TV, cinéma, affichage urbain et digital.</p>
+      <div data-reveal data-d="300" style="opacity:0;transform:translateY(30px);display:flex;align-items:center;gap:24px">
+        <a href="#contact" style="display:inline-flex;align-items:center;gap:14px;font-family:'Bebas Neue';font-size:22px;letter-spacing:.05em;color:#fff;background:#d90429;padding:16px 36px;transition:background .35s ease,transform .35s ease" style-hover="background:#b80324;transform:translateY(-3px)">
+          PRENDRE RENDEZ-VOUS
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px">↗</span>
+        </a>
+        <a href="#projets" style="font:600 12px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">VOIR LES PROJETS ↓</a>
+      </div>
+    </div>
+  </div>
+  <div ref="{{ indicRef }}" style="position:absolute;bottom:48px;left:56px;z-index:5;display:flex;align-items:center;gap:16px">
+    <button data-indic="0" style="width:48px;height:3px;background:#d90429;border:none;cursor:pointer;transition:background .3s ease,width .3s ease"></button>
+    <button data-indic="1" style="width:32px;height:3px;background:rgba(245,245,245,.25);border:none;cursor:pointer;transition:background .3s ease,width .3s ease"></button>
+    <button data-indic="2" style="width:32px;height:3px;background:rgba(245,245,245,.25);border:none;cursor:pointer;transition:background .3s ease,width .3s ease"></button>
+  </div>
+  <div style="position:absolute;bottom:48px;right:56px;z-index:5;display:flex;align-items:center;gap:12px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.35)">SCROLL</span>
+    <div style="width:1px;height:40px;background:rgba(255,255,255,.15);position:relative;overflow:hidden">
+      <div style="width:1px;height:16px;background:#d90429;position:absolute;top:0;animation:k-pulse 2s ease-in-out infinite"></div>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#d90429 0%,#d90429 30%,transparent 100%);z-index:5"></div>
+</section>
+
+<!-- MARQUEE -->
+<div style="background:#d90429;padding:14px 0;overflow:hidden;position:relative;z-index:10">
+  <div style="display:flex;white-space:nowrap;animation:k-slide 20s linear infinite">
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:#fff;padding:0 40px">DIRECTION ARTISTIQUE</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:#fff;padding:0 40px">PRODUCTION AUDIOVISUELLE</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+    <span style="font-family:'Ms Madi',cursive;font-size:26px;color:#fff;padding:0 40px">Photographie</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:#fff;padding:0 40px">LYON · GENÈVE</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:#fff;padding:0 40px">DIRECTION ARTISTIQUE</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:#fff;padding:0 40px">PRODUCTION AUDIOVISUELLE</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+    <span style="font-family:'Ms Madi',cursive;font-size:26px;color:#fff;padding:0 40px">Photographie</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:#fff;padding:0 40px">LYON · GENÈVE</span>
+    <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:.12em;color:rgba(255,255,255,.4);padding:0 40px">✦</span>
+  </div>
+</div>
+
+<!-- ============================== PROJETS — 3D CAROUSEL (image 4 pattern) ============================== -->
+<section id="projets" ref="{{ projetsRef }}" style="position:relative;background:#f0ede8">
+  <div ref="{{ carouselOuterRef }}" data-comment-anchor="c8c5536012-div" style="position:relative">
+    <div ref="{{ carouselStickyRef }}" style="position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column">
+
+      <!-- header -->
+      <div style="flex:none;display:flex;align-items:flex-end;justify-content:space-between;gap:40px;padding:88px 56px 28px">
+        <div>
+          <div data-reveal data-d="0" style="opacity:0;transform:translateY(20px);display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <span style="width:28px;height:2px;background:#d90429"></span>
+            <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.28em;color:#d90429">SÉLECTION DE PROJETS</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <h2 data-reveal data-d="80" style="opacity:0;transform:translateY(24px);font-family:'Bebas Neue';font-size:min(7vw,76px);line-height:.84;letter-spacing:.01em;color:#0a0a0a;margin:0">TRAVAUX<span style="color:#d90429">.</span></h2>
+            <span data-reveal data-d="120" style="opacity:0;transform:translateY(16px);font-family:'Ms Madi',cursive;font-size:min(3.5vw,38px);color:rgba(217,4,41,.6);line-height:1">une sélection</span>
+          </div>
+        </div>
+        <div data-reveal data-d="160" style="opacity:0;transform:translateY(16px);display:flex;align-items:center;gap:16px;padding-bottom:6px">
+          <span ref="{{ carouselCountRef }}" style="font:600 12px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:rgba(10,10,10,.45)">01 / 06</span>
+          <button ref="{{ prevBtnRef }}" style="width:44px;height:44px;border:1px solid rgba(10,10,10,.15);background:transparent;color:#0a0a0a;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .3s ease,background .3s ease" style-hover="border-color:#d90429;background:rgba(217,4,41,.1)">←</button>
+          <button ref="{{ nextBtnRef }}" style="width:44px;height:44px;border:1px solid rgba(10,10,10,.15);background:transparent;color:#0a0a0a;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .3s ease,background .3s ease" style-hover="border-color:#d90429;background:rgba(217,4,41,.1)">→</button>
+        </div>
+      </div>
+
+      <!-- 3D perspective track -->
+      <div style="flex:1;position:relative;overflow:hidden;perspective:1200px;perspective-origin:50% 50%">
+        <div ref="{{ carouselTrackRef }}" style="position:absolute;top:12px;left:0;bottom:12px;display:flex;gap:40px;padding:0 calc(50vw - 380px);will-change:transform;transform-style:preserve-3d">
+
+          <!-- CARD 1 — WSC Affichage -->
+          <a data-card href="#" style="flex:none;width:min(760px,80vw);height:100%;display:block;color:inherit;position:relative;overflow:visible;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,.61,.36,1),opacity .5s ease" data-comment-anchor="c205968ceb-div">
+            <div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0e0e0e;box-shadow:0 20px 80px -20px rgba(0,0,0,.8)">
+              <div data-media style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#141414 0 14px,#1b1b1b 14px 28px);transition:transform .6s cubic-bezier(.22,.61,.36,1)"></div>
+              <span style="position:absolute;top:18px;right:20px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.25)">[ VISUEL PROJET · 16:9 ]</span>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.92) 0%,rgba(10,10,10,.3) 35%,transparent 70%);pointer-events:none"></div>
+              <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.5) 0%,transparent 25%);pointer-events:none"></div>
+              <!-- giant client name watermark (image 4) -->
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none">
+                <div style="font-family:'Bebas Neue';font-size:min(14vw,140px);line-height:.78;color:rgba(255,255,255,.08);letter-spacing:.04em">WELLNESS</div>
+                <div style="font-family:'Ms Madi',cursive;font-size:min(9vw,100px);color:rgba(217,4,41,.18);line-height:.7;margin-top:-4px">Sport Club</div>
+              </div>
+              <!-- red stat block — floating left (image 4) -->
+              <div style="position:absolute;left:-20px;top:50%;transform:translateY(-50%);background:#d90429;padding:20px 24px 22px;z-index:3;box-shadow:4px 8px 30px rgba(0,0,0,.5)">
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">2 PAYS</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8);margin-bottom:10px">campagne nationale</div>
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">12 MOIS</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8)">diffusion continue</div>
+              </div>
+              <!-- title bottom-left (image 4) -->
+              <div style="position:absolute;left:28px;bottom:28px;z-index:2">
+                <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.55);margin-bottom:10px">WELLNESS SPORT CLUB</div>
+                <div style="font-family:'Bebas Neue';font-size:min(5.5vw,60px);line-height:.82;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5)">CAMPAGNE<br>D'AFFICHAGE</div>
+                <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:14px;max-width:160px;transition:width .5s cubic-bezier(.22,.61,.36,1)"></div>
+              </div>
+              <!-- projet suivant thumbnail — bottom-right (image 4) -->
+              <div data-peek style="position:absolute;right:20px;bottom:20px;z-index:3;transition:opacity .4s ease,transform .4s ease">
+                <div style="width:130px;overflow:hidden;border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                  <div style="aspect-ratio:16/10;background:repeating-linear-gradient(45deg,#0d0d0d 0 7px,#161616 7px 14px)"></div>
+                  <div style="background:#d90429;padding:5px 8px;font:600 7.5px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff;display:flex;align-items:center;justify-content:space-between">PROJET SUIVANT <span style="font-size:10px">↗</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- CARD 2 — Dimension Stores -->
+          <a data-card href="#" style="flex:none;width:min(760px,80vw);height:100%;display:block;color:inherit;position:relative;overflow:visible;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,.61,.36,1),opacity .5s ease">
+            <div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0e0e0e;box-shadow:0 20px 80px -20px rgba(0,0,0,.8)">
+              <div data-media style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,#131313 0 14px,#1a1a1a 14px 28px);transition:transform .6s cubic-bezier(.22,.61,.36,1)"></div>
+              <span style="position:absolute;top:18px;right:20px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.25)">[ VISUEL PROJET · 16:9 ]</span>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.92) 0%,rgba(10,10,10,.3) 35%,transparent 70%);pointer-events:none"></div>
+              <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.5) 0%,transparent 25%);pointer-events:none"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none">
+                <div style="font-family:'Bebas Neue';font-size:min(14vw,140px);line-height:.78;color:rgba(255,255,255,.08);letter-spacing:.04em">DIMENSION</div>
+                <div style="font-family:'Ms Madi',cursive;font-size:min(9vw,100px);color:rgba(217,4,41,.18);line-height:.7;margin-top:-4px">Stores</div>
+              </div>
+              <div style="position:absolute;left:-20px;top:50%;transform:translateY(-50%);background:#d90429;padding:20px 24px 22px;z-index:3;box-shadow:4px 8px 30px rgba(0,0,0,.5)">
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">8</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8);margin-bottom:10px">points de vente</div>
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">DA</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8)">+ identité visuelle</div>
+              </div>
+              <div style="position:absolute;left:28px;bottom:28px;z-index:2">
+                <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.55);margin-bottom:10px">DIMENSION STORES</div>
+                <div style="font-family:'Bebas Neue';font-size:min(5.5vw,60px);line-height:.82;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5)">IDENTITÉ<br>RETAIL</div>
+                <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:14px;max-width:160px;transition:width .5s cubic-bezier(.22,.61,.36,1)"></div>
+              </div>
+              <div data-peek style="position:absolute;right:20px;bottom:20px;z-index:3;transition:opacity .4s ease,transform .4s ease">
+                <div style="width:130px;overflow:hidden;border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                  <div style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#0d0d0d 0 7px,#161616 7px 14px)"></div>
+                  <div style="background:#d90429;padding:5px 8px;font:600 7.5px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff;display:flex;align-items:center;justify-content:space-between">PROJET SUIVANT <span style="font-size:10px">↗</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- CARD 3 — Techteam -->
+          <a data-card href="#" style="flex:none;width:min(760px,80vw);height:100%;display:block;color:inherit;position:relative;overflow:visible;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,.61,.36,1),opacity .5s ease">
+            <div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0e0e0e;box-shadow:0 20px 80px -20px rgba(0,0,0,.8)">
+              <div data-media style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#141414 0 14px,#1b1b1b 14px 28px);transition:transform .6s cubic-bezier(.22,.61,.36,1)"></div>
+              <span style="position:absolute;top:18px;right:20px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.25)">[ VISUEL PROJET · 1:1 ]</span>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.92) 0%,rgba(10,10,10,.3) 35%,transparent 70%);pointer-events:none"></div>
+              <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.5) 0%,transparent 25%);pointer-events:none"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none">
+                <div style="font-family:'Bebas Neue';font-size:min(14vw,140px);line-height:.78;color:rgba(255,255,255,.08);letter-spacing:.04em">TECHTEAM</div>
+                <div style="font-family:'Ms Madi',cursive;font-size:min(9vw,100px);color:rgba(217,4,41,.18);line-height:.7;margin-top:-4px">Films</div>
+              </div>
+              <div style="position:absolute;left:-20px;top:50%;transform:translateY(-50%);background:#d90429;padding:20px 24px 22px;z-index:3;box-shadow:4px 8px 30px rgba(0,0,0,.5)">
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">3</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8);margin-bottom:10px">films produits</div>
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">CORP</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8)">com. interne</div>
+              </div>
+              <div style="position:absolute;left:28px;bottom:28px;z-index:2">
+                <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.55);margin-bottom:10px">TECHTEAM · 3 FILMS</div>
+                <div style="font-family:'Bebas Neue';font-size:min(5.5vw,60px);line-height:.82;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5)">FILM<br>CORPORATE</div>
+                <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:14px;max-width:160px;transition:width .5s cubic-bezier(.22,.61,.36,1)"></div>
+              </div>
+              <div data-peek style="position:absolute;right:20px;bottom:20px;z-index:3;transition:opacity .4s ease,transform .4s ease">
+                <div style="width:130px;overflow:hidden;border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                  <div style="aspect-ratio:16/10;background:repeating-linear-gradient(160deg,#0d0d0d 0 7px,#161616 7px 14px)"></div>
+                  <div style="background:#d90429;padding:5px 8px;font:600 7.5px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff;display:flex;align-items:center;justify-content:space-between">PROJET SUIVANT <span style="font-size:10px">↗</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- CARD 4 — Le Docks40 -->
+          <a data-card href="#" style="flex:none;width:min(760px,80vw);height:100%;display:block;color:inherit;position:relative;overflow:visible;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,.61,.36,1),opacity .5s ease">
+            <div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0e0e0e;box-shadow:0 20px 80px -20px rgba(0,0,0,.8)">
+              <div data-media style="position:absolute;inset:0;background:repeating-linear-gradient(160deg,#121212 0 14px,#1a1a1a 14px 28px);transition:transform .6s cubic-bezier(.22,.61,.36,1)"></div>
+              <span style="position:absolute;top:18px;right:20px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.25)">[ VISUEL PROJET · 4:5 ]</span>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.92) 0%,rgba(10,10,10,.3) 35%,transparent 70%);pointer-events:none"></div>
+              <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.5) 0%,transparent 25%);pointer-events:none"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none">
+                <div style="font-family:'Bebas Neue';font-size:min(14vw,140px);line-height:.78;color:rgba(255,255,255,.08);letter-spacing:.04em">DOCKS40</div>
+                <div style="font-family:'Ms Madi',cursive;font-size:min(9vw,100px);color:rgba(217,4,41,.18);line-height:.7;margin-top:-4px">Lyon</div>
+              </div>
+              <div style="position:absolute;left:28px;bottom:28px;z-index:2">
+                <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.55);margin-bottom:10px">LE DOCKS40 · LYON</div>
+                <div style="font-family:'Bebas Neue';font-size:min(5.5vw,60px);line-height:.82;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5)">DIRECTION<br>PHOTO</div>
+                <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:14px;max-width:160px;transition:width .5s cubic-bezier(.22,.61,.36,1)"></div>
+              </div>
+              <div data-peek style="position:absolute;right:20px;bottom:20px;z-index:3;transition:opacity .4s ease,transform .4s ease">
+                <div style="width:130px;overflow:hidden;border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                  <div style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#0d0d0d 0 7px,#161616 7px 14px)"></div>
+                  <div style="background:#d90429;padding:5px 8px;font:600 7.5px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff;display:flex;align-items:center;justify-content:space-between">PROJET SUIVANT <span style="font-size:10px">↗</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- CARD 5 — Solerys -->
+          <a data-card href="#" style="flex:none;width:min(760px,80vw);height:100%;display:block;color:inherit;position:relative;overflow:visible;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,.61,.36,1),opacity .5s ease">
+            <div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0e0e0e;box-shadow:0 20px 80px -20px rgba(0,0,0,.8)">
+              <div data-media style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#141414 0 14px,#1b1b1b 14px 28px);transition:transform .6s cubic-bezier(.22,.61,.36,1)"></div>
+              <span style="position:absolute;top:18px;right:20px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.25)">[ VISUEL PROJET · 16:9 ]</span>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.92) 0%,rgba(10,10,10,.3) 35%,transparent 70%);pointer-events:none"></div>
+              <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.5) 0%,transparent 25%);pointer-events:none"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none">
+                <div style="font-family:'Bebas Neue';font-size:min(14vw,140px);line-height:.78;color:rgba(255,255,255,.08);letter-spacing:.04em">SOLERYS</div>
+                <div style="font-family:'Ms Madi',cursive;font-size:min(9vw,100px);color:rgba(217,4,41,.18);line-height:.7;margin-top:-4px">Nationale</div>
+              </div>
+              <div style="position:absolute;left:-20px;top:50%;transform:translateY(-50%);background:#d90429;padding:20px 24px 22px;z-index:3;box-shadow:4px 8px 30px rgba(0,0,0,.5)">
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">FR</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8);margin-bottom:10px">diffusion nationale</div>
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">SOCIAL</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8)">campagne RSE</div>
+              </div>
+              <div style="position:absolute;left:28px;bottom:28px;z-index:2">
+                <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.55);margin-bottom:10px">SOLERYS · NATIONALE</div>
+                <div style="font-family:'Bebas Neue';font-size:min(5.5vw,60px);line-height:.82;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5)">CAMPAGNE<br>SOCIALE</div>
+                <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:14px;max-width:160px;transition:width .5s cubic-bezier(.22,.61,.36,1)"></div>
+              </div>
+              <div data-peek style="position:absolute;right:20px;bottom:20px;z-index:3;transition:opacity .4s ease,transform .4s ease">
+                <div style="width:130px;overflow:hidden;border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                  <div style="aspect-ratio:16/10;background:repeating-linear-gradient(45deg,#0d0d0d 0 7px,#161616 7px 14px)"></div>
+                  <div style="background:#d90429;padding:5px 8px;font:600 7.5px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff;display:flex;align-items:center;justify-content:space-between">PROJET SUIVANT <span style="font-size:10px">↗</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- CARD 6 — Spot TV WSC -->
+          <a data-card href="#" style="flex:none;width:min(760px,80vw);height:100%;display:block;color:inherit;position:relative;overflow:visible;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,.61,.36,1),opacity .5s ease">
+            <div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0e0e0e;box-shadow:0 20px 80px -20px rgba(0,0,0,.8)">
+              <div data-media style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,#101010 0 14px,#191919 14px 28px);transition:transform .6s cubic-bezier(.22,.61,.36,1)"></div>
+              <span style="position:absolute;top:18px;right:20px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.25)">[ VISUEL PROJET · 1:1 ]</span>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.92) 0%,rgba(10,10,10,.3) 35%,transparent 70%);pointer-events:none"></div>
+              <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.5) 0%,transparent 25%);pointer-events:none"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none">
+                <div style="font-family:'Bebas Neue';font-size:min(14vw,140px);line-height:.78;color:rgba(255,255,255,.08);letter-spacing:.04em">WELLNESS</div>
+                <div style="font-family:'Ms Madi',cursive;font-size:min(9vw,100px);color:rgba(217,4,41,.18);line-height:.7;margin-top:-4px">Sport Club</div>
+              </div>
+              <div style="position:absolute;left:-20px;top:50%;transform:translateY(-50%);background:#d90429;padding:20px 24px 22px;z-index:3;box-shadow:4px 8px 30px rgba(0,0,0,.5)">
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">TV</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8);margin-bottom:10px">cinéma · digital</div>
+                <div style="font-family:'Bebas Neue';font-size:34px;line-height:.82;color:#fff">30"</div>
+                <div style="font:400 9px/1.4 'Inter';color:rgba(255,255,255,.8)">spot national</div>
+              </div>
+              <div style="position:absolute;left:28px;bottom:28px;z-index:2">
+                <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.55);margin-bottom:10px">WELLNESS SPORT CLUB</div>
+                <div style="font-family:'Bebas Neue';font-size:min(5.5vw,60px);line-height:.82;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5)">SPOT TV<br>/ CINÉMA</div>
+                <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:14px;max-width:160px;transition:width .5s cubic-bezier(.22,.61,.36,1)"></div>
+              </div>
+              <div data-peek style="position:absolute;right:20px;bottom:20px;z-index:3;transition:opacity .4s ease,transform .4s ease">
+                <div style="width:130px;overflow:hidden;border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                  <div style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#0d0d0d 0 7px,#161616 7px 14px)"></div>
+                  <div style="background:#d90429;padding:5px 8px;font:600 7.5px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff;display:flex;align-items:center;justify-content:space-between">RETOUR DÉBUT <span style="font-size:10px">↗</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- progress bar -->
+      <div style="flex:none;height:3px;background:rgba(10,10,10,.1);margin:0 56px 20px">
+        <div ref="{{ carouselProgressRef }}" style="height:100%;background:#d90429;width:16.67%;transition:width .15s linear"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== ABOUT ============================== -->
+<section id="about" style="background:#0c0c0c;padding:160px 56px;position:relative;overflow:hidden">
+  <div style="position:absolute;bottom:-30px;left:-20px;font-family:'Bebas Neue';font-size:min(22vw,320px);line-height:.7;color:#111;pointer-events:none;user-select:none;z-index:0">AGUS</div>
+  <div style="max-width:1340px;margin:0 auto;position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center">
+    <div data-reveal data-d="0" style="opacity:0;transform:translateY(30px)">
+      <div style="position:relative">
+        <div style="aspect-ratio:3/4;background:repeating-linear-gradient(135deg,#141414 0 14px,#1b1b1b 14px 28px);display:flex;align-items:center;justify-content:center">
+          <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.3)">[ PORTRAIT · 3:4 ]</span>
+        </div>
+        <div style="position:absolute;right:-24px;bottom:-24px;width:180px;background:#d90429;padding:22px 20px">
+          <div style="font-family:'Bebas Neue';font-size:42px;line-height:.82;color:#fff">+10 ANS</div>
+          <div style="font:400 11px/1.4 'Inter';color:rgba(255,255,255,.85);margin-top:4px">d'expérience en<br>direction artistique</div>
+        </div>
+        <div style="position:absolute;top:-12px;left:-12px;width:48px;height:48px;border-left:3px solid #d90429;border-top:3px solid #d90429"></div>
+      </div>
+    </div>
+    <div>
+      <div data-reveal data-d="80" style="opacity:0;transform:translateY(20px);display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <span style="width:28px;height:2px;background:#d90429"></span>
+        <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.28em;color:#d90429">À PROPOS</span>
+      </div>
+      <div data-reveal data-d="130" style="opacity:0;transform:translateY(18px);font-family:'Ms Madi',cursive;font-size:48px;color:#d90429;line-height:1;margin-bottom:-6px">Bastien</div>
+      <h2 data-reveal data-d="150" style="opacity:0;transform:translateY(24px);font-family:'Bebas Neue';font-size:72px;line-height:.86;letter-spacing:.01em;color:#f5f5f5;margin-bottom:32px">BASTIEN<br>AGUS<span style="color:#d90429">.</span></h2>
+      <p data-reveal data-d="220" style="opacity:0;transform:translateY(20px);font:400 16px/1.75 'Inter';color:rgba(245,245,245,.55);margin-bottom:20px">Directeur Artistique et Producteur Audiovisuel basé entre Lyon et Genève. Autodidacte sur les logiciels de création dès 13 ans, formé en Chef de Projet Web & Multimédia puis en Direction Artistique Audiovisuelle (Master 2).</p>
+      <p data-reveal data-d="280" style="opacity:0;transform:translateY(20px);font:400 16px/1.75 'Inter';color:rgba(245,245,245,.55);margin-bottom:40px">Je dirige le Pôle Créa de Wellness Sport Club — campagnes vidéo nationales diffusées TV, cinéma, affichage urbain, digital. Photographie de la campagne d'affichage annuelle en France et en Suisse.</p>
+      <div data-reveal data-d="340" style="opacity:0;transform:translateY(20px);display:flex;gap:40px;padding-top:32px;border-top:1px solid rgba(255,255,255,.1)">
+        <div>
+          <div style="font-family:'Bebas Neue';font-size:48px;line-height:.85;color:#f5f5f5">TV</div>
+          <div style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.1em;color:rgba(245,245,245,.45);margin-top:4px">CINÉMA · DIGITAL</div>
+        </div>
+        <div>
+          <div style="font-family:'Bebas Neue';font-size:48px;line-height:.85;color:#f5f5f5">2</div>
+          <div style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.1em;color:rgba(245,245,245,.45);margin-top:4px">PAYS · FR / CH</div>
+        </div>
+        <div>
+          <div style="font-family:'Bebas Neue';font-size:48px;line-height:.85;color:#f5f5f5">360°</div>
+          <div style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.1em;color:rgba(245,245,245,.45);margin-top:4px">STRATÉGIE → EXÉCUTION</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== SERVICES ============================== -->
+<section id="services" style="background:#f0ede8;padding:160px 56px;position:relative;overflow:hidden;color:#0a0a0a">
+  <div style="position:absolute;top:60px;right:-10px;font-family:'Bebas Neue';font-size:min(20vw,280px);line-height:.7;color:rgba(10,10,10,.04);pointer-events:none;user-select:none;z-index:0">CRAFT</div>
+  <div style="max-width:1340px;margin:0 auto;position:relative;z-index:1">
+    <div data-reveal data-d="0" style="opacity:0;transform:translateY(20px);display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <span style="width:28px;height:2px;background:#d90429"></span>
+      <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.28em;color:#d90429">EXPERTISES</span>
+    </div>
+    <h2 data-reveal data-d="80" style="opacity:0;transform:translateY(24px);font-family:'Bebas Neue';font-size:min(8vw,96px);line-height:.86;letter-spacing:.01em;color:#0a0a0a;margin-bottom:72px;max-width:800px">CE QUE JE FAIS<span style="color:#d90429">.</span></h2>
+    <div data-reveal data-d="120" style="opacity:0;transform:translateY(16px);font-family:'Ms Madi',cursive;font-size:min(4.5vw,52px);color:rgba(217,4,41,.65);margin-top:-10px;margin-bottom:60px;line-height:1">l'expertise</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(10,10,10,.1)">
+      <div data-svc data-reveal data-d="0" style="opacity:0;transform:translateY(20px);padding:52px 48px;border-bottom:1px solid rgba(10,10,10,.1);border-right:1px solid rgba(10,10,10,.1);transition:background .4s ease" style-hover="background:rgba(217,4,41,.06)">
+        <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:20px">
+          <span style="font-family:'Bebas Neue';font-size:56px;line-height:.8;color:rgba(217,4,41,.35)">01</span>
+          <h3 style="font-family:'Bebas Neue';font-size:34px;line-height:.9;color:#0a0a0a;letter-spacing:.02em">DIRECTION ARTISTIQUE</h3>
+        </div>
+        <p style="font:400 14px/1.65 'Inter';color:rgba(10,10,10,.55);max-width:380px">Identité visuelle, stratégie de marque, direction créative globale — de la conception au déploiement sur tous les points de contact.</p>
+      </div>
+      <div data-svc data-reveal data-d="70" style="opacity:0;transform:translateY(20px);padding:52px 48px;border-bottom:1px solid rgba(10,10,10,.1);transition:background .4s ease" style-hover="background:rgba(217,4,41,.06)">
+        <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:20px">
+          <span style="font-family:'Bebas Neue';font-size:56px;line-height:.8;color:rgba(217,4,41,.35)">02</span>
+          <h3 style="font-family:'Bebas Neue';font-size:34px;line-height:.9;color:#0a0a0a;letter-spacing:.02em">PRODUCTION VIDÉO</h3>
+        </div>
+        <p style="font:400 14px/1.65 'Inter';color:rgba(10,10,10,.55);max-width:380px">Spots TV & cinéma, films corporate, captation événementielle. Pré-production, tournage, post-production et livraison multi-format.</p>
+      </div>
+      <div data-svc data-reveal data-d="0" style="opacity:0;transform:translateY(20px);padding:52px 48px;border-right:1px solid rgba(10,10,10,.1);transition:background .4s ease" style-hover="background:rgba(217,4,41,.06)">
+        <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:20px">
+          <span style="font-family:'Bebas Neue';font-size:56px;line-height:.8;color:rgba(217,4,41,.35)">03</span>
+          <h3 style="font-family:'Bebas Neue';font-size:34px;line-height:.9;color:#0a0a0a;letter-spacing:.02em">PHOTOGRAPHIE</h3>
+        </div>
+        <p style="font:400 14px/1.65 'Inter';color:rgba(10,10,10,.55);max-width:380px">Direction photo, campagnes d'affichage, shooting produit et lifestyle. Du concept à la retouche, optimisé pour impression et digital.</p>
+      </div>
+      <div data-svc data-reveal data-d="70" style="opacity:0;transform:translateY(20px);padding:52px 48px;transition:background .4s ease" style-hover="background:rgba(217,4,41,.06)">
+        <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:20px">
+          <span style="font-family:'Bebas Neue';font-size:56px;line-height:.8;color:rgba(217,4,41,.35)">04</span>
+          <h3 style="font-family:'Bebas Neue';font-size:34px;line-height:.9;color:#0a0a0a;letter-spacing:.02em">MOTION DESIGN</h3>
+        </div>
+        <p style="font:400 14px/1.65 'Inter';color:rgba(10,10,10,.55);max-width:380px">Animation graphique, habillage vidéo, titrage broadcast. Motion adapté aux formats TV, digital et événementiel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CONTACT ============================== -->
+<section id="contact" style="background:#0c0c0c;padding:160px 56px;position:relative;overflow:hidden">
+  <div style="position:absolute;bottom:-20px;right:-10px;font-family:'Bebas Neue';font-size:min(18vw,260px);line-height:.7;color:#111;pointer-events:none;user-select:none;z-index:0">CONTACT</div>
+  <div style="max-width:1340px;margin:0 auto;position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start">
+    <div>
+      <div data-reveal data-d="0" style="opacity:0;transform:translateY(20px);display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <span style="width:28px;height:2px;background:#d90429"></span>
+        <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.28em;color:#d90429">CONTACT</span>
+      </div>
+      <h2 data-reveal data-d="80" style="opacity:0;transform:translateY(24px);font-family:'Bebas Neue';font-size:min(7vw,80px);line-height:.86;letter-spacing:.01em;color:#f5f5f5;margin-bottom:32px"><span style="font-family:'Ms Madi',cursive;font-size:min(5vw,52px);color:#d90429;display:block;margin-bottom:2px;line-height:1">discutons</span>DISCUTONS DE<br>VOTRE PROJET<span style="color:#d90429">.</span></h2>
+      <p data-reveal data-d="160" style="opacity:0;transform:translateY(20px);font:400 15px/1.7 'Inter';color:rgba(245,245,245,.5);margin-bottom:48px;max-width:420px">Que ce soit pour une campagne nationale, une direction photo ou un film — planifions un rendez-vous pour définir vos besoins et objectifs.</p>
+      <div data-reveal data-d="240" style="opacity:0;transform:translateY(20px);display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;align-items:center;gap:16px">
+          <span style="width:40px;height:40px;border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:16px;color:#d90429">@</span>
+          <div>
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4);margin-bottom:4px">EMAIL</div>
+            <span style="font:500 14px/1.3 'Inter';color:#f5f5f5">contact@bastienagus.com</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span style="width:40px;height:40px;border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:16px;color:#d90429">⌖</span>
+          <div>
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4);margin-bottom:4px">LOCALISATION</div>
+            <span style="font:500 14px/1.3 'Inter';color:#f5f5f5">Lyon · Genève</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div data-reveal data-d="120" style="opacity:0;transform:translateY(30px);background:#111;border:1px solid rgba(255,255,255,.1);padding:48px 40px">
+      <h3 style="font-family:'Bebas Neue';font-size:32px;line-height:.9;color:#f5f5f5;margin-bottom:32px">PRENDRE RENDEZ-VOUS<span style="color:#d90429">.</span></h3>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div>
+          <label style="display:block;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.45);margin-bottom:10px">NOM / ENTREPRISE</label>
+          <div style="height:48px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;padding:0 16px;font:400 14px/1 'Inter';color:rgba(245,245,245,.25)">Votre nom ou raison sociale</div>
+        </div>
+        <div>
+          <label style="display:block;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.45);margin-bottom:10px">EMAIL</label>
+          <div style="height:48px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;padding:0 16px;font:400 14px/1 'Inter';color:rgba(245,245,245,.25)">votre@email.com</div>
+        </div>
+        <div>
+          <label style="display:block;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.45);margin-bottom:10px">TYPE DE PROJET</label>
+          <div style="height:48px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font:400 14px/1 'Inter';color:rgba(245,245,245,.25)">Sélectionner <span style="font-size:10px;color:rgba(245,245,245,.3)">▼</span></div>
+        </div>
+        <div>
+          <label style="display:block;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.45);margin-bottom:10px">MESSAGE</label>
+          <div style="min-height:120px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);padding:14px 16px;font:400 14px/1.5 'Inter';color:rgba(245,245,245,.25)">Décrivez brièvement votre projet…</div>
+        </div>
+        <button style="width:100%;height:54px;background:#d90429;border:none;cursor:pointer;font-family:'Bebas Neue';font-size:20px;letter-spacing:.08em;color:#fff;display:flex;align-items:center;justify-content:center;gap:12px;transition:background .35s ease,transform .35s ease" style-hover="background:#b80324;transform:translateY(-2px)">
+          ENVOYER MA DEMANDE
+          <span style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:13px">↗</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#080808;border-top:1px solid rgba(255,255,255,.08);padding:64px 56px 40px">
+  <div style="max-width:1340px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:40px;margin-bottom:48px">
+    <div>
+      <div style="font-family:'Bebas Neue';font-size:36px;letter-spacing:.04em;color:#f5f5f5;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="width:8px;height:8px;background:#d90429;display:inline-block"></span>
+        BASTIEN AGUS
+      </div>
+      <div style="font:400 13px/1.6 'Inter';color:rgba(245,245,245,.4);max-width:280px">Directeur Artistique<br>Producteur Audiovisuel<br>Lyon · Genève</div>
+    </div>
+    <div style="display:flex;gap:56px">
+      <div>
+        <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.35);margin-bottom:18px">NAVIGATION</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="#projets" style="font:400 13px/1.3 'Inter';color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">Projets</a>
+          <a href="#about" style="font:400 13px/1.3 'Inter';color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">À propos</a>
+          <a href="#services" style="font:400 13px/1.3 'Inter';color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">Services</a>
+          <a href="#contact" style="font:400 13px/1.3 'Inter';color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.35);margin-bottom:18px">RÉSEAUX</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="#" style="font:400 13px/1.3 'Inter';color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">LinkedIn</a>
+          <a href="#" style="font:400 13px/1.3 'Inter';color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">Instagram</a>
+          <a href="#" style="font:400 13px/1.3 'Inter';color:rgba(245,245,245,.55);transition:color .3s ease" style-hover="color:#f5f5f5">Vimeo</a>
+        </div>
+      </div>
+    </div>
+    <div>
+      <a href="#contact" style="display:inline-flex;align-items:center;gap:12px;font-family:'Bebas Neue';font-size:20px;letter-spacing:.05em;color:#fff;background:#d90429;padding:14px 32px;transition:background .35s ease,transform .35s ease" style-hover="background:#b80324;transform:translateY(-2px)">
+        PRENDRE RDV
+        <span style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px">↗</span>
+      </a>
+    </div>
+  </div>
+  <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:24px;display:flex;align-items:center;justify-content:space-between">
+    <span style="font:400 11px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:rgba(245,245,245,.25)">© 2026 BASTIEN AGUS — TOUS DROITS RÉSERVÉS</span>
+    <span style="font:400 11px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:rgba(245,245,245,.2)">DESIGN & CODE · BASTIEN AGUS</span>
+  </div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  navRef = React.createRef();
+  heroRef = React.createRef();
+  heroGhostRef = React.createRef();
+  slidesRef = React.createRef();
+  indicRef = React.createRef();
+  projetsRef = React.createRef();
+  carouselOuterRef = React.createRef();
+  carouselStickyRef = React.createRef();
+  carouselTrackRef = React.createRef();
+  carouselProgressRef = React.createRef();
+  carouselCountRef = React.createRef();
+  prevBtnRef = React.createRef();
+  nextBtnRef = React.createRef();
+  _slideTimer = null;
+  _io = null;
+  _scrollRAF = null;
+
+  componentDidMount() {
+    this._initReveals();
+    this._initNav();
+    this._initSlideshow();
+    this._initCardHovers();
+    this._initParallax();
+    this._initCarousel();
+  }
+
+  componentWillUnmount() {
+    if (this._slideTimer) clearInterval(this._slideTimer);
+    if (this._io) this._io.disconnect();
+    if (this._scrollRAF) cancelAnimationFrame(this._scrollRAF);
+  }
+
+  _initReveals() {
+    const EASE = 'cubic-bezier(.22,.61,.36,1)';
+    const items = document.querySelectorAll('[data-reveal]');
+    this._io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const d = parseInt(el.dataset.d) || 0;
+        el.style.transition = 'opacity .8s ' + EASE + ' ' + d + 'ms, transform .8s ' + EASE + ' ' + d + 'ms';
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        this._io.unobserve(el);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    items.forEach(el => this._io.observe(el));
+    setTimeout(() => items.forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; }), 4000);
+  }
+
+  _initNav() {
+    const nav = this.navRef.current;
+    if (!nav) return;
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      if (y > 80) {
+        nav.style.background = 'rgba(10,10,10,.92)';
+        nav.style.backdropFilter = 'blur(16px)';
+        nav.style.boxShadow = '0 1px 0 rgba(255,255,255,.06)';
+      } else {
+        nav.style.background = 'transparent';
+        nav.style.backdropFilter = 'none';
+        nav.style.boxShadow = 'none';
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  _initSlideshow() {
+    const container = this.slidesRef.current;
+    const indicContainer = this.indicRef.current;
+    if (!container || !indicContainer) return;
+    const slides = container.querySelectorAll('[data-slide]');
+    const indics = indicContainer.querySelectorAll('[data-indic]');
+    let current = 0;
+    const total = slides.length;
+    const goTo = (n) => {
+      slides.forEach((s, i) => { s.style.opacity = i === n ? '1' : '0'; });
+      indics.forEach((ind, i) => {
+        ind.style.background = i === n ? '#d90429' : 'rgba(245,245,245,.25)';
+        ind.style.width = i === n ? '48px' : '32px';
+      });
+      current = n;
+    };
+    indics.forEach((ind, i) => { ind.addEventListener('click', () => goTo(i)); });
+    this._slideTimer = setInterval(() => { goTo((current + 1) % total); }, 5000);
+  }
+
+  _initCardHovers() {
+    document.querySelectorAll('[data-card]').forEach(card => {
+      const media = card.querySelector('[data-media]');
+      const bar = card.querySelector('[data-bar]');
+      const peek = card.querySelector('[data-peek]');
+      card.addEventListener('mouseenter', () => {
+        if (media) media.style.transform = 'scale(1.04)';
+        if (bar) bar.style.width = '100%';
+      });
+      card.addEventListener('mouseleave', () => {
+        if (media) media.style.transform = 'none';
+        if (bar) bar.style.width = '0%';
+      });
+    });
+  }
+
+  _initParallax() {
+    const ghost = this.heroGhostRef.current;
+    if (!ghost) return;
+    const tick = () => {
+      const y = window.scrollY || 0;
+      ghost.style.transform = 'translate(-50%, calc(-50% + ' + (y * 0.12) + 'px))';
+      this._scrollRAF = requestAnimationFrame(tick);
+    };
+    this._scrollRAF = requestAnimationFrame(tick);
+  }
+
+  /* ——— 3D CAROUSEL WITH SCROLL-LOCK ——— */
+  _initCarousel() {
+    const outer = this.carouselOuterRef.current;
+    const track = this.carouselTrackRef.current;
+    const progress = this.carouselProgressRef.current;
+    const counter = this.carouselCountRef.current;
+    const prevBtn = this.prevBtnRef.current;
+    const nextBtn = this.nextBtnRef.current;
+    if (!outer || !track) return;
+
+    const cards = [...track.querySelectorAll('[data-card]')];
+    const total = cards.length;
+    const GAP = 40;
+
+    const getCardW = () => cards[0] ? cards[0].offsetWidth : 760;
+
+    // Calculate total horizontal scroll distance
+    const getMaxScroll = () => {
+      const cardW = getCardW();
+      const trackW = (cardW + GAP) * total - GAP;
+      const viewW = window.innerWidth;
+      const padLeft = (viewW - cardW) / 2; // center first card
+      return Math.max(0, trackW - viewW + padLeft * 2);
+    };
+
+    // Set outer height = 1 viewport + scroll distance (no extra empty space)
+    const setHeight = () => {
+      const maxScroll = getMaxScroll();
+      outer.style.height = (window.innerHeight + maxScroll) + 'px';
+    };
+    setHeight();
+    window.addEventListener('resize', setHeight);
+
+    // Update track + 3D card transforms on scroll
+    const updateCarousel = () => {
+      const rect = outer.getBoundingClientRect();
+      const scrolled = Math.max(0, -rect.top);
+      const maxScroll = Math.max(1, getMaxScroll());
+      const pct = Math.min(1, scrolled / maxScroll);
+      const cardW = getCardW();
+
+      // Translate track
+      track.style.transform = 'translateX(' + (-pct * maxScroll) + 'px)';
+
+      // 3D transforms per card
+      const centerX = window.innerWidth / 2;
+      cards.forEach((card, i) => {
+        const cardLeft = (cardW + GAP) * i - (pct * maxScroll) + (window.innerWidth - cardW) / 2;
+        const cardCenter = cardLeft + cardW / 2;
+        const dist = (cardCenter - centerX) / centerX; // -1 to 1
+        const absDist = Math.abs(dist);
+
+        // rotateY: cards to left rotate right, cards to right rotate left
+        const rotY = dist * -18;
+        // scale: active card = 1, others shrink
+        const scale = 1 - absDist * 0.08;
+        // opacity: dim non-active cards
+        const opacity = 1 - absDist * 0.35;
+        // translateZ: push non-active cards back
+        const tz = -absDist * 80;
+
+        card.style.transform = 'perspective(1200px) rotateY(' + rotY + 'deg) scale(' + Math.max(0.85, scale) + ') translateZ(' + tz + 'px)';
+        card.style.opacity = Math.max(0.5, opacity);
+
+        // Show peek only on active card
+        const peek = card.querySelector('[data-peek]');
+        if (peek) {
+          if (absDist < 0.35) {
+            peek.style.opacity = '1';
+            peek.style.transform = 'translateY(0)';
+          } else {
+            peek.style.opacity = '0';
+            peek.style.transform = 'translateY(8px)';
+          }
+        }
+      });
+
+      // Progress bar
+      if (progress) {
+        progress.style.width = (((pct * (total - 1)) + 1) / total * 100) + '%';
+      }
+      // Counter
+      if (counter) {
+        const idx = Math.min(total, Math.round(pct * (total - 1)) + 1);
+        counter.textContent = String(idx).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+      }
+    };
+
+    window.addEventListener('scroll', updateCarousel, { passive: true });
+    updateCarousel();
+
+    // Prev/Next buttons
+    const scrollToCard = (idx) => {
+      const rect = outer.getBoundingClientRect();
+      const outerTop = window.scrollY + rect.top;
+      const maxScroll = Math.max(1, getMaxScroll());
+      const targetPct = Math.max(0, Math.min(1, idx / (total - 1)));
+      window.scrollTo({ top: outerTop + targetPct * maxScroll, behavior: 'smooth' });
+    };
+
+    const getCurrentIdx = () => {
+      const rect = outer.getBoundingClientRect();
+      const scrolled = Math.max(0, -rect.top);
+      const maxScroll = Math.max(1, getMaxScroll());
+      return Math.round((scrolled / maxScroll) * (total - 1));
+    };
+
+    if (prevBtn) prevBtn.addEventListener('click', () => scrollToCard(Math.max(0, getCurrentIdx() - 1)));
+    if (nextBtn) nextBtn.addEventListener('click', () => scrollToCard(Math.min(total - 1, getCurrentIdx() + 1)));
+  }
+
+  renderVals() {
+    return {
+      navRef: this.navRef,
+      heroRef: this.heroRef,
+      heroGhostRef: this.heroGhostRef,
+      slidesRef: this.slidesRef,
+      indicRef: this.indicRef,
+      projetsRef: this.projetsRef,
+      carouselOuterRef: this.carouselOuterRef,
+      carouselStickyRef: this.carouselStickyRef,
+      carouselTrackRef: this.carouselTrackRef,
+      carouselProgressRef: this.carouselProgressRef,
+      carouselCountRef: this.carouselCountRef,
+      prevBtnRef: this.prevBtnRef,
+      nextBtnRef: this.nextBtnRef
+    };
+  }
+}
+</script>
+</body>
+</html>

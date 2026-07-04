@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#0a0a0a;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:#d90429;color:#fff}
+</style>
+</helmet>
+
+<section data-screen-label="Portfolio" ref="{{ rootRef }}" style="background:#0a0a0a;color:#f5f5f5;padding:120px 80px 128px;position:relative;overflow:hidden">
+
+  <!-- faint oversized ghost word, collage DNA -->
+  <div style="position:absolute;top:64px;right:-24px;font-family:'Bebas Neue';font-size:340px;line-height:.7;color:#111;letter-spacing:.02em;pointer-events:none;user-select:none;z-index:0">2026</div>
+
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+
+    <!-- ===== SECTION HEADER ===== -->
+    <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:72px">
+      <div>
+        <div data-reveal data-i="0" style="opacity:0;transform:translateY(20px);display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <span style="width:28px;height:2px;background:#d90429"></span>
+          <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.28em;color:#d90429">SÉLECTION DE PROJETS</span>
+        </div>
+        <h2 data-reveal data-i="1" style="opacity:0;transform:translateY(20px);margin:0;font-family:'Bebas Neue';font-size:132px;line-height:.82;letter-spacing:.01em;color:#f5f5f5">TRAVAUX<span style="color:#d90429">.</span></h2>
+      </div>
+      <p data-reveal data-i="2" style="opacity:0;transform:translateY(20px);margin:0 0 10px;max-width:340px;font:400 14px/1.65 'Inter';color:rgba(245,245,245,.5)">De la stratégie de marque à l'exécution technique. Campagnes nationales, direction photo, films — diffusés du prime TV à l'affichage urbain.</p>
+    </header>
+
+    <!-- ===== MODULAR MASONRY GRID (count-agnostic) ===== -->
+    <div style="columns:3;column-gap:20px">
+
+      <!-- CARD 1 -->
+      <a data-card data-reveal data-i="3" href="#" style="opacity:0;transform:translateY(20px);display:block;break-inside:avoid;margin:0 0 20px;text-decoration:none;color:inherit;transition:box-shadow .45s cubic-bezier(.22,.61,.36,1)">
+        <div style="position:relative;overflow:hidden;background:#0e0e0e">
+          <div data-media style="aspect-ratio:4/5;background:repeating-linear-gradient(135deg,#141414 0 12px,#1b1b1b 12px 24px);transition:transform .55s cubic-bezier(.22,.61,.36,1)"></div>
+          <span style="position:absolute;top:14px;left:14px;font:600 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4)">[ VISUEL · 4:5 ]</span>
+          <span style="position:absolute;top:12px;right:16px;font-family:'Bebas Neue';font-size:22px;color:rgba(245,245,245,.35)">01</span>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.25) 46%,transparent 70%);pointer-events:none"></div>
+          <!-- floating red stat block (WSC pattern) -->
+          <div style="position:absolute;left:0;top:34px;background:#d90429;padding:12px 16px 13px">
+            <div style="font-family:'Bebas Neue';font-size:30px;line-height:.86;color:#fff">2 PAYS</div>
+            <div style="font-family:'Bebas Neue';font-size:30px;line-height:.86;color:#fff;margin-top:4px">12 MOIS</div>
+          </div>
+          <!-- title overlay -->
+          <div style="position:absolute;left:16px;right:16px;bottom:16px">
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.65);margin-bottom:8px">WELLNESS SPORT CLUB</div>
+            <div style="font-family:'Bebas Neue';font-size:42px;line-height:.86;color:#fff">CAMPAGNE<br>D'AFFICHAGE</div>
+            <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:12px;transition:width .45s cubic-bezier(.22,.61,.36,1)"></div>
+          </div>
+          <!-- projet suivant preview (WSC pattern) -->
+          <div data-peek style="position:absolute;right:14px;bottom:14px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(10,10,10,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);padding:6px 6px 6px 10px">
+              <span style="font:600 8px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff">PROJET<br>SUIVANT</span>
+              <span style="width:20px;height:20px;background:#d90429;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">↗</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- CARD 2 -->
+      <a data-card data-reveal data-i="4" href="#" style="opacity:0;transform:translateY(20px);display:block;break-inside:avoid;margin:0 0 20px;text-decoration:none;color:inherit;transition:box-shadow .45s cubic-bezier(.22,.61,.36,1)">
+        <div style="position:relative;overflow:hidden;background:#0e0e0e">
+          <div data-media style="aspect-ratio:16/11;background:repeating-linear-gradient(135deg,#141414 0 12px,#1b1b1b 12px 24px);transition:transform .55s cubic-bezier(.22,.61,.36,1)"></div>
+          <span style="position:absolute;top:14px;left:14px;font:600 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4)">[ VISUEL · 16:11 ]</span>
+          <span style="position:absolute;top:12px;right:16px;font-family:'Bebas Neue';font-size:22px;color:rgba(245,245,245,.35)">02</span>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.2) 50%,transparent 72%);pointer-events:none"></div>
+          <div style="position:absolute;left:16px;right:16px;bottom:16px">
+            <div style="display:flex;gap:18px;margin-bottom:10px">
+              <div><div style="font-family:'Bebas Neue';font-size:24px;line-height:.9;color:#fff">8</div><div style="font:600 8px/1 'JetBrains Mono';letter-spacing:.12em;color:rgba(245,245,245,.5)">POINTS DE VENTE</div></div>
+              <div><div style="font-family:'Bebas Neue';font-size:24px;line-height:.9;color:#fff">DA</div><div style="font:600 8px/1 'JetBrains Mono';letter-spacing:.12em;color:rgba(245,245,245,.5)">+ IDENTITÉ</div></div>
+            </div>
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.65);margin-bottom:8px">DIMENSION STORES</div>
+            <div style="font-family:'Bebas Neue';font-size:38px;line-height:.86;color:#fff">IDENTITÉ RETAIL</div>
+            <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:12px;transition:width .45s cubic-bezier(.22,.61,.36,1)"></div>
+          </div>
+          <div data-peek style="position:absolute;right:14px;top:14px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(10,10,10,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);padding:6px 6px 6px 10px">
+              <span style="font:600 8px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff">PROJET<br>SUIVANT</span>
+              <span style="width:20px;height:20px;background:#d90429;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">↗</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- CARD 3 -->
+      <a data-card data-reveal data-i="5" href="#" style="opacity:0;transform:translateY(20px);display:block;break-inside:avoid;margin:0 0 20px;text-decoration:none;color:inherit;transition:box-shadow .45s cubic-bezier(.22,.61,.36,1)">
+        <div style="position:relative;overflow:hidden;background:#0e0e0e">
+          <div data-media style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#141414 0 12px,#1b1b1b 12px 24px);transition:transform .55s cubic-bezier(.22,.61,.36,1)"></div>
+          <span style="position:absolute;top:14px;left:14px;font:600 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4)">[ VISUEL · 1:1 ]</span>
+          <span style="position:absolute;top:12px;right:16px;font-family:'Bebas Neue';font-size:22px;color:rgba(245,245,245,.35)">03</span>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.2) 50%,transparent 72%);pointer-events:none"></div>
+          <div style="position:absolute;left:16px;right:16px;bottom:16px">
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.65);margin-bottom:8px">TECHTEAM · 3 FILMS</div>
+            <div style="font-family:'Bebas Neue';font-size:38px;line-height:.86;color:#fff">FILM<br>CORPORATE</div>
+            <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:12px;transition:width .45s cubic-bezier(.22,.61,.36,1)"></div>
+          </div>
+          <div data-peek style="position:absolute;right:14px;top:14px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(10,10,10,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);padding:6px 6px 6px 10px">
+              <span style="font:600 8px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff">PROJET<br>SUIVANT</span>
+              <span style="width:20px;height:20px;background:#d90429;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">↗</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- CARD 4 -->
+      <a data-card data-reveal data-i="6" href="#" style="opacity:0;transform:translateY(20px);display:block;break-inside:avoid;margin:0 0 20px;text-decoration:none;color:inherit;transition:box-shadow .45s cubic-bezier(.22,.61,.36,1)">
+        <div style="position:relative;overflow:hidden;background:#0e0e0e">
+          <div data-media style="aspect-ratio:4/5;background:repeating-linear-gradient(135deg,#141414 0 12px,#1b1b1b 12px 24px);transition:transform .55s cubic-bezier(.22,.61,.36,1)"></div>
+          <span style="position:absolute;top:14px;left:14px;font:600 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4)">[ VISUEL · 4:5 ]</span>
+          <span style="position:absolute;top:12px;right:16px;font-family:'Bebas Neue';font-size:22px;color:rgba(245,245,245,.35)">04</span>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.2) 50%,transparent 72%);pointer-events:none"></div>
+          <div style="position:absolute;left:16px;right:16px;bottom:16px">
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.65);margin-bottom:8px">LE DOCKS40 · LYON</div>
+            <div style="font-family:'Bebas Neue';font-size:40px;line-height:.86;color:#fff">DIRECTION<br>PHOTO</div>
+            <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:12px;transition:width .45s cubic-bezier(.22,.61,.36,1)"></div>
+          </div>
+          <div data-peek style="position:absolute;right:14px;bottom:14px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(10,10,10,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);padding:6px 6px 6px 10px">
+              <span style="font:600 8px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff">PROJET<br>SUIVANT</span>
+              <span style="width:20px;height:20px;background:#d90429;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">↗</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- CARD 5 -->
+      <a data-card data-reveal data-i="7" href="#" style="opacity:0;transform:translateY(20px);display:block;break-inside:avoid;margin:0 0 20px;text-decoration:none;color:inherit;transition:box-shadow .45s cubic-bezier(.22,.61,.36,1)">
+        <div style="position:relative;overflow:hidden;background:#0e0e0e">
+          <div data-media style="aspect-ratio:16/11;background:repeating-linear-gradient(135deg,#141414 0 12px,#1b1b1b 12px 24px);transition:transform .55s cubic-bezier(.22,.61,.36,1)"></div>
+          <span style="position:absolute;top:14px;left:14px;font:600 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4)">[ VISUEL · 16:11 ]</span>
+          <span style="position:absolute;top:12px;right:16px;font-family:'Bebas Neue';font-size:22px;color:rgba(245,245,245,.35)">05</span>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.2) 50%,transparent 72%);pointer-events:none"></div>
+          <div style="position:absolute;left:16px;right:16px;bottom:16px">
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.65);margin-bottom:8px">SOLERYS · NATIONALE</div>
+            <div style="font-family:'Bebas Neue';font-size:38px;line-height:.86;color:#fff">CAMPAGNE SOCIALE</div>
+            <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:12px;transition:width .45s cubic-bezier(.22,.61,.36,1)"></div>
+          </div>
+          <div data-peek style="position:absolute;right:14px;top:14px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(10,10,10,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);padding:6px 6px 6px 10px">
+              <span style="font:600 8px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff">PROJET<br>SUIVANT</span>
+              <span style="width:20px;height:20px;background:#d90429;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">↗</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- CARD 6 -->
+      <a data-card data-reveal data-i="8" href="#" style="opacity:0;transform:translateY(20px);display:block;break-inside:avoid;margin:0 0 20px;text-decoration:none;color:inherit;transition:box-shadow .45s cubic-bezier(.22,.61,.36,1)">
+        <div style="position:relative;overflow:hidden;background:#0e0e0e">
+          <div data-media style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#141414 0 12px,#1b1b1b 12px 24px);transition:transform .55s cubic-bezier(.22,.61,.36,1)"></div>
+          <span style="position:absolute;top:14px;left:14px;font:600 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:rgba(245,245,245,.4)">[ VISUEL · 1:1 ]</span>
+          <span style="position:absolute;top:12px;right:16px;font-family:'Bebas Neue';font-size:22px;color:rgba(245,245,245,.35)">06</span>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.2) 50%,transparent 72%);pointer-events:none"></div>
+          <div style="position:absolute;left:16px;right:16px;bottom:16px">
+            <div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:rgba(245,245,245,.65);margin-bottom:8px">WELLNESS SPORT CLUB</div>
+            <div style="font-family:'Bebas Neue';font-size:38px;line-height:.86;color:#fff">SPOT TV<br>/ CINÉMA</div>
+            <div data-bar style="height:2px;width:0%;background:#d90429;margin-top:12px;transition:width .45s cubic-bezier(.22,.61,.36,1)"></div>
+          </div>
+          <div data-peek style="position:absolute;right:14px;top:14px;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(10,10,10,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);padding:6px 6px 6px 10px">
+              <span style="font:600 8px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em;color:#fff">RETOUR<br>DÉBUT</span>
+              <span style="width:20px;height:20px;background:#d90429;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">↗</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- footer line of section -->
+    <div data-reveal data-i="9" style="opacity:0;transform:translateY(20px);display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:56px;padding-top:28px;border-top:1px solid rgba(255,255,255,.1)">
+      <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:rgba(245,245,245,.45)">— GRILLE MODULAIRE · NOMBRE DE PROJETS VARIABLE</span>
+      <a href="#" style="display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:#fff;font-family:'Bebas Neue';font-size:22px;letter-spacing:.03em">PRENDRE RENDEZ-VOUS <span style="width:34px;height:34px;border-radius:50%;background:#d90429;display:flex;align-items:center;justify-content:center;font-size:14px">↗</span></a>
+    </div>
+
+  </div>
+
+  <!-- ================= HANDOFF SHEET ================= -->
+  <div style="max-width:1280px;margin:96px auto 0;position:relative;z-index:1;border:1px solid rgba(255,255,255,.12);background:#0c0c0c">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid rgba(255,255,255,.1);background:#111">
+      <span style="width:9px;height:9px;background:#d90429;border-radius:50%"></span>
+      <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.2em;color:#f5f5f5">HANDOFF · SECTION PORTFOLIO</span>
+      <span style="margin-left:auto;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:rgba(245,245,245,.4)">→ Claude Code ready</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font:500 11.5px/1.7 'JetBrains Mono',monospace;color:rgba(245,245,245,.62)">
+      <div style="padding:22px 24px;border-right:1px solid rgba(255,255,255,.08)">
+        <div style="color:#d90429;letter-spacing:.14em;margin-bottom:12px">TOKENS</div>
+        --bg #0a0a0a<br>--surface #0c0c0c<br>--line rgba(255,255,255,.10)<br>--accent #d90429<br>--text #f5f5f5<br>--muted rgba(245,245,255,.55)<br>display Bebas Neue<br>body Inter · mono JetBrains
+      </div>
+      <div style="padding:22px 24px;border-right:1px solid rgba(255,255,255,.08)">
+        <div style="color:#d90429;letter-spacing:.14em;margin-bottom:12px">DIMENSIONS / SPACING</div>
+        section pad 120/80px<br>container max 1280px<br>grid: columns 3 · gap 20px<br>(2 col ≤1024 · 1 col ≤640)<br>card radius 0 · media ratios<br>4:5 · 16:11 · 1:1<br>title Bebas 38–42px<br>label mono 10px / .16em
+      </div>
+      <div style="padding:22px 24px">
+        <div style="color:#d90429;letter-spacing:.14em;margin-bottom:12px">INTERACTIONS</div>
+        reveal: y+20px, op 0→1,<br>stagger 70ms, .7s ease-out<br>[reste révélé en remontée]<br>hover: card lift -6px,<br>media scale 1.03, bar 0→100%,<br>peek fade-up (projet suivant)<br>ease cubic(.22,.61,.36,1)
+      </div>
+    </div>
+    <div style="padding:18px 24px;border-top:1px solid rgba(255,255,255,.08);font:500 11.5px/1.7 'JetBrains Mono',monospace;color:rgba(245,245,245,.62)">
+      <span style="color:#d90429;letter-spacing:.14em">ASSETS À FOURNIR ·</span> 1 visuel/projet aux ratios ci-dessus (JPG/WEBP, ≥1600px large) · titre + client + 1–2 chiffres clés par projet · lien de destination (page projet ou externe) · thumbnail « projet suivant » = réutilise le visuel du projet cible.
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  rootRef = React.createRef();
+  componentDidMount() {
+    const root = this.rootRef.current;
+    if (!root) return;
+    const EASE = 'cubic-bezier(.22,.61,.36,1)';
+    const items = [...root.querySelectorAll('[data-reveal]')];
+    items.forEach((el) => { el.style.willChange = 'opacity, transform'; });
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const i = +el.dataset.i || 0;
+        const d = (i % 12) * 70;
+        el.style.transition = `opacity .7s ${EASE} ${d}ms, transform .7s ${EASE} ${d}ms`;
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        io.unobserve(el);
+        // after reveal, hand transform back to hover (snappier)
+        if (el.hasAttribute('data-card')) {
+          setTimeout(() => { el.style.transition = `transform .45s ${EASE}, box-shadow .45s ${EASE}`; }, d + 760);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    items.forEach((el) => io.observe(el));
+
+    // safety: ensure everything visible even if observer never fires
+    setTimeout(() => items.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; }), 2000);
+
+    // hover interactions
+    root.querySelectorAll('[data-card]').forEach((card) => {
+      const media = card.querySelector('[data-media]');
+      const bar = card.querySelector('[data-bar]');
+      const peek = card.querySelector('[data-peek]');
+      card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-6px)';
+        card.style.boxShadow = '0 34px 60px -28px rgba(0,0,0,.85)';
+        if (media) media.style.transform = 'scale(1.03)';
+        if (bar) bar.style.width = '100%';
+        if (peek) { peek.style.opacity = '1'; peek.style.transform = 'translateY(0)'; }
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'none';
+        card.style.boxShadow = 'none';
+        if (media) media.style.transform = 'none';
+        if (bar) bar.style.width = '0%';
+        if (peek) { peek.style.opacity = '0'; peek.style.transform = 'translateY(8px)'; }
+      });
+    });
+  }
+  renderVals() {
+    return { rootRef: this.rootRef };
+  }
+}
+</script>
+</body>
+</html>

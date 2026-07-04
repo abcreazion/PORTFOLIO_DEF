@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projet — Bastien Agus</title>
+<meta name="description" content="Projet — Bastien Agus, Directeur Artistique et Producteur Audiovisuel.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<!-- Valeurs par défaut ; réécrites par slug dans js/project-page.js (voir SITE_URL) -->
+<link rel="canonical" id="metaCanonical" href="https://bastienagus.com/projet.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bastien Agus">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:url" id="metaOgUrl" content="https://bastienagus.com/projet.html">
+<meta property="og:title" id="metaOgTitle" content="Projet — Bastien Agus">
+<meta property="og:description" id="metaOgDescription" content="Projet — Bastien Agus, Directeur Artistique et Producteur Audiovisuel.">
+<meta property="og:image" id="metaOgImage" content="https://bastienagus.com/assets/img/hero-1.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" id="metaTwitterTitle" content="Projet — Bastien Agus">
+<meta name="twitter:description" id="metaTwitterDescription" content="Projet — Bastien Agus, Directeur Artistique et Producteur Audiovisuel.">
+<meta name="twitter:image" id="metaTwitterImage" content="https://bastienagus.com/assets/img/hero-1.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/project.css">
+</head>
+<body>
+
+<a href="#project-root" class="skip-link">Aller au contenu</a>
+
+<!-- GRAIN OVERLAY -->
+<div class="grain" aria-hidden="true"><div class="grain__noise"></div></div>
+
+<!-- NAV -->
+<nav class="nav is-scrolled" id="nav" data-static="true">
+  <a href="index.html#hero" class="nav__brand">
+    <span class="dot"></span>
+    BASTIEN AGUS
+  </a>
+  <div class="nav__links">
+    <a href="index.html#projets" class="nav__link">← TOUS LES PROJETS</a>
+    <a href="index.html#contact" class="nav__cta">
+      PRENDRE RDV
+      <span class="nav__cta-arrow">↗</span>
+    </a>
+  </div>
+  <button class="nav__burger" id="navBurger" type="button" aria-expanded="false" aria-controls="navMobilePanel" aria-label="Ouvrir le menu">
+    <span class="nav__burger-bar"></span>
+    <span class="nav__burger-bar"></span>
+    <span class="nav__burger-bar"></span>
+  </button>
+</nav>
+<div class="nav__mobile-panel" id="navMobilePanel">
+  <a href="index.html#projets" class="nav__mobile-link">← TOUS LES PROJETS</a>
+  <a href="index.html#about" class="nav__mobile-link">À PROPOS</a>
+  <a href="index.html#services" class="nav__mobile-link">SERVICES</a>
+  <a href="index.html#contact" class="nav__mobile-link">PRENDRE RDV ↗</a>
+</div>
+
+<!-- Rempli par js/project-page.js à partir de js/projects.js -->
+<main id="project-root"></main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer__top">
+    <div>
+      <div class="footer__brand"><span class="dot"></span> BASTIEN AGUS</div>
+      <div class="footer__tagline">Directeur Artistique<br>Producteur Audiovisuel<br>Lyon · Genève</div>
+    </div>
+    <div class="footer__cols">
+      <div>
+        <div class="footer__col-title">NAVIGATION</div>
+        <div class="footer__col-links">
+          <a href="index.html#projets">Projets</a>
+          <a href="index.html#about">À propos</a>
+          <a href="index.html#services">Services</a>
+          <a href="index.html#contact">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__col-title">RÉSEAUX</div>
+        <div class="footer__col-links">
+          <a href="#">LinkedIn</a>
+          <a href="#">Instagram</a>
+          <a href="#">Vimeo</a>
+        </div>
+      </div>
+    </div>
+    <div>
+      <a href="index.html#contact" class="btn-primary">
+        PRENDRE RDV
+        <span class="btn-primary__arrow btn-primary__arrow--sm">↗</span>
+      </a>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <span>© 2026 BASTIEN AGUS — TOUS DROITS RÉSERVÉS</span>
+    <span>DESIGN &amp; CODE · BASTIEN AGUS</span>
+  </div>
+</footer>
+
+<script src="js/projects.js"></script>
+<script src="js/main.js"></script>
+<script src="js/project-page.js"></script>
+</body>
+</html>

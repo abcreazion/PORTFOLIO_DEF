@@ -1,0 +1,111 @@
+# Bastien Agus — Portfolio
+
+Site portfolio one-page + pages projet pour **Bastien Agus**, Directeur Artistique & Producteur Audiovisuel (Lyon · Genève). Recréé à partir d'un handoff **Claude Design** (`project/Bastien Agus Site.dc.html`, prototype `.dc.html` non utilisé en prod — voir `README.md`).
+
+**État : version validée par l'utilisateur (2026-07-04) — base à conserver.** Testée en direct sur mobile et desktop réels (via tunnel localtunnel exposant le serveur local), retours intégrés. Voir « TODO / dette connue » avant de repartir sur une nouvelle itération : beaucoup de ce qui pourrait sembler être de la dette a déjà été corrigé et vérifié — ne pas re-auditer sans raison.
+
+## Stack & principes
+
+- **Site statique pur : HTML + CSS + JS vanilla. AUCUN framework, AUCUN build, AUCUNE dépendance npm.** (`package-lock.json` à la racine est un fichier vide/orphelin sans rapport avec le site — aucune install npm n'est réellement utilisée.)
+- Le formulaire de contact fait un `fetch()` direct vers **Formspree** (service externe, pas une dépendance npm/build) — voir section dédiée plus bas.
+- Scroll **natif** (une intégration Lenis a été testée puis **retirée** : son inertie rendait la page poisseuse par-dessus le carrousel scroll-lock). Ne pas réintroduire de smooth-scroll JS sans raison.
+- Pas de GSAP non plus (testé pour les reveals, positions peu fiables à cause du carrousel `sticky` à hauteur dynamique). Les animations sont en **CSS + IntersectionObserver**.
+- Langue du contenu : **français**. Coins nets (pas de border-radius), esthétique dark éditorial.
+- Polices (Google Fonts) : **Bebas Neue** (titres), **Inter** (corps), **JetBrains Mono** (labels/mono), **Ms Madi** (manuscrit rouge).
+
+## Lancer en local
+
+Site statique → n'importe quel serveur HTTP. Depuis `D:\BASTIEN\PORTFOLIO` :
+```
+python -m http.server 4610
+```
+Puis http://localhost:4610 . Ne PAS ouvrir en `file://` (le carrousel/JS ont besoin d'HTTP).
+`.claude/launch.json` définit déjà la config preview « portfolio » (port 4610).
+⚠️ En test : `html { scroll-behavior: smooth }` fait que `window.scrollTo` programmatique **s'anime** — utiliser `behavior:'instant'` pour mesurer des positions de scroll fiablement, et privilégier `'auto'`/`'instant'` (pas `'smooth'`) si le test tourne dans un onglet sans focus/non visible (`document.hasFocus()===false`) : les navigateurs mettent en pause le `requestAnimationFrame` qui anime le smooth scroll en arrière-plan — ce n'est pas un bug du site, juste une limite de l'environnement de test.
+Pour tester sur un vrai téléphone sans exposer publiquement le projet en continu : `npx --yes localtunnel --port 4610` (déjà utilisé avec succès cette session). Génère une URL `https://xxxxx.loca.lt` temporaire ; **une page interstitielle "Tunnel website ahead!" s'affiche pour les navigateurs mobiles** (détection par user-agent) et demande de cliquer sur "Click to Continue" — à prévenir l'utilisateur, ce n'est pas une erreur du site.
+
+## Design tokens (définis dans `css/styles.css` `:root`)
+
+- `--bg:#0a0a0a` `--ink:#f5f5f5` `--red:#d90429` `--red-dark:#b80324` `--cream:#f0ede8`
+- `--red-text:#ff3b5c` — variante rouge AA (~5.7:1 sur `--bg`) pour tout texte < 18px (`--red` seul est à 3.77:1, échoue en petit texte). Utilisée pour tous les eyebrows/labels rouges.
+- `--ink-dim: rgba(245,245,245,.6)` — gris atténué AA (~6.8:1) pour labels/petit texte secondaire.
+- `--display:'Bebas Neue'` `--sans:'Inter'` `--mono:'JetBrains Mono'` `--script:'Ms Madi'`
+
+## Architecture des fichiers
+
+| Fichier | Rôle |
+|---|---|
+| `index.html` | Page d'accueil : nav (+ burger mobile), hero (vidéo autoplay), marquee, **carrousel projets**, à propos, services, contact, footer. Meta OG/Twitter Card + canonical statiques dans le `<head>`. |
+| `projet.html` | **Template unique** de page projet (rempli en JS via `?p=SLUG`). Meta OG/Twitter Card en placeholders (`id="metaOg..."`), réécrits par projet via JS. |
+| `css/styles.css` | Styles de l'accueil + tokens + nav/footer/boutons/grain partagés + responsive (breakpoints 900px / 560px) |
+| `css/project.css` | Styles des pages projet (s'appuie sur les tokens de styles.css) |
+| **`js/projects.js`** | **⭐ LA SOURCE DE VÉRITÉ des projets** — `window.PROJECTS` (liste d'objets) |
+| `js/main.js` | Logique de l'accueil : rendu des cartes, carrousel (3D desktop / scroll natif mobile), reveals, nav, formulaire Formspree, hero vidéo, parallax |
+| `js/project-page.js` | Rendu d'une page projet depuis `window.PROJECTS` : hero → meta → vidéo → contexte → galerie (+ lightbox focus-trappée) → projet suivant. Injecte aussi les meta OG/Twitter par projet (constante `SITE_URL`). |
+| `favicon.svg` | Favicon SVG simple (carré noir + point rouge, repris du `.dot` de la nav) |
+| `robots.txt` / `sitemap.xml` | SEO — sitemap statique listant l'accueil + les 6 projets (`projet.html?p=slug`) |
+| `assets/img/` | `card-N-*.jpg` (= visuel carte + hero page projet), `hero-1..3.jpg`, `about-portrait.jpg` |
+| `assets/img/projets/<slug>/` | Galerie d'un projet : `01.jpg`, `02.jpg`, … |
+| `assets/video/` | Vidéos web des projets (`<slug>.mp4`) + `hero_slideshow.mp4`. **`techteam.mp4` et `wsc-spot.mp4` n'existent pas encore** (voir TODO). |
+
+## ⭐ Système data-driven des projets (à connaître avant toute modif projet)
+
+Les 6 projets ne sont **pas** codés en dur. Ils sont générés depuis `window.PROJECTS` dans **`js/projects.js`** (le SEUL fichier à éditer pour gérer les projets). Chaque objet alimente **à la fois** sa carte sur l'accueil, sa page détail `projet.html?p=SLUG`, et ses meta Open Graph/Twitter (titre, description = `intro`, image).
+
+- `renderProjects()` (dans `js/main.js`) construit les cartes du carrousel ; il tourne **en premier** dans `init()` pour que `initCarousel()` voie les `[data-card]` générés.
+- `js/project-page.js` lit `?p=slug`, trouve le projet, et rend : hero plein écran → barre méta (client/année/prestation) → contexte éditorial 2 colonnes → **vidéo (seulement si `video` défini)** → **galerie masonry** → teaser « projet suivant ». Met aussi à jour `document.title`, `meta[description]`, le `<link rel="canonical">` et les meta OG/Twitter (`updateSocialMeta`) via la constante `SITE_URL` en tête du fichier.
+- Dérivés automatiques de la liste : numéro `01/0X`, vignette « projet suivant » (= image du projet suivant), dernière carte « RETOUR DÉBUT », lien `projet.html?p=slug`, page « projet suivant ».
+
+**Ajouter un projet** = 1) déposer l'image principale dans `assets/img/`, 2) déposer les photos dans `assets/img/projets/<slug>/` (01.jpg…), 3) copier un bloc `{…}` dans `js/projects.js`, 4) penser à ajouter l'URL dans `sitemap.xml`. **Supprimer** = effacer le bloc (+ retirer du sitemap). Champs documentés en tête de `js/projects.js`. `stats: []` masque le bloc rouge ; `video: null` = pas de lecteur vidéo ; `url` (optionnel) remplace la page détail par un lien externe.
+
+Les images de galerie ont été générées via un script **Pillow** (redimension max-width 1400, JPEG progressif). Refaire pareil pour de nouveaux projets (pas de tooling image auto dans le repo).
+
+## Détails de comportement
+
+- **Carrousel projets** (`initCarousel` dans `js/main.js`) — **comportement différent desktop/mobile, tranché une fois au chargement via `matchMedia('(max-width:900px)')`** :
+  - **Desktop** (`initDesktop`) : 3D scroll-lock via section `sticky` haute. `SCROLL_FACTOR = 0.55` découple le déplacement horizontal des cartes de la distance verticale. La rotation `rotateY` est **plafonnée à ±22deg** (`Math.max(-22, Math.min(22, dist * -18))`) — sans ce plafond, les cartes les plus excentrées (6 cartes de 760px) tournaient jusqu'à -77/-90deg, quasiment sur la tranche à l'écran, donc de fait impossibles à cliquer malgré un hit-test techniquement correct. Ne pas retirer ce clamp.
+  - **Mobile ≤900px** (`initMobile`) : **pas de scroll-jack**, scroll horizontal natif avec `scroll-snap-type:x mandatory` sur `.carousel-stage` (`overflow-x:auto`). Les cartes ne reçoivent **aucun transform JS** (liens `<a>` natifs, toujours pleinement cliquables). `.carousel-sticky` passe en `position:static`. Les boutons prev/next et la barre de progression pilotent/lisent `stage.scrollLeft` au lieu du scroll de la fenêtre. Ce choix remplace l'ancien scroll-jack mobile jugé « très défaillant » en test réel (scroll qui ne répond pas bien, carrousel qui prend trop de place, cartes non cliquables) — ne pas revenir à un carrousel scroll-jacké unique desktop+mobile.
+  - Si le viewport change de côté du breakpoint 900px en cours de session (rotation d'écran, redimensionnement fenêtre), le mode n'est **pas** recalculé dynamiquement (décidé une fois au `init()`) — limitation connue, acceptable en pratique.
+- **Reveals** : éléments `[data-reveal]` révélés par IntersectionObserver (accueil : styles inline ; page projet : classe `.is-in`). `prefers-reduced-motion` respecté partout ; le slideshow ne s'auto-avance plus sous reduced-motion.
+- **Hero** : `.hero__scrim` est un dégradé **horizontal** (gauche→droite, 88%→12% d'opacité) dédié à la zone où le texte est réellement affiché, + un second calque en bas. Un dégradé diagonal 135deg était utilisé avant et tombait à ~40-55% d'opacité pile sous le texte (lisibilité insuffisante contre une vidéo claire, retour utilisateur direct). `.hero__title`/`.hero__lead` ont aussi un `text-shadow` en filet de sécurité (même technique que `.card__title`). Ne pas repasser à un dégradé diagonal sans revérifier le contraste réel sous le texte.
+- **Nav mobile** : burger fonctionnel (`nav__mobile-panel`), et **`.nav__cta` ("PRENDRE RDV") est masqué sous 900px** — il fait doublon avec le lien équivalent du panneau mobile et surchargeait le header (bug corrigé cette session, ne pas le réafficher sans repenser l'espace disponible).
+- **Boutons hero** : `.btn-primary--lg` a un override mobile (font-size/padding réduits, `.hero__actions` en `flex-wrap`) pour ne pas déborder sur petit viewport.
+- **Galerie** (page projet) : **masonry** en `column-count` (3 desktop / 2 ≤1100px / 2 mobile), proportions naturelles, pas de recadrage. Images `<img>` avec `alt` + `loading="lazy"`. La **lightbox** (`role="dialog"`) a un **focus trap** (Tab/Shift+Tab bouclent entre close/prev/next, ne s'échappent plus vers le contenu masqué derrière) + Escape/flèches clavier + focus renvoyé à l'élément déclencheur à la fermeture.
+- **Vidéo** (page projet) : poster + bouton play qui injecte un `<video controls>` à la demande ; si le fichier manque → message « vidéo bientôt disponible ». Projets vidéo : `techteam`, `wsc-spot` — **fichiers `.mp4` pas encore livrés** (voir TODO).
+- **Cartes projet (accueil)** : `.card__media` (background-image CSS) porte `role="img" aria-label="CLIENT — TITRE"` pour être exposée aux lecteurs d'écran (avant : image totalement invisible pour l'a11y). La vignette « projet suivant » (`.card__peek-thumb`) est `aria-hidden="true"` (redondante avec son label texte).
+- **Formulaire de contact** (`initContactForm` dans `js/main.js`) : **branché sur Formspree, opérationnel**. `<form action="https://formspree.io/f/xbdvqbor" method="POST">` dans `index.html`. JS fait un vrai `fetch()` POST en JSON (`Accept: application/json` pour éviter la redirection par défaut de Formspree) avec 3 issues gérées dans l'UI existante (`#contactStatus`, `role="status" aria-live="polite"`) :
+  1. Succès (`res.ok`) → message de succès + `form.reset()`.
+  2. Formspree répond mais refuse (ID invalide, quota, anti-spam) → message d'erreur inline avec détail, **pas** de repli mailto (le service est joignable, ce n'est pas une panne).
+  3. Échec réseau total (`fetch` rejette — hors ligne, Formspree injoignable) → repli automatique sur `mailto:contact@bastienagus.com` pré-rempli.
+  Testé en conditions réelles : soumission de test envoyée avec succès (`200 OK`) sur le compte Formspree du client. Plan Free (50 soumissions/mois), usage attendu ~10/mois.
+- **SEO/partage** : favicon SVG, meta Open Graph + Twitter Card (statiques sur l'accueil, réécrites par projet via JS), `robots.txt` + `sitemap.xml`. **Toutes les URLs absolues utilisent `https://bastienagus.com` en dur** (déduit de l'email de contact, domaine réel non confirmé) — voir TODO.
+
+## TODO / dette connue
+
+🔴 **Bloquant** :
+- **Vidéos manquantes** : `assets/video/techteam.mp4` et `assets/video/wsc-spot.mp4` n'existent pas — le client doit fournir les rushes sources (procédure de compression déjà documentée dans `assets/video/README.txt`, ffmpeg requis).
+
+🟡 **À faire mais pas urgent** :
+- **Domaine en dur** : `https://bastienagus.com` est utilisé partout (meta OG/Twitter/canonical statiques d'`index.html`/`projet.html`, constante `SITE_URL` en tête de `js/project-page.js`, `robots.txt`, `sitemap.xml`). Si le domaine réel de prod diffère, mettre à jour ces emplacements (recherche/remplacement simple, tout est centralisé en quelques endroits documentés).
+- **Hébergement / CMS** : pas encore choisi. Site 100% statique aujourd'hui (compatible n'importe quel hébergement statique : Netlify, Vercel, GitHub Pages, OVH, etc.) — décision à prendre plus tard, aucune urgence technique.
+
+🟢 **Dette mineure restante (issue de l'audit WCAG, non bloquante)** :
+- Sous-titres/captions pour les vidéos projet (à intégrer *au moment* de l'upload des vidéos manquantes, pas séparément).
+- `autocomplete="name"`/`"email"` et `aria-invalid`/`aria-describedby` sur les champs du formulaire (améliore l'a11y du formulaire, non bloquant — le formulaire fonctionne).
+- `package-lock.json` orphelin (vide, aucune dépendance réelle) et `.media-tag--dark` (classe CSS morte, aucune occurrence dans le HTML/JS) — cosmétique, à supprimer un jour.
+- Page 404 réelle (au lieu du "Projet introuvable" rendu en SPA sans statut HTTP).
+- Version anglaise / `hreflang` — décision business, pas technique.
+
+**Points de l'ancien audit désormais résolus** (ne pas re-découvrir/ré-auditer inutilement) : menu burger mobile, contraste texte (`--red-text`/`--ink-dim`), `:focus-visible`, skip-link, landmark `<main>`, `prefers-reduced-motion`, alt text cartes projet, focus trap lightbox, favicon/OG/robots/sitemap, formulaire de contact réellement fonctionnel, lisibilité du hero, boutons mobile disproportionnés, carrousel desktop (rotation) et mobile (scroll natif) — tout ça a été audité puis corrigé et **vérifié fonctionnellement en direct sur mobile et desktop réels** le 2026-07-04.
+
+## Conventions
+
+- Écrire du code qui ressemble à l'existant : vanilla, IIFE dans les JS, classes BEM-ish (`.card__meta`, `.pgal__item`), variables CSS pour les couleurs/polices.
+- Après une modif observable, **vérifier dans le navigateur** (serveur preview) plutôt que demander à l'utilisateur. Pour les vérifications fonctionnelles sans capture d'écran : DOM (`getBoundingClientRect`, `getComputedStyle`), `document.elementFromPoint` pour le hit-test de zones cliquables, dispatch d'événements clavier/souris synthétiques.
+- Ne pas réintroduire de framework / build / lib de smooth-scroll sans validation explicite.
+- Ne pas re-casser le clamp de rotation du carrousel desktop (±22deg) ni réintroduire un scroll-jack sur mobile — voir « Détails de comportement ».
+
+## Outils
+
+- Skill **`ui-ux-pro-max`** installé (design intelligence : styles, palettes, guidelines UX, typo, charts). Sûr (audité). L'invoquer pour les décisions de style/couleur/UX.
+- Skill **`design:accessibility-review`** disponible pour un audit WCAG 2.1 AA formel (déjà utilisé cette session — voir historique de conversation pour le rapport détaillé si besoin de reprendre un audit).
