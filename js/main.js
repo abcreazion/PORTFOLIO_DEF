@@ -37,10 +37,16 @@
           }).join('') + '</div>'
         : '';
 
+      var focal = p.focal || 'center';
+
       return '' +
         '<a data-card href="' + href + '" class="card">' +
           '<div class="card__frame">' +
-            '<div class="card__media" data-media role="img" aria-label="' + cardLabel + '" style="background-image:url(\'' + p.image + '\')"></div>' +
+            '<div class="card__media" data-media>' +
+              '<div class="card__media-shift" data-media-shift>' +
+                '<img class="card__media-img" data-media-img src="' + p.image + '" alt="' + cardLabel + '" loading="lazy" style="object-position:' + focal + '">' +
+              '</div>' +
+            '</div>' +
             '<div class="card__scrim-b"></div>' +
             '<div class="card__scrim-l"></div>' +
             '<div class="card__watermark">' +
@@ -253,7 +259,10 @@
      la page) est illisible et quasi non-cliquable au tactile — testé en conditions
      réelles (retours utilisateur), donc pas de patch cosmétique : le mobile utilise
      un vrai <div overflow-x:auto scroll-snap> où les cartes ne sont jamais
-     transformées par JS et restent des liens natifs pleinement cliquables. ——— */
+     transformées par JS et restent des liens natifs pleinement cliquables. Les
+     effets ci-dessous (parallax/Ken Burns/mise au point/reveal) ne touchent JAMAIS
+     .card lui-même (le <a> cliquable) — uniquement ses enfants internes
+     (.card__media-shift, .card__media-img), sur les deux breakpoints. ——— */
   function initCarousel() {
     var outer = document.getElementById('carouselOuter');
     var track = document.getElementById('carouselTrack');
@@ -270,6 +279,66 @@
 
     var GAP = 40;
     var getCardW = function () { return cards[0] ? cards[0].offsetWidth : 760; };
+
+    // Un seul scroll listener qui déclenche potentiellement plusieurs fois par
+    // frame native : on ne garde que le dernier appel par frame (rAF), le calcul
+    // réel ne tourne jamais plus d'une fois par 16ms. Aucune dépendance, même
+    // principe que Lenis/GSAP visaient mais sans intercepter le scroll lui-même.
+    function rafThrottle(fn) {
+      var scheduled = false;
+      return function () {
+        if (scheduled) return;
+        scheduled = true;
+        requestAnimationFrame(function () { scheduled = false; fn(); });
+      };
+    }
+
+    // Seuil sous lequel une carte est considérée "au centre" : révèle son texte
+    // (client/titre/stats/barre, via la classe .is-focused) et déclenche le zoom
+    // Ken Burns. Volontairement plus large que le seuil du peek (0.35) — sinon les
+    // voisines immédiates (absDist ~1.11 au repos) n'auraient jamais leur texte.
+    var FOCUS_THRESHOLD = 0.5;
+
+    /* Applique aux enfants internes d'une carte (jamais à .card) :
+       - reveal bidirectionnel du texte (classe .is-focused, réversible par construction
+         puisque dérivée de dist/absDist — remonter rejoue juste l'autre sens)
+       - parallax interne à l'image (translate proportionnel à dist, indépendant
+         de la rotation/scale de la carte parente)
+       - mise au point : flou + désaturation croissants avec absDist (Concept 2)
+       - zoom Ken Burns (classe .is-kenburns) uniquement sur la carte focalisée —
+         piloté par une @keyframes CSS, pas par du JS à chaque tick (gratuit,
+         compositor-only, continue même si le scroll s'arrête pendant qu'on dwell) */
+    function applyCardEffects(card, dist, absDist) {
+      var focused = absDist < FOCUS_THRESHOLD;
+      card.classList.toggle('is-focused', focused);
+
+      var shift = card.querySelector('[data-media-shift]');
+      if (shift) {
+        var panX = Math.max(-26, Math.min(26, dist * -22));
+        var panY = Math.min(14, absDist * 6);
+        var t = 'scale(1.1) translate(' + panX.toFixed(1) + 'px,' + panY.toFixed(1) + 'px)';
+        shift.style.transform = t;
+        if (!REDUCE) {
+          var blur = Math.min(6, absDist * 4.5);
+          var gray = Math.min(70, absDist * 46);
+          shift.style.filter = 'blur(' + blur.toFixed(2) + 'px) grayscale(' + gray.toFixed(0) + '%)';
+        }
+      }
+
+      var img = card.querySelector('[data-media-img]');
+      if (img && !REDUCE) img.classList.toggle('is-kenburns', focused);
+
+      var peek = card.querySelector('[data-peek]');
+      if (peek) {
+        if (absDist < 0.35) {
+          peek.style.opacity = '1';
+          peek.style.transform = 'translateY(0)';
+        } else {
+          peek.style.opacity = '0';
+          peek.style.transform = 'translateY(8px)';
+        }
+      }
+    }
 
     if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
       initMobile();
@@ -289,8 +358,17 @@
           var idx = Math.min(total, getIdx() + 1);
           counter.textContent = String(idx).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
         }
+
+        var cardW = getCardW();
+        var stageCenterX = stage.clientWidth / 2;
+        cards.forEach(function (card, i) {
+          var cardLeft = i * getStep() - stage.scrollLeft;
+          var cardCenter = cardLeft + cardW / 2;
+          var dist = (cardCenter - stageCenterX) / stageCenterX;
+          applyCardEffects(card, dist, Math.abs(dist));
+        });
       };
-      stage.addEventListener('scroll', update, { passive: true });
+      stage.addEventListener('scroll', rafThrottle(update), { passive: true });
       update();
 
       var goTo = function (idx) {
@@ -349,16 +427,7 @@
             Math.max(0.85, scale) + ') translateZ(' + tz + 'px)';
           card.style.opacity = Math.max(0.5, opacity);
 
-          var peek = card.querySelector('[data-peek]');
-          if (peek) {
-            if (absDist < 0.35) {
-              peek.style.opacity = '1';
-              peek.style.transform = 'translateY(0)';
-            } else {
-              peek.style.opacity = '0';
-              peek.style.transform = 'translateY(8px)';
-            }
-          }
+          applyCardEffects(card, dist, absDist);
         });
 
         if (progress) {
@@ -370,7 +439,7 @@
         }
       };
 
-      window.addEventListener('scroll', updateCarousel, { passive: true });
+      window.addEventListener('scroll', rafThrottle(updateCarousel), { passive: true });
       updateCarousel();
 
       var scrollToCard = function (idx) {

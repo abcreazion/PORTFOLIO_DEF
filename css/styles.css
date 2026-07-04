@@ -314,12 +314,27 @@ img { display: block; max-width: 100%; }
   background: #0e0e0e; box-shadow: 0 20px 80px -20px rgba(0,0,0,.8);
 }
 .card__media {
-  position: absolute; inset: 0;
-  background-color: #0e0e0e; background-size: cover;
-  background-position: center; background-repeat: no-repeat;
-  transition: transform var(--dur-slower) var(--ease-out);
+  position: absolute; inset: 0; overflow: hidden; background-color: #0e0e0e;
 }
-.card:hover .card__media { transform: scale(1.04); }
+/* Enfant interne piloté par JS à chaque tick de scroll (jamais .card lui-même) :
+   parallax (translate) + mise au point (filter). scale(1.1) de base donne de la
+   marge pour le translate sans jamais découvrir le bord du cadre. Pas de transition
+   CSS ici — la valeur est déjà interpolée en continu par le scroll, une transition
+   ajouterait un lissage/retard en plus (cf. audit sur .card lui-même). */
+.card__media-shift {
+  position: absolute; inset: 0; will-change: transform, filter;
+}
+.card__media-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Zoom Ken Burns : une vraie animation CSS (compositor, gratuite), déclenchée par
+   une classe posée/retirée par JS uniquement au changement d'état (pas à chaque
+   tick) — continue même si le scroll s'arrête pendant qu'on reste sur une carte. */
+@media (prefers-reduced-motion: no-preference) {
+  .card__media-img.is-kenburns { animation: cardKenBurns 9s var(--ease-out) forwards; }
+}
+@keyframes cardKenBurns {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
 .card__tag {
   position: absolute; top: 18px; right: 20px;
   font: 500 10px/1 var(--mono); letter-spacing: .14em; color: rgba(245,245,245,.25);
@@ -345,10 +360,15 @@ img { display: block; max-width: 100%; }
   color: rgba(217,4,41,.18); line-height: .7; margin-top: -4px;
 }
 .card__stats {
-  position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
+  position: absolute; left: -20px; top: 50%; transform: translateY(calc(-50% + 14px));
   background: var(--red); padding: 20px 24px 22px; z-index: 3;
   box-shadow: 4px 8px 30px rgba(0,0,0,.5);
+  opacity: 0; transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
 }
+/* Reveal bidirectionnel : dérivé de absDist (via .is-focused), donc réversible par
+   construction — remonter recroise le même seuil et rejoue le fondu en sens inverse,
+   sans logique "once" séparée. */
+.card.is-focused .card__stats { opacity: 1; transform: translateY(-50%); }
 .card__stat-num { font-family: var(--display); font-size: 34px; line-height: .82; color: #fff; }
 .card__stat-label { font: 400 9px/1.4 var(--sans); color: rgba(255,255,255,.8); }
 .card__stat-label--gap { margin-bottom: 10px; }
@@ -356,16 +376,22 @@ img { display: block; max-width: 100%; }
 .card__client {
   font: 600 10px/1 var(--mono); letter-spacing: .18em;
   color: rgba(245,245,245,.55); margin-bottom: 10px;
+  opacity: 0; transform: translateY(14px);
+  transition: opacity var(--dur-slow) var(--ease-out) .05s, transform var(--dur-slow) var(--ease-out) .05s;
 }
+.card.is-focused .card__client { opacity: 1; transform: none; }
 .card__title {
   font-family: var(--display); font-size: min(5.5vw,60px); line-height: .82;
   color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.5);
+  opacity: 0; transform: translateY(14px);
+  transition: opacity var(--dur-slow) var(--ease-out) .12s, transform var(--dur-slow) var(--ease-out) .12s;
 }
+.card.is-focused .card__title { opacity: 1; transform: none; }
 .card__bar {
   height: 2px; width: 0%; background: var(--red); margin-top: 14px;
   max-width: 160px; transition: width var(--dur-slow) var(--ease-out);
 }
-.card:hover .card__bar { width: 100%; }
+.card:hover .card__bar, .card.is-focused .card__bar { width: 100%; }
 .card__peek {
   position: absolute; right: 20px; bottom: 20px; z-index: 3;
   transition: opacity var(--dur-med) ease, transform var(--dur-med) ease;

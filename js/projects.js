@@ -31,6 +31,12 @@
      video           projet VIDÉO uniquement : { src:"assets/video/SLUG.mp4", poster:"..." }
                      — mets  null  pour un projet sans vidéo
      url             (optionnel) lien externe qui REMPLACE la page détail (Vimeo, Behance…)
+     focal           (optionnel) point focal de la photo sur la carte carrousel (accueil
+                      uniquement), en `object-position` CSS — ex. "50% 20%" pour protéger un
+                      visage proche du haut. Par défaut "center" (comportement identique à
+                      avant). Le cadre carte n'a pas le même ratio que la photo source, donc
+                      `object-fit:cover` recadre toujours un peu — ce champ choisit QUELLE
+                      partie garder, à régler à l'œil au cas par cas.
    ============================================================ */
 
 window.PROJECTS = [
@@ -98,6 +104,7 @@ window.PROJECTS = [
     stats: [],
     year: "2025",
     role: "Direction photo",
+    focal: "50% 56%",
     intro: "Direction photo d'une soirée événementielle au Docks40, à Lyon.",
     context: [
       "Direction photo complète d'un événement au Docks40 : ambiance de club, portraits, performances de cirque et captation de l'atmosphère du lieu.",
@@ -116,6 +123,7 @@ window.PROJECTS = [
     stats: [["FR", "diffusion nationale"], ["SOCIAL", "campagne RSE"]],
     year: "2026",
     role: "Direction artistique · Campagne",
+    focal: "50% 20%",
     intro: "Une campagne sociale à diffusion nationale, portée par une direction artistique éditoriale.",
     context: [
       "Direction artistique d'une campagne RSE à vocation sociale, diffusée à l'échelle nationale.",
