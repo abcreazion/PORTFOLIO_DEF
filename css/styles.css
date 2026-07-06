@@ -490,10 +490,10 @@ img { display: block; max-width: 100%; }
   color: rgba(10,10,10,.04); pointer-events: none; user-select: none; z-index: 0;
 }
 .services__inner { max-width: 1340px; margin: 0 auto; position: relative; z-index: 1; }
-.services__title { font-size: min(8vw,96px); line-height: .86; margin-bottom: 72px; max-width: 800px; }
+.services__title { font-size: min(8vw,96px); line-height: .86; margin-bottom: 4px; max-width: 800px; }
 .services__script {
   font-size: min(4.5vw,52px); color: rgba(217,4,41,.65);
-  margin-top: -10px; margin-bottom: 60px;
+  margin-top: -4px; margin-bottom: 64px;
 }
 /* Liste éditoriale numérotée (façon sommaire de magazine) : 4 rangées pleine
    largeur plutôt qu'une grille 2×2 — le texte utilise toute la largeur dispo
@@ -752,7 +752,11 @@ a.contact__detail-value:hover { color: var(--red-text); }
      se retrouve coupé hors écran (mesuré : left:-8px à 390px). */
   .nav.is-split .nav__brand { padding: 5px 14px; margin: -5px -14px; }
   .nav__links { gap: 20px; }
-  .nav__link, .nav__cta { display: none; } /* déjà présents dans .nav__mobile-panel, évite le doublon qui écrasait le header */
+  /* Spécificité 0,2,0 (avec le `.nav` parent) : doit battre `a.is-magnetic { display:inline-flex }`
+     (0,1,1, ligne ~827) — sinon dès que l'effet magnétique s'active (pointeur fin : devtools,
+     tablettes hybrides…), le CTA rouge « PRENDRE RDV » réapparaissait grossi sur la nav mobile,
+     alors qu'il doit rester masqué (doublon du lien du panneau burger). */
+  .nav .nav__link, .nav .nav__cta { display: none; }
   .nav__burger { display: flex; }
   .hero__content { padding: 0 24px; }
   .btn-primary--lg {

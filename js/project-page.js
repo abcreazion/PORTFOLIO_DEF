@@ -53,11 +53,16 @@
       var src = 'assets/img/projets/' + p.slug + '/' + (i < 10 ? '0' + i : i) + '.jpg';
       items += '<figure class="pgal__item" data-reveal>' +
         '<button class="pgal__btn" type="button" aria-label="Agrandir la photo ' + i + '">' +
-          '<img src="' + src + '" alt="' + stripTags(p.client) + ' — photographie ' + i + '" loading="lazy">' +
+          '<img src="' + src + '" alt="' + stripTags(p.client) + ' — ' + stripTags(p.title) + ', photographie ' + i + '" loading="lazy">' +
         '</button>' +
       '</figure>';
     }
-    return '<section class="pgal"><div class="pgal__grid">' + items + '</div></section>';
+    return '<section class="pgal">' +
+      '<div class="pgal__head" data-reveal>' +
+        '<span class="eyebrow__line"></span>' +
+        '<h2 class="eyebrow__text eyebrow__h">LA GALERIE</h2>' +
+      '</div>' +
+      '<div class="pgal__grid">' + items + '</div></section>';
   }
 
   function lightboxHtml() {
@@ -70,15 +75,57 @@
     '</div>';
   }
 
+  function ytThumb(id, kind) { return 'https://img.youtube.com/vi/' + id + '/' + (kind || 'maxresdefault') + '.jpg'; }
+
   function videoHtml(p) {
-    if (!p.video || !p.video.src) return '';
+    var yt = p.youtube;
+    var src = p.video && p.video.src;
+    if (!yt && !src) return '';
+    // Poster YouTube : maxresdefault (HD 1280px) quand elle existe, sinon fallback hqdefault
+    // (toujours disponible) — géré par fixYtPosters() car maxres absente renvoie un placeholder
+    // gris 120px (succès HTTP, pas une erreur), indétectable par onerror seul.
+    var customPoster = p.video && p.video.poster;
+    var poster = customPoster || (yt ? ytThumb(yt) : p.image);
+    var hqAttr = (yt && !customPoster) ? ' data-hqfallback="' + ytThumb(yt, 'hqdefault') + '"' : '';
+    // data-youtube (embed iframe au clic) OU data-video (fichier <video> local au clic)
+    var dataAttr = yt ? ' data-youtube="' + yt + '"' : ' data-video="' + src + '"';
     return '<section class="pvid"><div class="pvid__inner">' +
-      '<div class="pvid__label" data-reveal><span class="eyebrow__line"></span><span class="eyebrow__text">LA VIDÉO</span></div>' +
-      '<div class="pvid__frame" data-reveal data-video="' + p.video.src + '">' +
-        '<img class="pvid__poster" src="' + (p.video.poster || p.image) + '" alt="' + stripTags(p.client) + ' — vidéo">' +
+      '<div class="pvid__label" data-reveal><span class="eyebrow__line"></span><h2 class="eyebrow__text eyebrow__h">LA VIDÉO</h2></div>' +
+      '<div class="pvid__frame" data-reveal' + dataAttr + '>' +
+        '<img class="pvid__poster" src="' + poster + '"' + hqAttr + ' alt="' + stripTags(p.client) + ' — vidéo">' +
         '<button class="pvid__play" type="button" aria-label="Lire la vidéo"><span>▶</span></button>' +
       '</div>' +
     '</div></section>';
+  }
+
+  function fixYtPosters(root) {
+    var img = root.querySelector('.pvid__poster[data-hqfallback]');
+    if (!img) return;
+    var hq = img.getAttribute('data-hqfallback');
+    function swapIfPlaceholder() {
+      // La miniature maxres absente = image grise 120px de large ; on bascule alors sur hqdefault.
+      if (img.naturalWidth && img.naturalWidth <= 120) img.src = hq;
+    }
+    img.addEventListener('error', function () { img.src = hq; }, { once: true });
+    if (img.complete) swapIfPlaceholder();
+    else img.addEventListener('load', swapIfPlaceholder, { once: true });
+  }
+
+  function fixYtHero(root) {
+    // Le hero est un div avec background-image (pas de onerror possible) : on précharge la
+    // miniature maxres via une Image() de test, et on bascule le fond sur hqdefault si elle
+    // est absente (placeholder gris 120px) ou en erreur.
+    var el = root.querySelector('.ph__media[data-hqfallback]');
+    if (!el) return;
+    var hq = el.getAttribute('data-hqfallback');
+    var m = /url\(['"]?(.*?)['"]?\)/.exec(el.style.backgroundImage || '');
+    if (!m || !m[1]) return;
+    var probe = new Image();
+    probe.onload = function () {
+      if (probe.naturalWidth <= 120) el.style.backgroundImage = "url('" + hq + "')";
+    };
+    probe.onerror = function () { el.style.backgroundImage = "url('" + hq + "')"; };
+    probe.src = m[1];
   }
 
   function contextHtml(p) {
@@ -86,7 +133,7 @@
       return '<p class="pctx__p" data-reveal>' + t + '</p>';
     }).join('');
     return '<section class="pctx"><div class="pctx__inner">' +
-      '<div class="pctx__label" data-reveal><span class="eyebrow__line"></span><span class="eyebrow__text">LE PROJET</span></div>' +
+      '<div class="pctx__label" data-reveal><span class="eyebrow__line"></span><h2 class="eyebrow__text eyebrow__h">L\'ÉTUDE DE CAS</h2></div>' +
       '<div class="pctx__body">' +
         (p.intro ? '<p class="pctx__intro" data-reveal>' + p.intro + '</p>' : '') +
         paras +
@@ -107,8 +154,12 @@
   }
 
   function heroHtml(p) {
+    // Projet avec lien YouTube → le hero est la miniature du clip (maxres, fallback hqdefault
+    // via fixYtHero() pour les vidéos sans miniature HD). Sinon l'image du projet.
+    var heroImg = p.youtube ? ytThumb(p.youtube) : p.image;
+    var heroHq = p.youtube ? ' data-hqfallback="' + ytThumb(p.youtube, 'hqdefault') + '"' : '';
     return '<header class="ph">' +
-      '<div class="ph__media" style="background-image:url(\'' + p.image + '\')"></div>' +
+      '<div class="ph__media"' + heroHq + ' style="background-image:url(\'' + heroImg + '\')"></div>' +
       '<div class="ph__scrim"></div>' +
       '<div class="ph__inner">' +
         '<div class="ph__eyebrow"><span class="ph__eyebrow-line"></span><span class="ph__eyebrow-text">' + p.client + '</span></div>' +
@@ -119,6 +170,17 @@
     '</header>';
   }
 
+  function ctaHtml(p) {
+    return '<section class="pcta">' +
+      '<div class="pcta__inner">' +
+        '<div class="pcta__label" data-reveal><span class="eyebrow__line"></span><span class="eyebrow__text">ON EN PARLE ?</span></div>' +
+        '<h2 class="pcta__title" data-reveal>Un projet dans le même esprit<span class="red"> ?</span></h2>' +
+        '<p class="pcta__text" data-reveal>De la direction artistique à la livraison finale, donnons à votre marque des images qui marquent. Basé entre Lyon et Marseille, disponible partout.</p>' +
+        '<a class="btn-primary pcta__btn" data-reveal href="index.html#contact">Démarrer votre projet <span class="btn-primary__arrow btn-primary__arrow--sm">↗</span></a>' +
+      '</div>' +
+    '</section>';
+  }
+
   function nextHtml(list, index) {
     var next = list[(index + 1) % list.length];
     return '<a class="pnext" href="projet.html?p=' + next.slug + '">' +
@@ -127,7 +189,7 @@
       '<div class="pnext__inner">' +
         '<div class="pnext__k">PROJET SUIVANT</div>' +
         '<div class="pnext__title">' + next.title + '</div>' +
-        '<div class="pnext__cta">Voir le projet <span>↗</span></div>' +
+        '<div class="pnext__cta">Explorer l\'étude de cas <span>↗</span></div>' +
       '</div>' +
     '</a>';
   }
@@ -160,9 +222,24 @@
     var frame = root.querySelector('.pvid__frame');
     if (!frame) return;
     frame.addEventListener('click', function () {
-      var src = frame.getAttribute('data-video');
       if (frame.classList.contains('is-playing')) return;
       frame.classList.add('is-playing');
+
+      // Embed YouTube : injecte un <iframe> à la demande (pas de chargement tant qu'on ne clique pas).
+      var ytId = frame.getAttribute('data-youtube');
+      if (ytId) {
+        var iframe = document.createElement('iframe');
+        iframe.className = 'pvid__video';
+        iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0';
+        iframe.title = 'Vidéo YouTube';
+        iframe.setAttribute('frameborder', '0');
+        iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+        iframe.setAttribute('allowfullscreen', '');
+        frame.appendChild(iframe);
+        return;
+      }
+
+      var src = frame.getAttribute('data-video');
       var v = document.createElement('video');
       v.setAttribute('controls', '');
       v.setAttribute('autoplay', '');
@@ -254,7 +331,7 @@
     // contexte éditorial → galerie → projet suivant.
     root.innerHTML =
       heroHtml(p) + metaHtml(p) + videoHtml(p) + contextHtml(p) + galleryHtml(p) +
-      nextHtml(hit.list, hit.index) + (p.galleryCount ? lightboxHtml() : '');
+      ctaHtml(p) + nextHtml(hit.list, hit.index) + (p.galleryCount ? lightboxHtml() : '');
 
     document.title = stripTags(p.title) + ' — ' + p.client + ' · Bastien Agus';
     var meta = document.querySelector('meta[name="description"]');
@@ -263,6 +340,8 @@
 
     initReveals(root);
     initVideo(root);
+    fixYtPosters(root);
+    fixYtHero(root);
     initGallery(root);
   }
 

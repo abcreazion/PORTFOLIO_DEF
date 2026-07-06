@@ -13,6 +13,11 @@
 
   function stripTags(s) { return String(s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
 
+  // Miniature YouTube (maxres HD par défaut). Un projet avec un champ `youtube`
+  // affiche cette miniature sur sa carte carrousel + sa vignette « projet suivant ».
+  function ytThumb(id, kind) { return 'https://img.youtube.com/vi/' + id + '/' + (kind || 'maxresdefault') + '.jpg'; }
+  function cardImage(p) { return p.youtube ? ytThumb(p.youtube) : p.image; }
+
   /* ——— Build the project cards from js/projects.js ———
      Cards are data-driven: the peek "projet suivant" thumbnail, the last-card
      "retour début", and the counter total all derive from the list length. */
@@ -44,7 +49,7 @@
           '<div class="card__frame">' +
             '<div class="card__media" data-media>' +
               '<div class="card__media-shift" data-media-shift>' +
-                '<img class="card__media-img" data-media-img src="' + p.image + '" alt="' + cardLabel + '" loading="lazy" style="object-position:' + focal + '">' +
+                '<img class="card__media-img" data-media-img src="' + cardImage(p) + '"' + (p.youtube ? ' data-hqfallback="' + ytThumb(p.youtube, 'hqdefault') + '"' : '') + ' alt="' + cardLabel + '" loading="lazy" style="object-position:' + focal + '">' +
               '</div>' +
             '</div>' +
             '<div class="card__scrim-b"></div>' +
@@ -61,7 +66,7 @@
             '</div>' +
             '<div class="card__peek" data-peek aria-hidden="true">' +
               '<div class="card__peek-inner">' +
-                '<div class="card__peek-thumb" style="background-image:url(\'' + next.image + '\')"></div>' +
+                '<div class="card__peek-thumb"' + (next.youtube ? ' data-hqfallback="' + ytThumb(next.youtube, 'hqdefault') + '"' : '') + ' style="background-image:url(\'' + cardImage(next) + '\')"></div>' +
                 '<div class="card__peek-label">' + (last ? 'RETOUR DÉBUT' : 'PROJET SUIVANT') + ' <span>↗</span></div>' +
               '</div>' +
             '</div>' +
@@ -71,6 +76,32 @@
 
     var countEl = document.getElementById('carouselCount');
     if (countEl) countEl.textContent = '01 / ' + String(n).padStart(2, '0');
+
+    fixYtThumbs(track);
+  }
+
+  /* ——— Fallback miniatures YouTube ———
+     maxresdefault n'existe pas pour toutes les vidéos (ex. ludeo → placeholder gris 120px
+     renvoyé en succès HTTP). On bascule alors sur hqdefault (toujours dispo). Gère à la fois
+     les <img> (cartes) et les fonds background-image (vignettes « projet suivant »). */
+  function fixYtThumbs(root) {
+    // <img> des cartes
+    Array.prototype.forEach.call(root.querySelectorAll('.card__media-img[data-hqfallback]'), function (img) {
+      var hq = img.getAttribute('data-hqfallback');
+      function swap() { if (img.naturalWidth && img.naturalWidth <= 120) img.src = hq; }
+      img.addEventListener('error', function () { img.src = hq; }, { once: true });
+      if (img.complete) swap(); else img.addEventListener('load', swap, { once: true });
+    });
+    // fonds background-image des vignettes peek
+    Array.prototype.forEach.call(root.querySelectorAll('.card__peek-thumb[data-hqfallback]'), function (el) {
+      var hq = el.getAttribute('data-hqfallback');
+      var m = /url\(['"]?(.*?)['"]?\)/.exec(el.style.backgroundImage || '');
+      if (!m || !m[1]) return;
+      var probe = new Image();
+      probe.onload = function () { if (probe.naturalWidth <= 120) el.style.backgroundImage = "url('" + hq + "')"; };
+      probe.onerror = function () { el.style.backgroundImage = "url('" + hq + "')"; };
+      probe.src = m[1];
+    });
   }
 
   /* ——— Scroll reveals (IntersectionObserver) ———
@@ -507,6 +538,16 @@
       var getScrollDist = function () { return Math.max(1, getMaxScroll() * SCROLL_FACTOR); };
 
       var setHeight = function () {
+        // Si le viewport descend sous le breakpoint mobile APRÈS un chargement desktop
+        // (redimensionnement de fenêtre, rotation d'écran, preview qui se rétrécit), le CSS
+        // bascule le carrousel en mode natif (`.carousel-sticky` statique) : il faut alors
+        // EFFACER la hauteur desktop, sinon elle reste collée sous un carrousel court et crée
+        // un grand vide avant la section « à propos ». (Le mode/scroll-lock lui-même n'est pas
+        // recalculé — limitation connue et acceptée — mais au moins plus de trou visuel.)
+        if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
+          outer.style.height = '';
+          return;
+        }
         outer.style.height = (window.innerHeight + getScrollDist()) + 'px';
       };
       setHeight();
