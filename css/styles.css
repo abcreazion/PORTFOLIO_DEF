@@ -9,6 +9,7 @@
   --red: #d90429;
   --red-dark: #b80324;
   --red-text: #ff3b5c; /* rouge AA (~5.7:1 sur --bg) pour le petit texte — --red seul (3.77:1) échoue <18px */
+  --red-text-on-cream: #c40427; /* variante AA (~5.3:1) pour le même usage sur fond --cream : --red-text y tombe à 2.98:1 (échoue), --red seul est à 4.496:1 (trop juste, à la limite de l'arrondi) */
   --ink-dim: rgba(245, 245, 245, .6); /* gris atténué AA (~6.8:1 sur --bg) pour labels/petit texte */
   --cream: #f0ede8;
   --mono: 'JetBrains Mono', monospace;
@@ -23,6 +24,15 @@
   --dur-slow: .5s;
   --dur-slower: .6s;
   --dur-slowest: .8s;
+
+  /* Glassmorphisme sombre partagé (nav scrollée + pilules mobile). Opacité tenue
+     assez haute (.66) pour que le texte clair reste parfaitement lisible, mais
+     assez basse pour laisser transparaître le flou + la saturation du fond — la
+     vraie signature "verre". Le bord clair + le liseré interne font la brillance. */
+  --glass-bg: rgba(10, 10, 10, .66);
+  --glass-blur: blur(20px) saturate(150%);
+  --glass-border: rgba(255, 255, 255, .1);
+  --glass-shadow: 0 8px 30px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .06);
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -64,42 +74,34 @@ img { display: block; max-width: 100%; }
 /* keyframes */
 @keyframes k-pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
 @keyframes k-slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes k-grain {
-  0%, 100% { transform: translate(0, 0); }
-  10% { transform: translate(-5%, -10%); }
-  20% { transform: translate(-15%, 5%); }
-  30% { transform: translate(7%, -25%); }
-  40% { transform: translate(-5%, 25%); }
-  50% { transform: translate(-15%, 10%); }
-  60% { transform: translate(15%, 0); }
-  70% { transform: translate(0, 15%); }
-  80% { transform: translate(3%, 35%); }
-  90% { transform: translate(-10%, 10%); }
-}
-
-/* ============================== GRAIN ============================== */
-.grain { position: fixed; inset: 0; z-index: 9999; pointer-events: none; opacity: .035; }
-.grain__noise {
-  position: absolute; inset: -50%; width: 200%; height: 200%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.85%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E");
-  animation: k-grain 8s steps(10) infinite;
-}
 
 /* ============================== NAV ============================== */
+/* Bandeau plein largeur classique au repos (tout en haut de page). Dès que
+   .is-split est posée (JS, ~qq px de scroll) :
+   - Desktop (≥901px) : .nav reste UN SEUL bandeau (logo + liens + CTA
+     ensemble) qui flotte, se resserre (padding croissant) et se pose un fond
+     pilule — jamais de split ni de burger ici, cf. media query dédiée.
+   - Mobile (≤900px) : .nav lui-même reste transparent, ce sont .nav__brand et
+     .nav__burger qui deviennent chacun leur propre pilule flottante (seuls
+     éléments visibles en mobile de toute façon) — cf. media query dédiée. */
+/* left:50%+translateX(-50%) plutôt que left:0;right:0 : le rétrécissement doit
+   réduire la largeur RÉELLE de la boîte (donc de son fond), pas juste agrandir
+   son padding intérieur — sinon le fond/rayon restent posés sur une boîte plein
+   écran (coins arrondis collés aux bords de l'écran), pas sur un bandeau
+   effectivement plus étroit et centré. translateX(-50%) recentre automatiquement
+   à chaque largeur, pas besoin de l'animer séparément. */
 .nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 56px; height: 72px;
-  transition: background var(--dur-med) ease, backdrop-filter var(--dur-med) ease, box-shadow var(--dur-med) ease;
-}
-.nav.is-scrolled {
-  background: rgba(10,10,10,.92);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 1px 0 rgba(255,255,255,.06);
+  padding: 0 56px; height: 72px; border-radius: 12px; /* rayon toujours présent, invisible tant qu'il n'y a pas de fond */
+  transition: top var(--dur-med) var(--ease-out), width var(--dur-med) var(--ease-out),
+    background var(--dur-base) ease, box-shadow var(--dur-base) ease;
 }
 .nav__brand {
   font-family: var(--display); font-size: 26px; letter-spacing: .06em;
   color: var(--ink); display: flex; align-items: center; gap: 10px;
+  border-radius: 12px;
+  transition: background var(--dur-base) ease, box-shadow var(--dur-base) ease;
 }
 .nav__links { display: flex; align-items: center; gap: 40px; }
 .nav__link {
@@ -108,16 +110,21 @@ img { display: block; max-width: 100%; }
 }
 .nav__link:hover { color: var(--ink); }
 .nav__cta {
+  /* padding vertical remonté (10px→16px) : le CTA passe de 33px à ~44px de haut —
+     seule action de conversion visible en permanence, il faisait chétif face au
+     système de boutons (btn-primary ~61px, btn-submit 54px) et passait sous la
+     cible tactile minimale de 44px. */
   display: inline-flex; align-items: center; gap: 10px;
   font: 500 11px/1 var(--mono); letter-spacing: .16em; color: #fff;
-  background: var(--red); padding: 10px 20px;
+  background: var(--red); padding: 16px 22px;
 }
 .nav__cta-arrow { font-size: 13px; }
 
 .nav__burger {
   display: none; flex-direction: column; align-items: center; justify-content: center;
   gap: 5px; width: 44px; height: 44px; background: transparent; border: none; cursor: pointer;
-  flex: none;
+  flex: none; border-radius: 12px;
+  transition: background var(--dur-base) ease, box-shadow var(--dur-base) ease;
 }
 .nav__burger-bar { width: 22px; height: 2px; background: var(--ink); transition: transform var(--dur-fast) ease, opacity var(--dur-fast) ease; }
 .nav__burger[aria-expanded="true"] .nav__burger-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
@@ -126,12 +133,13 @@ img { display: block; max-width: 100%; }
 
 .nav__mobile-panel {
   position: fixed; top: 72px; left: 0; right: 0; z-index: 99;
-  background: rgba(10,10,10,.97); backdrop-filter: blur(16px);
+  background: rgba(10,10,10,.97); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
   border-top: 1px solid rgba(255,255,255,.08);
   display: flex; flex-direction: column; padding: 4px 24px 20px;
   transform: translateY(-12px); opacity: 0; pointer-events: none;
-  transition: opacity .25s ease, transform .25s ease;
+  transition: opacity .25s ease, transform .25s ease, top var(--dur-med) var(--ease-out);
 }
+.nav.is-split ~ .nav__mobile-panel { top: 88px; } /* mobile uniquement : nav flotte à top:12px, cf. override dans la media query ≤900px */
 .nav__mobile-panel.is-open { opacity: 1; transform: none; pointer-events: auto; }
 .nav__mobile-link {
   font: 600 14px/1 var(--mono); letter-spacing: .14em; color: rgba(245,245,245,.75);
@@ -167,7 +175,7 @@ img { display: block; max-width: 100%; }
   position: absolute; inset: 0; z-index: 4;
   display: flex; flex-direction: column; justify-content: center; padding: 0 56px;
 }
-.hero__inner { max-width: 720px; }
+.hero__inner { max-width: 900px; }
 .hero__eyebrow {
   display: flex; align-items: center; gap: 14px; margin-bottom: 28px;
 }
@@ -177,24 +185,10 @@ img { display: block; max-width: 100%; }
 }
 .hero__title {
   font-family: var(--display); font-size: min(10vw,128px); line-height: .84;
-  letter-spacing: .01em; color: var(--ink); margin-bottom: 20px;
+  letter-spacing: .01em; color: var(--ink); margin-bottom: 36px;
   text-shadow: 0 4px 32px rgba(0,0,0,.55);
 }
-.hero__script {
-  font-family: var(--script); font-size: min(6vw,76px); color: var(--red);
-  display: block; margin-bottom: 4px; line-height: 1; letter-spacing: .02em;
-}
-.hero__lead {
-  font: 400 17px/1.7 var(--sans); color: rgba(245,245,245,.65);
-  max-width: 440px; margin-bottom: 40px;
-  text-shadow: 0 2px 20px rgba(0,0,0,.6);
-}
-.hero__actions { display: flex; align-items: center; gap: 24px; }
-.hero__link {
-  font: 600 12px/1 var(--mono); letter-spacing: .14em;
-  color: rgba(245,245,245,.55); transition: color var(--dur-fast) ease;
-}
-.hero__link:hover { color: var(--ink); }
+.hero__actions { display: flex; }
 
 .hero__scroll {
   position: absolute; bottom: 48px; right: 56px; z-index: 5;
@@ -257,6 +251,10 @@ img { display: block; max-width: 100%; }
 .eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .eyebrow__line { width: 28px; height: 2px; background: var(--red); }
 .eyebrow__text { font: 600 11px/1 var(--mono); letter-spacing: .28em; color: var(--red-text); }
+/* .eyebrow__text est partagée entre sections à fond sombre (--bg, où --red-text passe
+   ~5.7:1) et sections à fond clair (--cream, où --red-text tombe à 2.98:1 — échoue AA,
+   trouvé en auditant Services). Override ciblé aux deux sections concernées. */
+.projets .eyebrow__text, .services .eyebrow__text { color: var(--red-text-on-cream); }
 
 .section-title {
   font-family: var(--display); line-height: .84; letter-spacing: .01em; margin: 0;
@@ -284,7 +282,9 @@ img { display: block; max-width: 100%; }
   display: flex; align-items: center; gap: 16px; padding-bottom: 6px;
 }
 .carousel-nav__count {
-  font: 600 12px/1 var(--mono); letter-spacing: .1em; color: rgba(10,10,10,.45);
+  /* .45 tombait à 3.08:1 sur le fond crème (échoue AA pour un repère de nav 12px).
+     .65 → ~5.95:1, passe AA, reste discret. */
+  font: 600 12px/1 var(--mono); letter-spacing: .1em; color: rgba(10,10,10,.65);
 }
 .carousel-nav__btn {
   width: 44px; height: 44px; border: 1px solid rgba(10,10,10,.15);
@@ -307,7 +307,15 @@ img { display: block; max-width: 100%; }
 .card {
   flex: none; width: min(760px,80vw); height: 100%; display: block; color: inherit;
   position: relative; overflow: visible; transform-style: preserve-3d;
-  transition: transform var(--dur-slower) var(--ease-out), opacity var(--dur-slow) ease;
+  /* Pas de transition sur `transform` : cette propriété est réécrite à chaque tick de
+     scroll (updateCarousel), déjà interpolée en continu par le scroll lui-même. Une
+     transition CSS par-dessus faisait retraîner la carte ~600ms derrière le scroll réel
+     (mesuré) — exactement la sensation « poisseuse » qui avait motivé le retrait de Lenis.
+     Même principe que .card__media-shift (aucune transition, interpolation par le scroll).
+     Les boutons prev/next passent déjà par scrollTo({behavior:'smooth'}), donc le scroll
+     est progressif de lui-même — pas besoin de lissage CSS en plus. On garde la transition
+     `opacity` (mise à jour bien moins fréquemment, pas de retard perceptible). */
+  transition: opacity var(--dur-slow) ease;
 }
 .card__frame {
   position: relative; width: 100%; height: 100%; overflow: hidden;
@@ -460,6 +468,16 @@ img { display: block; max-width: 100%; }
   font: 500 10px/1.3 var(--mono); letter-spacing: .1em;
   color: var(--ink-dim); margin-top: 4px;
 }
+/* Même langage visuel que .contact__icon (carré bordé, icône rouge) — cohérence
+   entre les deux seuls endroits du site où des icônes ponctuelles apparaissent. */
+.about__social { display: flex; gap: 16px; margin-top: 32px; }
+.about__social-link {
+  width: 40px; height: 40px; border: 1px solid rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center; flex: none;
+  color: var(--red); transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.about__social-link svg { width: 18px; height: 18px; }
+.about__social-link:hover, .about__social-link:focus-visible { color: var(--ink); border-color: var(--red); }
 
 /* ============================== SERVICES ============================== */
 .services {
@@ -477,21 +495,117 @@ img { display: block; max-width: 100%; }
   font-size: min(4.5vw,52px); color: rgba(217,4,41,.65);
   margin-top: -10px; margin-bottom: 60px;
 }
-.services__grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-  border: 1px solid rgba(10,10,10,.1);
-}
+/* Liste éditoriale numérotée (façon sommaire de magazine) : 4 rangées pleine
+   largeur plutôt qu'une grille 2×2 — le texte utilise toute la largeur dispo
+   (avant : 380px de large dans une colonne de 656px, 42% de vide), le numéro
+   devient l'ancrage visuel dominant de chaque rangée. */
+.services__grid { border-top: 1px solid rgba(10,10,10,.1); }
 .svc {
-  padding: 52px 48px; transition: background var(--dur-med) ease;
-  border-bottom: 1px solid rgba(10,10,10,.1);
+  position: relative;
+  display: grid; grid-template-columns: 140px 1fr auto; grid-template-areas: "num body icon";
+  align-items: center; column-gap: 40px; padding: 44px 0 44px 28px; cursor: pointer;
+  border-bottom: 1px solid rgba(10,10,10,.1); border-radius: 2px; /* très faible, invisible tant qu'il n'y a pas de fond */
+  transition: background var(--dur-med) ease;
 }
-.svc:nth-child(odd) { border-right: 1px solid rgba(10,10,10,.1); }
-.svc:nth-child(3), .svc:nth-child(4) { border-bottom: none; }
-.svc:hover { background: rgba(217,4,41,.06); }
-.svc__head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; }
-.svc__num { font-family: var(--display); font-size: 56px; line-height: .8; color: rgba(217,4,41,.35); }
-.svc__title { font-family: var(--display); font-size: 34px; line-height: .9; color: var(--bg); letter-spacing: .02em; }
-.svc__text { font: 400 14px/1.65 var(--sans); color: rgba(10,10,10,.55); max-width: 380px; }
+/* padding-left dédié : la barre d'accent (::before, left:-1px) est hors flux par
+   rapport à .svc, donc ce padding ne la déplace pas — il écarte juste le contenu.
+   Même bug que sur mobile (mesuré à 1px d'écart avant correction) ; valeur plus
+   généreuse ici (28px vs 18px mobile) vu l'espace disponible en desktop. */
+.svc:focus-visible, .svc:active { background: rgba(217,4,41,.06); }
+/* Barre d'accent verticale : 0 → pleine hauteur au survol/focus/tap, ancrée au
+   bord gauche de la rangée (même logique que .card__bar du carrousel, en vertical). */
+.svc::before {
+  content: ''; position: absolute; left: -1px; top: 50%; width: 2px; height: 0;
+  background: var(--red); transform: translateY(-50%);
+  transition: height var(--dur-base) var(--ease-out);
+}
+.svc:focus-visible::before, .svc:active::before { height: 100%; }
+.svc__num {
+  grid-area: num; font-family: var(--display); line-height: .8; color: rgba(217,4,41,.38);
+  font-size: clamp(64px, 7vw, 120px);
+  transition: color var(--dur-base) ease;
+}
+.svc:focus-visible .svc__num, .svc:active .svc__num { color: var(--red-dark); }
+.svc__body { grid-area: body; min-width: 0; } /* min-width:0 : sinon le texte force la colonne 1fr à s'étirer au lieu de wrapper */
+.svc__icon { grid-area: icon; width: 36px; height: 36px; color: var(--red-dark); justify-self: end; }
+/* Pictogramme qui se dessine : le trait est "rentré" (dashoffset = sa propre
+   longueur, 160 couvre large pour les 4 icônes) puis révélé au survol/focus/tap. */
+.svc__icon > * { stroke-dasharray: 160; stroke-dashoffset: 160; transition: stroke-dashoffset .5s var(--ease-out); }
+.svc:focus-visible .svc__icon > *, .svc:active .svc__icon > * { stroke-dashoffset: 0; }
+.svc__cta {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 20px;
+  font: 600 11px/1 var(--mono); letter-spacing: .12em; color: var(--red-text-on-cream);
+}
+.svc__cta-arrow { display: inline-block; transition: transform var(--dur-fast) var(--ease-out); }
+.svc:focus-visible .svc__cta-arrow, .svc:active .svc__cta-arrow { transform: translateX(4px); }
+/* "Hover effects don't work on touch devices" : :hover reste entièrement dans
+   cette media query (souris uniquement). :focus-visible (ci-dessus) NE se
+   déclenche PAS de façon fiable sur un tap tactile — c'est même le but de cette
+   pseudo-classe (exclure le focus déclenché par un pointeur/tap, contrairement à
+   :focus tout court) ; l'affirmation précédente de ce commentaire était erronée.
+   Le vrai retour tactile passe par :active (ci-dessus, hors media query — se
+   déclenche de façon fiable au tap sur mobile, cf. js/main.js pour le petit délai
+   de navigation qui laisse le temps de le voir). */
+@media (hover: hover) and (pointer: fine) {
+  .svc:hover { background: rgba(217,4,41,.06); }
+  .svc:hover::before { height: 100%; }
+  .svc:hover .svc__num { color: var(--red-dark); }
+  .svc:hover .svc__icon > * { stroke-dashoffset: 0; }
+  .svc:hover .svc__cta-arrow { transform: translateX(4px); }
+  .svc__cta {
+    opacity: 0; transform: translateY(6px);
+    transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+  }
+  .svc:hover .svc__cta, .svc:focus-visible .svc__cta { opacity: 1; transform: none; }
+}
+.svc__title {
+  font-family: var(--display); line-height: .9; color: var(--bg); letter-spacing: .02em;
+  font-size: clamp(30px, 3.2vw, 42px); margin-bottom: 14px;
+}
+/* .55 tombait à 4.22:1 sur crème (échoue AA de peu pour un texte 15px). .6 → 5.0:1.
+   NB : seul le contraste est touché ici, pas l'esthétique de la section (à revoir). */
+.svc__text { font: 400 15px/1.7 var(--sans); color: rgba(10,10,10,.6); max-width: 640px; }
+
+/* ——— Reveal scroll bidirectionnel (cascade num → titre → texte → icône/cta) ———
+   Piloté par un IntersectionObserver dédié (js/main.js initServicesReveal) qui
+   bascule .is-revealed dans les DEUX sens (jamais de unobserve "once") — remonter
+   refranchit le même seuil et rejoue le fondu en sens inverse, même principe que
+   le reveal bidirectionnel déjà en place sur le carrousel. */
+.svc__num, .svc__title, .svc__text, .svc__icon {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+}
+/* .svc__num a AUSSI une transition `color` déclarée plus haut (survol/focus/tap) —
+   comme `transition` est un raccourci, la déclaration ci-dessus l'écrasait
+   silencieusement (le changement de couleur ne s'animait plus du tout, il
+   sautait instantanément). Retrouvé en vérifiant transitionProperty en direct
+   (ne contenait que "opacity, transform") — fusion complète ici. */
+.svc__num { transition: opacity .6s var(--ease-out), transform .6s var(--ease-out), color var(--dur-base) ease; }
+.svc.is-revealed .svc__num { opacity: 1; transform: none; transition-delay: 0ms; }
+.svc.is-revealed .svc__title { opacity: 1; transform: none; transition-delay: 60ms; }
+.svc.is-revealed .svc__text { opacity: 1; transform: none; transition-delay: 110ms; }
+.svc.is-revealed .svc__icon { opacity: 1; transform: none; transition-delay: 150ms; }
+.svc__cta { opacity: 0; transform: translateY(20px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); transition-delay: 150ms; }
+.svc.is-revealed .svc__cta { opacity: 1; transform: none; }
+/* Cascade d'entrée renforcée : le picto se dessine, la barre d'accent se déploie
+   et le numéro s'intensifie PENDANT le reveal (pas seulement au survol/tap) —
+   sur mobile c'est le seul moment d'interaction garanti (pas de hover), donc
+   l'essentiel du "craft" doit se jouer là. Toujours piloté par .is-revealed
+   (même classe, même bidirectionnalité) : remonter détisse le picto, rétracte la
+   barre et repâlit le numéro en sens inverse, sans code séparé à écrire. */
+.svc.is-revealed .svc__num { color: var(--red-dark); }
+.svc.is-revealed::before { height: 100%; transition-delay: 200ms; }
+.svc.is-revealed .svc__icon > * { stroke-dashoffset: 0; transition-delay: 150ms; }
+@media (hover: hover) and (pointer: fine) {
+  /* Sur desktop, une fois révélée par le scroll, la ligne repasse en mode
+     "CTA cachée jusqu'au survol" — les deux mécanismes se superposent proprement
+     car cette règle est déclarée après (même sélecteur, priorité à l'ordre). */
+  .svc.is-revealed .svc__cta {
+    opacity: 0; transform: translateY(6px);
+    transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+  }
+  .svc.is-revealed:hover .svc__cta, .svc.is-revealed:focus-visible .svc__cta { opacity: 1; transform: none; }
+}
 
 /* ============================== CONTACT ============================== */
 .contact { background: #0c0c0c; padding: 160px 56px; position: relative; overflow: hidden; }
@@ -604,17 +718,43 @@ a.contact__detail-value:hover { color: var(--red-text); }
 
 /* ============================== RESPONSIVE ============================== */
 @media (min-width: 901px) {
-  .nav__burger { display: none !important; }
+  /* Desktop : UN SEUL bandeau flottant qui se resserre au scroll (logo + liens
+     + CTA restent ensemble, toujours visibles) — jamais de split, jamais de
+     burger ici. Le burger/panel restent strictement réservés au mobile. */
+  .nav.is-split {
+    top: 16px; width: 66vw;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+  .nav__burger { display: none; }
   .nav__mobile-panel { display: none; }
 }
 
 @media (max-width: 900px) {
   .nav { padding: 0 24px; }
+  /* Mobile : .nav lui-même reste transparent (pas de fond), ce sont .nav__brand
+     et .nav__burger qui portent chacun leur pilule — seuls éléments affichés
+     ici de toute façon (liens/CTA masqués juste en dessous). */
+  .nav.is-split { top: 12px; width: 94vw; } /* quasi pleine largeur */
+  .nav.is-split ~ .nav__mobile-panel { top: 84px; } /* nav flotte à 12px (pas 16px comme desktop) + hauteur 72px */
+  .nav.is-split .nav__brand, .nav.is-split .nav__burger {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+  /* Le pilule-brand grandit via padding+margin négatif : sur petit écran il faut
+     une marge réduite, sinon elle dépasse le padding réduit de .nav et le logo
+     se retrouve coupé hors écran (mesuré : left:-8px à 390px). */
+  .nav.is-split .nav__brand { padding: 5px 14px; margin: -5px -14px; }
   .nav__links { gap: 20px; }
   .nav__link, .nav__cta { display: none; } /* déjà présents dans .nav__mobile-panel, évite le doublon qui écrasait le header */
   .nav__burger { display: flex; }
   .hero__content { padding: 0 24px; }
-  .hero__actions { flex-wrap: wrap; gap: 16px; }
   .btn-primary--lg {
     font-size: 16px; gap: 10px; padding: 13px 22px;
   }
@@ -629,17 +769,35 @@ a.contact__detail-value:hover { color: var(--red-text); }
     perspective: none; overflow-x: auto; overflow-y: hidden;
     scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    /* Sans touch-action, le navigateur doit "deviner" si un toucher est un début
+       de scroll ou un tap avant de le traiter — source connue de taps ratés sur
+       les carrousels à scroll-snap horizontal (remonté par l'utilisateur : cartes
+       "difficilement cliquables"). pan-x lève l'ambiguïté : seul le geste
+       horizontal est un scroll natif, un tap est traité immédiatement. */
+    touch-action: pan-x;
   }
   .carousel-stage::-webkit-scrollbar { display: none; }
   .carousel-track { position: static; padding: 12px 7vw; }
-  .card { width: 86vw; height: 64vh; min-height: 380px; scroll-snap-align: center; }
+  .card {
+    width: 86vw; height: 64vh; min-height: 380px; scroll-snap-align: center;
+    touch-action: manipulation; /* supprime aussi le délai de détection double-tap-zoom sur le lien lui-même */
+  }
   .carousel-progress { margin: 0 24px 20px; }
   .about, .services, .contact { padding: 100px 24px; }
   .about__grid, .contact__grid { grid-template-columns: 1fr; gap: 48px; }
   .about__title { font-size: 56px; }
-  .services__grid { grid-template-columns: 1fr; }
-  .svc:nth-child(odd) { border-right: none; }
-  .svc:nth-child(3) { border-bottom: 1px solid rgba(10,10,10,.1); }
+  /* num+icon partagent une ligne d'en-tête, body (titre+texte+cta) passe en dessous
+     sur toute la largeur — sinon 140px+auto+1fr est trop serré sous 900px. */
+  /* padding-left dédié : la barre d'accent (::before, left:-1px) est positionnée
+     hors flux par rapport à .svc lui-même, donc ce padding ne la déplace pas —
+     il ne fait qu'écarter le contenu (grille), créant une vraie respiration entre
+     la barre et le texte (mesuré à 0px d'écart avant cette correction). */
+  .svc {
+    grid-template-columns: 1fr auto; grid-template-areas: "num icon" "body body";
+    row-gap: 14px; padding: 32px 0 32px 18px;
+  }
+  .svc__num { font-size: clamp(48px, 14vw, 72px); }
+  .svc__icon { width: 28px; height: 28px; }
   .footer__top { flex-direction: column; gap: 32px; }
 }
 
@@ -649,7 +807,78 @@ a.contact__detail-value:hover { color: var(--red-text); }
   .carousel-header__titles { flex-direction: column; gap: 6px; align-items: flex-start; }
 }
 
+/* ============================================================
+   MOTION — cinématique scroll & micro-design (piloté par js/motion.js)
+   Tout en transform/opacity (compositor, 60fps). Court-circuité sous
+   prefers-reduced-motion (bloc dédié en fin de fichier).
+   ============================================================ */
+
+/* ——— Split-text : chaque mot enveloppé dans un masque (overflow:hidden),
+   l'inner monte depuis le bas au reveal (.is-split-in ajouté par JS).
+   Le padding/margin bas laisse respirer les jambages sans décaler la mise
+   en page. ——— */
+.m-word { display: inline-block; overflow: hidden; vertical-align: top; padding: .06em .02em .18em; margin: 0 -.02em -.18em; }
+.m-word__i { display: inline-block; transform: translateY(118%); transition: transform .9s var(--ease-out); will-change: transform; }
+.is-split-in .m-word__i { transform: translateY(0); }
+
+/* ——— Curseur magnétique : l'élément est translaté par JS (lerp amorti).
+   inline-block requis pour que le transform s'applique aux liens inline. ——— */
+.is-magnetic { will-change: transform; }
+a.is-magnetic { display: inline-flex; }
+
+/* ——— Reveal directionnel générique piloté par .is-in (Motion.reveal),
+   pour les blocs hors système [data-reveal] de l'accueil. ——— */
+.m-reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); will-change: opacity, transform; }
+.m-reveal.is-in { opacity: 1; transform: none; }
+
+/* ============================================================
+   MICRO-DESIGN — finitions d'interaction (quiet & precise)
+   Le split-text porte la signature ; ici, tout reste discipliné.
+   ============================================================ */
+
+/* Fix conflit magnétique : le transform est piloté par JS (lerp, chaque frame).
+   On retire donc "transform" de la transition CSS de ces éléments pour ne pas
+   doubler le lissage (sinon rendu mou/laggy). On conserve leurs autres transitions. */
+.btn-primary.is-magnetic, .nav__cta.is-magnetic { transition: background var(--dur-base) var(--ease-out); }
+.carousel-nav__btn.is-magnetic { transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease; }
+
+/* Liens nav : soulignement rouge qui se déroule depuis la gauche (transform only) */
+.nav__link { position: relative; }
+.nav__link::after {
+  content: ''; position: absolute; left: 0; bottom: -6px; width: 100%; height: 1px;
+  background: var(--red); transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.nav__link:hover::after, .nav__link:focus-visible::after { transform: scaleX(1); }
+
+/* Liens footer : même grammaire de soulignement (cohérence) */
+.footer__col-links { align-items: flex-start; }
+.footer__col-links a { position: relative; }
+.footer__col-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -2px; width: 100%; height: 1px;
+  background: var(--ink); transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.footer__col-links a:hover::after, .footer__col-links a:focus-visible::after { transform: scaleX(1); }
+
+/* Flèche des boutons (↗) : léger décalage diagonal + halo au survol du bouton.
+   La flèche est un enfant — ne rentre pas en conflit avec le magnétique du bouton. */
+.btn-primary__arrow, .btn-submit__arrow {
+  transition: transform var(--dur-base) var(--ease-out), background var(--dur-base) ease;
+}
+.btn-primary:hover .btn-primary__arrow,
+.btn-submit:hover .btn-submit__arrow { transform: translate(2px, -2px); background: rgba(255,255,255,.34); }
+
+/* Inputs : transitions de focus adoucies (durée base + easing), survol qui éclaire
+   discrètement la bordure. Non destructif pour l'état :focus (rouge) et .is-invalid. */
+.field__input { transition: border-color var(--dur-base) var(--ease-out), background var(--dur-base) ease; }
+.field__input:hover:not(:focus):not(.is-invalid) { border-color: rgba(255,255,255,.26); }
+.field__input:focus { background: #0d0d0d; }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
   html { scroll-behavior: auto; }
+  /* Toute cinématique motion figée sur son état final */
+  .m-word__i { transform: none !important; transition: none !important; }
+  .m-reveal { opacity: 1 !important; transform: none !important; }
 }

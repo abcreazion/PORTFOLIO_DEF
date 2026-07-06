@@ -47,9 +47,9 @@ window.PROJECTS = [
     watermarkScript: "Sport Club",
     client: "WELLNESS SPORT CLUB",
     title: "CAMPAGNE<br>D'AFFICHAGE",
-    stats: [["2 PAYS", "campagne nationale"], ["12 MOIS", "diffusion continue"]],
-    year: "2025",
-    role: "Direction artistique · Photographie",
+    stats: [["2", "PAYS"], ["12", "MOIS DE DIFFUSION"]],
+    year: "2023",
+    role: "Direction artistique · Réalisation",
     intro: "La campagne d'affichage annuelle de Wellness Sport Club, déployée en France et en Suisse.",
     context: [
       "Direction de la campagne d'affichage nationale : conception créative, direction photo et déclinaison sur l'ensemble des supports urbains (abribus, 4×3, réseaux JCDecaux).",
@@ -58,6 +58,62 @@ window.PROJECTS = [
     galleryCount: 4,
     video: null
   },
+    {
+    slug: "hakai-lune",
+    image: "assets/img/card-1-wsc-affichage.jpg",
+    watermark: "HAKAI LUNE",
+    watermarkScript: "hakai",
+    client: "HAKAI",
+    title: "CLIP<br>D'HAKAI LUNE",
+    stats: [["244K", "VUES"], ["+7K", "ENGAGMENTS"]],
+    year: "2023",
+    role: "Direction artistique · Réalisation",
+    intro: "Un clip musical immersif dans les rues de Lyon, pour le morceau LUNE de l'artiste Hakai.",
+    context: [
+      "Un univers urbain se passant dans les rues de Lyon. Le clip viens servir de manière dynamique le morceau LUNE  de l'artiste Hakai.",
+      "Une direction artistique et un étallonage cinématographique pour un clip musical immersif au coeur de lyon un jour de concert."
+    ],
+    galleryCount: 4,
+    video: null
+  },
+   {
+    slug: "smaa-alterations",
+    image: "assets/img/card-1-wsc-affichage.jpg",
+    watermark: "SMAA ALTERATIONS",
+    watermarkScript: "smaa",
+    client: "SMAA ALTERATIONS",
+    title: "POCHETTE<br>D'ALBUM",
+    stats: [["244K", "VUES"], ["+7K", "ENGAGMENTS"]],
+    year: "2022",
+    role: "Direction artistique · Photographie",
+    intro: "Une pochette d'album qui intereple",
+    context: [
+      "Direction Artistique visuelle que nous avons pu mettre en place autour de L'EP de SMAA",
+      "Ce projet comportant 6 titres inédits, nous permet de découvrir deux facettes de l'artiste. Il nous plonge au coeur des émotions de celui-ci. Certains morceaux sont sombres, mais le projet se finit par des titres plus joyeux et colorés.",
+      "Un travail de direction artistique et de photographie pour la pochette d'album et les visuels promotionnels de l'EP d'Alterations."
+    ],
+    galleryCount: 4,
+    video: null
+  },
+
+    {
+    slug: "97-cafe",
+    image: "assets/img/card-1-wsc-affichage.jpg",
+    watermark: "97 CAFÉ",
+    watermarkScript: "97cafe",
+    client: "97 CAFÉ",
+    title: "COMMUNICATION<br>360",
+    stats: [["+70k", "Vues cumulées"], ["360°", "des assets multicanaux"]],
+    year: "2023",
+    role: "Direction artistique · realisation",
+    intro: "Accompagner un restaurant dans sa communication visuelle et digitale, pour un lancement réussi.",
+    context: [
+      "Accompagnement de 97 Café dans sa communication visuelle et digitale : shooting photo, réalisation d'une vidéo promotionnelle et déclinaison sur les réseaux sociaux.",
+    ],
+    galleryCount: 4,
+    video: null
+  },
+
   {
     slug: "dimension",
     image: "assets/img/card-2-dimension.jpg",
@@ -65,31 +121,48 @@ window.PROJECTS = [
     watermarkScript: "Stores",
     client: "DIMENSION STORES",
     title: "IDENTITÉ<br>RETAIL",
-    stats: [["8", "points de vente"], ["DA", "+ identité visuelle"]],
+    stats: [["+157k", "vues"], ["+10%", "d'engagements"]],
     year: "2025",
-    role: "Direction artistique · Identité visuelle",
-    intro: "Une identité retail cohérente déployée sur l'ensemble des points de vente.",
+    role: "Direction artistique · Motion design",
+    intro: "Création de la vidéo annonçant le changement de l'identité visuelle de Dimension Stores.",
     context: [
-      "Création de l'identité visuelle et direction artistique retail : du concept au déploiement sur huit points de vente.",
-      "Photographie produit et lifestyle, habillage des espaces et cohérence de marque sur tous les points de contact clients."
+      "Accompagnement de Dimension Stores dans le changement de son identité visuelle : création d'une vidéo d'annonce sur instagram en motion design."
     ],
     galleryCount: 6,
     video: null
   },
   {
-    slug: "techteam",
-    image: "assets/img/card-3-techteam.jpg",
-    watermark: "TECHTEAM",
-    watermarkScript: "Films",
-    client: "TECHTEAM · 3 FILMS",
-    title: "FILM<br>CORPORATE",
-    stats: [["3", "films produits"], ["CORP", "com. interne"]],
-    year: "2026",
-    role: "Réalisation · Production audiovisuelle",
-    intro: "Trois films corporate pour la communication interne de Techteam.",
+    slug: "ludeo",
+    image: "assets/img/card-2-dimension.jpg",
+    watermark: "LUDEO",
+    watermarkScript: "LUDEO",
+    client: "LUDEO",
+    title: "DIRECTION ARTISTIQUE<br>réalisation",
+    stats: [["+157k", "vues"], ["+10%", "d'engagements"]],
+    year: "2024",
+    role: "Direction artistique · Réalisation",
+    intro: "Un clip muscial dévoilant la sortie du projet de l'artiste Ludeo",
     context: [
-      "Production de trois films corporate : écriture, tournage et post-production, au service de la communication interne de l'entreprise.",
-      "Un traitement sobre et premium, pensé pour valoriser les équipes et les savoir-faire de Techteam."
+      "Nous avons accompagné l'artiste Ludeo dans la réalisation de son clip musical dévoilant la sortie de son projet.",
+      "Un travail de direction artistique et de réalisation pour un clip musical plongeant le spectateur dans l'univers de l'artiste. Une réalisation qui mêle différents arts."
+    ],
+    galleryCount: 6,
+    video: null
+  },
+  {
+    slug: "masion-lyne-standre",
+    image: "assets/img/card-3-techteam.jpg",
+    watermark: "Maison Lyne St. André",
+    watermarkScript: "Direction artistique",
+    client: "MAISON LYNE ST. ANDRÉ · 3 FILMS",
+    title: "SHOOTING<br>DE COLLECTION",
+    stats: [["+50", "ressources photos"], ["1", "VIDÉO DE MARQUE"]],
+    year: "2026",
+    role: "Photographie et réalisation",
+    intro: "Un shooting photos et une vidéo de marque pour la Maison Lyne St. André, valorisant la créatrice et son savoir faire.",
+    context: [
+      "Shooting photos et réalisation d'une vidéo de marque pour la Maison Lyne St. André, valorisant la créatrice et son savoir faire. Un travail précis et exigeant dans l'univers de la mode.",
+      
     ],
     galleryCount: 6,
     video: { src: "assets/video/techteam.mp4", poster: "assets/img/card-3-techteam.jpg" }
@@ -119,15 +192,15 @@ window.PROJECTS = [
     watermark: "SOLERYS",
     watermarkScript: "Nationale",
     client: "SOLERYS · NATIONALE",
-    title: "CAMPAGNE<br>SOCIALE",
-    stats: [["FR", "diffusion nationale"], ["SOCIAL", "campagne RSE"]],
+    title: "VIDÉO<br>RSE",
+    stats: [["FR", "diffusion nationale"], ["RSE", "vidéo sociale"]],
     year: "2026",
-    role: "Direction artistique · Campagne",
+    role: "Motion design · Direction artistique",
     focal: "50% 20%",
     intro: "Une campagne sociale à diffusion nationale, portée par une direction artistique éditoriale.",
     context: [
-      "Direction artistique d'une campagne RSE à vocation sociale, diffusée à l'échelle nationale.",
-      "Un traitement éditorial et humain, décliné sur les supports print et digital pour porter le message au plus grand nombre."
+      "Direction artistique et animation d'une vidéo RSE à vocation sociale, diffusée à tout les collaborateurs de l'entreprise.",
+      "Un traitement éditorial et humain, dans une vidéo de 4minutes, pour faire le bilan rse de l'année écoulée et présenter les actions de l'entreprise en matière de responsabilité sociale."
     ],
     galleryCount: 8,
     video: null

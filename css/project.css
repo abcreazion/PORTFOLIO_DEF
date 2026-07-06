@@ -127,7 +127,11 @@
 }
 
 /* ——— PROJET SUIVANT ——— */
-.pnext { position: relative; display: block; min-height: 60vh; overflow: hidden; color: inherit; }
+/* touch-action:manipulation supprime le délai de détection double-tap-zoom sur
+   ce grand lien tactile — même correctif que .card sur le carrousel (remonté :
+   "difficilement cliquable" sur mobile), même si pnext n'est pas dans un
+   conteneur à scroll horizontal. */
+.pnext { position: relative; display: block; min-height: 60vh; overflow: hidden; color: inherit; touch-action: manipulation; }
 .pnext__media { position: absolute; inset: 0; background: #111 center/cover no-repeat; transition: transform var(--dur-slowest) var(--ease-out); }
 .pnext:hover .pnext__media { transform: scale(1.05); }
 .pnext__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,10,.85), rgba(10,10,10,.45)); }

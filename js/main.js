@@ -59,9 +59,9 @@
               '<div class="card__title">' + p.title + '</div>' +
               '<div class="card__bar" data-bar></div>' +
             '</div>' +
-            '<div class="card__peek" data-peek>' +
+            '<div class="card__peek" data-peek aria-hidden="true">' +
               '<div class="card__peek-inner">' +
-                '<div class="card__peek-thumb" aria-hidden="true" style="background-image:url(\'' + next.image + '\')"></div>' +
+                '<div class="card__peek-thumb" style="background-image:url(\'' + next.image + '\')"></div>' +
                 '<div class="card__peek-label">' + (last ? 'RETOUR DÉBUT' : 'PROJET SUIVANT') + ' <span>↗</span></div>' +
               '</div>' +
             '</div>' +
@@ -74,35 +74,67 @@
   }
 
   /* ——— Scroll reveals (IntersectionObserver) ———
-     Robust against the sticky, dynamically-sized 3D carousel — unlike scroll-position
-     math, IO reveals each element exactly when it enters the viewport. */
+     Robuste face au carrousel sticky à hauteur dynamique — contrairement à un
+     calcul de position de scroll, l'IO révèle chaque élément quand il entre.
+
+     Élevé vers une finition "Don Molinico" :
+     - directionnel/bidirectionnel : entrée mémorable au scroll-down, retrait
+       élégant au scroll-up (toggle .is-in dans les deux sens, plus de unobserve) ;
+     - split-text : les titres display portant [data-split] sont découpés mot par
+       mot (masque + montée), délégué à window.Motion ;
+     - l'état caché initial est posé PAR JS (pas en CSS) : si le JS échoue, le
+       contenu reste visible (dégradation sûre, bon pour LCP/SEO) ;
+     - reduced-motion : tout est révélé d'emblée, rien n'est masqué. */
   function initReveals() {
-    var items = document.querySelectorAll('[data-reveal]');
-    if (REDUCE) { showAll(items); return; }
-    if (!('IntersectionObserver' in window)) { showAll(items); return; }
+    var items = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'));
+    var M = window.Motion;
+
+    function isSplit(el) { return el.hasAttribute('data-split'); }
+    function revealSplit(el) { if (M) M.splitText(el); el.classList.add('is-split-in'); }
+
+    if (REDUCE || !('IntersectionObserver' in window)) {
+      items.forEach(function (el) { if (isSplit(el)) revealSplit(el); });
+      showAll(items.filter(function (el) { return !isSplit(el); }));
+      return;
+    }
+
+    // État initial masqué, posé par JS (no-JS ⇒ contenu visible).
+    items.forEach(function (el) {
+      if (isSplit(el)) { M && M.splitText(el); return; } // le split porte son propre état initial
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(28px)';
+      el.style.willChange = 'opacity, transform';
+    });
+
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
         var el = e.target;
+        var on = e.isIntersecting;
         var d = parseInt(el.dataset.d, 10) || 0;
-        el.style.transition = 'opacity .8s ' + EASE + ' ' + d + 'ms, transform .8s ' + EASE + ' ' + d + 'ms';
-        el.style.opacity = '1';
-        el.style.transform = 'none';
-        io.unobserve(el);
+        if (isSplit(el)) { el.classList.toggle('is-split-in', on); return; }
+        el.style.transition = 'opacity .9s ' + EASE + ' ' + d + 'ms, transform .9s ' + EASE + ' ' + d + 'ms';
+        el.style.opacity = on ? '1' : '0';
+        el.style.transform = on ? 'none' : 'translateY(28px)';
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
     items.forEach(function (el) { io.observe(el); });
-    // Failsafe: reveal everything after 4s in case an observer misses.
-    setTimeout(function () { showAll(items); }, 4000);
+    // Pas de failsafe "reveal-all" ici : contrairement à l'ancien modèle "once"
+    // (unobserve au 1er passage), l'observateur reste attaché et bascule .is-in /
+    // .is-split-in dans les DEUX sens — un éventuel "miss" se corrige de lui-même
+    // au prochain changement d'intersection. Un reveal-all permanent figerait au
+    // contraire les titres en état révélé et casserait le retrait au scroll-up.
   }
 
-  /* ——— Nav background on scroll ——— */
+  /* ——— Nav : bandeau plein largeur au repos, split en 2 pilules (logo / burger)
+     dès les tout premiers pixels de scroll. Seuil à 2px (pas 0) pour absorber le
+     rubber-banding du scroll au tout point haut (trackpad/mobile) sans faire
+     clignoter le split. ——— */
   function initNav() {
     var nav = document.getElementById('nav');
     if (!nav) return;
-    if (nav.hasAttribute('data-static')) return; // always-on background (project pages)
+    if (nav.hasAttribute('data-static')) return; // état final déjà figé dans le HTML (pages projet, pas de hero)
     var onScroll = function () {
-      nav.classList.toggle('is-scrolled', (window.scrollY || 0) > 80);
+      nav.classList.toggle('is-split', (window.scrollY || 0) > 2);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
@@ -139,6 +171,62 @@
       if (burger.getAttribute('aria-expanded') !== 'true') return;
       if (!panel.contains(e.target) && !burger.contains(e.target)) close();
     });
+  }
+
+  /* ——— Services → formulaire : chaque bloc .svc est un vrai <a href="#contact">
+     (jump natif + scroll-behavior:smooth déjà global) ; on se contente d'en profiter
+     pour pré-sélectionner l'option correspondante du select #f-type. data-type
+     correspond exactement au texte des <option> du select (pas de value= explicite
+     dessus, donc option.value === texte).
+
+     Feedback tactile (B) : sur tactile/mobile (pas de hover), le seul retour visuel
+     possible est :active — mais il ne se déclenche de façon fiable sur iOS Safari
+     que s'il existe un listener touchstart quelque part dans le document. Sur ces
+     appareils on retarde aussi légèrement la navigation (~150ms) pour laisser le
+     temps de voir le flash :active avant que la page saute vers #contact — sur
+     desktop (hover:hover + pointer:fine) le survol a déjà montré l'état enrichi
+     avant le clic, donc pas de délai ajouté là. ——— */
+  function initServicesConnector() {
+    var svcs = Array.prototype.slice.call(document.querySelectorAll('.svc[data-type]'));
+    var select = document.getElementById('f-type');
+    if (!svcs.length) return;
+
+    var hasFinePointer = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+    if (!hasFinePointer) {
+      document.addEventListener('touchstart', function () {}, { passive: true });
+    }
+
+    svcs.forEach(function (svc) {
+      svc.addEventListener('click', function (e) {
+        if (select) select.value = svc.dataset.type;
+        if (hasFinePointer) return;
+        e.preventDefault();
+        setTimeout(function () {
+          window.location.hash = 'contact';
+        }, REDUCE ? 0 : 150);
+      });
+    });
+  }
+
+  /* ——— Services : reveal scroll bidirectionnel (cascade num→titre→texte→icône/cta),
+     dédié à cette section — ne touche pas le système [data-reveal] global (once,
+     utilisé ailleurs sur le site). Bascule .is-revealed dans les DEUX sens à chaque
+     croisement du seuil (jamais de unobserve) : remonter rejoue le fondu en sens
+     inverse, même principe que le reveal bidirectionnel déjà en place sur le
+     carrousel (js/main.js applyCardEffects, dérivé de absDist en continu). ——— */
+  function initServicesReveal() {
+    var svcs = Array.prototype.slice.call(document.querySelectorAll('.svc'));
+    if (!svcs.length) return;
+    if (REDUCE || !('IntersectionObserver' in window)) {
+      svcs.forEach(function (svc) { svc.classList.add('is-revealed'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        entry.target.classList.toggle('is-revealed', entry.isIntersecting);
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    svcs.forEach(function (svc) { io.observe(svc); });
   }
 
   /* ——— Contact form : POST JSON vers Formspree, fallback mailto si le fetch échoue totalement ———
@@ -277,6 +365,30 @@
     var total = cards.length;
     if (!total) return;
 
+    // Navigation intra-carrousel (amener une carte au centre). Réassignée par
+    // initDesktop/initMobile car chacun a sa propre mécanique de scroll (scroll de
+    // fenêtre vs scroll horizontal du stage). Le peek s'en sert pour avancer d'une
+    // carte plutôt que d'ouvrir une page projet.
+    var goToCard = function () {};
+
+    // La carte entière est un <a> vers sa page projet. Le peek « PROJET SUIVANT »
+    // n'ouvre PAS cette page : il fait AVANCER le carrousel d'une carte (comme la
+    // flèche →), pour amener le projet suivant au centre, là où il devient facilement
+    // cliquable. C'est ce qui rend les cartes du milieu accessibles : en scroll libre,
+    // seules la 1re (haut) et la dernière (bas) se posent naturellement au centre ;
+    // avancer carte par carte recentre proprement chaque projet.
+    // preventDefault coupe la navigation par défaut du <a> parent, stopPropagation
+    // évite tout autre handler. Le reste de la carte reste le lien vers sa page.
+    cards.forEach(function (card, i) {
+      var peek = card.querySelector('[data-peek]');
+      if (!peek) return;
+      peek.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        goToCard((i + 1) % total); // wrap : la dernière (« RETOUR DÉBUT ») revient à la 1re
+      });
+    });
+
     var GAP = 40;
     var getCardW = function () { return cards[0] ? cards[0].offsetWidth : 760; };
 
@@ -375,6 +487,7 @@
         idx = Math.max(0, Math.min(total - 1, idx));
         stage.scrollTo({ left: idx * getStep(), behavior: REDUCE ? 'auto' : 'smooth' });
       };
+      goToCard = goTo; // le peek avance d'une carte (cf. handler plus haut)
       if (prevBtn) prevBtn.addEventListener('click', function () { goTo(getIdx() - 1); });
       if (nextBtn) nextBtn.addEventListener('click', function () { goTo(getIdx() + 1); });
     }
@@ -442,22 +555,80 @@
       window.addEventListener('scroll', rafThrottle(updateCarousel), { passive: true });
       updateCarousel();
 
-      var scrollToCard = function (idx) {
-        var rect = outer.getBoundingClientRect();
-        var outerTop = window.scrollY + rect.top;
-        var targetPct = Math.max(0, Math.min(1, idx / (total - 1)));
-        window.scrollTo({ top: outerTop + targetPct * getScrollDist(), behavior: 'smooth' });
+      // ——— Snap-to-card (desktop uniquement) ———
+      // Le carrousel desktop est en scroll libre (scroll vertical de page → position
+      // horizontale des cartes). S'arrêter entre deux cartes laisse une carte à moitié
+      // pivotée, difficile à cliquer (retour utilisateur). On "aimante" donc la carte la
+      // plus proche au centre dès que le scroll s'immobilise — MAIS uniquement dans la
+      // zone épinglée du carrousel (scrolled strictement entre 0 et getScrollDist), jamais
+      // pendant l'entrée depuis le hero ni la sortie vers À propos, pour ne pas piéger le
+      // scroll de page. Ce n'est PAS un smooth-scroll global (Lenis) ni un scroll-jack en
+      // continu : c'est un recentrage ponctuel déclenché seulement à l'arrêt du scroll.
+      // Le mobile a déjà son propre snap natif (scroll-snap-type:x mandatory en CSS).
+      var isSnapping = false;   // verrou : coupe l'auto-snap pendant un scroll programmatique
+      var snapTimer = null;     // debounce du "scroll arrêté"
+      var releaseTimer = null;  // relâche isSnapping une fois le scroll programmatique posé
+
+      var getOuterTop = function () {
+        return window.scrollY + outer.getBoundingClientRect().top;
       };
 
+      var snapScrollTo = function (top) {
+        isSnapping = true;
+        window.scrollTo({ top: top, behavior: REDUCE ? 'auto' : 'smooth' });
+        window.clearTimeout(releaseTimer);
+        // 700ms couvre la durée d'un smooth scroll. Même si c'était trop court, la
+        // prochaine évaluation trouverait delta<4 et ne ferait rien → aucune boucle possible.
+        releaseTimer = window.setTimeout(function () { isSnapping = false; }, REDUCE ? 60 : 700);
+      };
+
+      var scrollToCard = function (idx) {
+        var targetPct = Math.max(0, Math.min(1, idx / (total - 1)));
+        snapScrollTo(getOuterTop() + targetPct * getScrollDist());
+      };
+      goToCard = scrollToCard; // le peek et les flèches amènent une carte au centre
+
       var getCurrentIdx = function () {
-        var rect = outer.getBoundingClientRect();
-        var scrolled = Math.max(0, -rect.top);
+        var scrolled = Math.max(0, -outer.getBoundingClientRect().top);
         return Math.round((scrolled / getScrollDist()) * (total - 1));
       };
+
+      var maybeSnap = function () {
+        if (isSnapping) return;
+        var scrollDist = getScrollDist();
+        var scrolled = -outer.getBoundingClientRect().top;
+        // Hors zone épinglée (au-dessus du carrousel ou déjà passé) → on laisse filer le
+        // scroll de page, aucun aimantage (sinon on piégerait l'entrée/sortie de section).
+        if (scrolled <= 0 || scrolled >= scrollDist) return;
+        var idx = Math.round((scrolled / scrollDist) * (total - 1));
+        var targetTop = getOuterTop() + (idx / (total - 1)) * scrollDist;
+        if (Math.abs(targetTop - window.scrollY) < 4) return; // déjà centré, rien à faire
+        snapScrollTo(targetTop);
+      };
+
+      window.addEventListener('scroll', function () {
+        if (isSnapping) return;
+        window.clearTimeout(snapTimer);
+        // attend ~140ms sans scroll (inclut le momentum trackpad) avant de recentrer
+        snapTimer = window.setTimeout(maybeSnap, 140);
+      }, { passive: true });
 
       if (prevBtn) prevBtn.addEventListener('click', function () { scrollToCard(Math.max(0, getCurrentIdx() - 1)); });
       if (nextBtn) nextBtn.addEventListener('click', function () { scrollToCard(Math.min(total - 1, getCurrentIdx() + 1)); });
     }
+  }
+
+  /* ——— Micro-interactions premium (curseur magnétique + parallax scrubbé) ———
+     Additif, isolé dans window.Motion (js/motion.js). Ne touche jamais .card ni
+     la section #projets (scroll-lock). Court-circuité sous reduced-motion / tactile
+     directement dans les primitives. */
+  function initMotion() {
+    var M = window.Motion;
+    if (!M) return;
+    // Curseur magnétique : réservé aux CTA focaux + flèches du carrousel.
+    M.magnetic('.btn-primary, .nav__cta, .carousel-nav__btn', { strength: 0.3, ease: 0.16 });
+    // Parallax scrubbé : uniquement les grands mots décoratifs de fond.
+    M.parallax('.about__bgword, .services__bgword, .contact__bgword', { speed: 0.14 });
   }
 
   function init() {
@@ -465,10 +636,13 @@
     initReveals();
     initNav();
     initMobileNav();
+    initServicesConnector();
+    initServicesReveal();
     initContactForm();
     initHeroVideo();
     initParallax();
     initCarousel();
+    initMotion();
   }
 
   if (document.readyState === 'loading') {

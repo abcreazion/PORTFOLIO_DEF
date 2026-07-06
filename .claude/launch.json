@@ -12,6 +12,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "4611"],
       "port": 4611
+    },
+    {
+      "name": "portfolio-preview",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "4612"],
+      "port": 4612
     }
   ]
 }

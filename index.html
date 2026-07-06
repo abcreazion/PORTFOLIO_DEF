@@ -28,11 +28,6 @@
 
 <a href="#main-content" class="skip-link">Aller au contenu</a>
 
-<!-- GRAIN OVERLAY -->
-<div class="grain" aria-hidden="true">
-  <div class="grain__noise"></div>
-</div>
-
 <!-- NAV -->
 <nav class="nav" id="nav">
   <a href="#hero" class="nav__brand">
@@ -80,16 +75,14 @@
         <span class="hero__eyebrow-line"></span>
         <span class="hero__eyebrow-text">DIRECTION ARTISTIQUE · PRODUCTION AUDIOVISUELLE</span>
       </div>
-      <h1 class="hero__title" data-reveal data-d="100">
-        <span class="hero__script">l'art de</span>CRÉER. PRODUIRE<span class="red">.</span><br>DIFFUSER<span class="red">.</span>
+      <h1 class="hero__title" data-reveal data-split data-d="100">
+        Raconter l'unique<span class="red">.</span><br>Concevoir<br>le mémorable<span class="red">.</span>
       </h1>
-      <p class="hero__lead" data-reveal data-d="200">De la stratégie de marque à l'exécution technique — campagnes nationales TV, cinéma, affichage urbain et digital.</p>
-      <div class="hero__actions" data-reveal data-d="300">
+      <div class="hero__actions" data-reveal data-d="200">
         <a href="#contact" class="btn-primary btn-primary--lg">
           PRENDRE RENDEZ-VOUS
           <span class="btn-primary__arrow">↗</span>
         </a>
-        <a href="#projets" class="hero__link">VOIR LES PROJETS ↓</a>
       </div>
     </div>
   </div>
@@ -137,7 +130,7 @@
             <span class="eyebrow__text">SÉLECTION DE PROJETS</span>
           </div>
           <div class="carousel-header__titles">
-            <h2 class="section-title section-title--dark" data-reveal data-d="80">TRAVAUX<span class="red">.</span></h2>
+            <h2 class="section-title section-title--dark" data-reveal data-split data-d="80">TRAVAUX<span class="red">.</span></h2>
             <span class="script script--muted" data-reveal data-d="120">une sélection</span>
           </div>
         </div>
@@ -183,7 +176,7 @@
         <span class="eyebrow__text">À PROPOS</span>
       </div>
       <div class="script about__firstname" data-reveal data-d="130">Bastien</div>
-      <h2 class="about__title" data-reveal data-d="150">BASTIEN<br>AGUS<span class="red">.</span></h2>
+      <h2 class="about__title" data-reveal data-split data-d="150">BASTIEN<br>AGUS<span class="red">.</span></h2>
       <p class="about__text" data-reveal data-d="220">Directeur Artistique et Producteur Audiovisuel basé entre Lyon et Genève. Autodidacte sur les logiciels de création dès 13 ans, formé en Chef de Projet Web &amp; Multimédia puis en Direction Artistique Audiovisuelle (Master 2).</p>
       <p class="about__text" data-reveal data-d="280">Je dirige le Pôle Créa de Wellness Sport Club — campagnes vidéo nationales diffusées TV, cinéma, affichage urbain, digital. Photographie de la campagne d'affichage annuelle en France et en Suisse.</p>
       <div class="about__stats" data-reveal data-d="340">
@@ -200,6 +193,24 @@
           <div class="about__stat-label">STRATÉGIE → EXÉCUTION</div>
         </div>
       </div>
+      <div class="about__social" data-reveal data-d="400">
+        <a href="https://www.linkedin.com/in/bastien-agus-53ba7216b/" class="about__social-link" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <rect x="3" y="3" width="26" height="26" rx="4"/>
+            <line x1="9" y1="13" x2="9" y2="23"/>
+            <circle cx="9" cy="8.5" r="0.9" fill="currentColor" stroke="none"/>
+            <path d="M14 23v-7c0-1.66 1.34-3 3-3s3 1.34 3 3v7"/>
+            <line x1="14" y1="13" x2="14" y2="23"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/abcreazion/" class="about__social-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <rect x="3" y="3" width="26" height="26" rx="7"/>
+            <circle cx="16" cy="16" r="6"/>
+            <circle cx="22.5" cy="9.5" r="1.1" fill="currentColor" stroke="none"/>
+          </svg>
+        </a>
+      </div>
     </div>
   </div>
 </section>
@@ -212,37 +223,55 @@
       <span class="eyebrow__line"></span>
       <span class="eyebrow__text">EXPERTISES</span>
     </div>
-    <h2 class="section-title section-title--dark services__title" data-reveal data-d="80">CE QUE JE FAIS<span class="red">.</span></h2>
+    <h2 class="section-title section-title--dark services__title" data-reveal data-split data-d="80">CE QUE JE FAIS<span class="red">.</span></h2>
     <div class="script script--muted services__script" data-reveal data-d="120">l'expertise</div>
     <div class="services__grid">
-      <div class="svc" data-reveal data-d="0">
-        <div class="svc__head">
-          <span class="svc__num">01</span>
+      <a href="#contact" class="svc" data-reveal data-d="0" data-type="Direction artistique">
+        <span class="svc__num">01</span>
+        <div class="svc__body">
           <h3 class="svc__title">DIRECTION ARTISTIQUE</h3>
+          <p class="svc__text">Identité visuelle, stratégie de marque, direction créative globale — de la conception au déploiement sur tous les points de contact.</p>
+          <span class="svc__cta">DEMANDER UN DEVIS <span class="svc__cta-arrow">→</span></span>
         </div>
-        <p class="svc__text">Identité visuelle, stratégie de marque, direction créative globale — de la conception au déploiement sur tous les points de contact.</p>
-      </div>
-      <div class="svc" data-reveal data-d="70">
-        <div class="svc__head">
-          <span class="svc__num">02</span>
+        <svg class="svc__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M2 10V2H10"/><path d="M22 2H30V10"/><path d="M30 22V30H22"/><path d="M10 30H2V22"/>
+        </svg>
+      </a>
+      <a href="#contact" class="svc" data-reveal data-d="70" data-type="Production vidéo">
+        <span class="svc__num">02</span>
+        <div class="svc__body">
           <h3 class="svc__title">PRODUCTION VIDÉO</h3>
+          <p class="svc__text">Spots TV &amp; cinéma, films corporate, captation événementielle. Pré-production, tournage, post-production et livraison multi-format.</p>
+          <span class="svc__cta">DEMANDER UN DEVIS <span class="svc__cta-arrow">→</span></span>
         </div>
-        <p class="svc__text">Spots TV &amp; cinéma, films corporate, captation événementielle. Pré-production, tournage, post-production et livraison multi-format.</p>
-      </div>
-      <div class="svc" data-reveal data-d="0">
-        <div class="svc__head">
-          <span class="svc__num">03</span>
+        <svg class="svc__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <rect x="3" y="12" width="26" height="17"/><path d="M3 12L8 4H14L11 12"/><path d="M14 12L19 4H25L22 12"/>
+        </svg>
+      </a>
+      <a href="#contact" class="svc" data-reveal data-d="0" data-type="Photographie">
+        <span class="svc__num">03</span>
+        <div class="svc__body">
           <h3 class="svc__title">PHOTOGRAPHIE</h3>
+          <p class="svc__text">Direction photo, campagnes d'affichage, shooting produit et lifestyle. Du concept à la retouche, optimisé pour impression et digital.</p>
+          <span class="svc__cta">DEMANDER UN DEVIS <span class="svc__cta-arrow">→</span></span>
         </div>
-        <p class="svc__text">Direction photo, campagnes d'affichage, shooting produit et lifestyle. Du concept à la retouche, optimisé pour impression et digital.</p>
-      </div>
-      <div class="svc" data-reveal data-d="70">
-        <div class="svc__head">
-          <span class="svc__num">04</span>
+        <svg class="svc__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <polygon points="16,3 27,10 27,22 16,29 5,22 5,10"/><polygon points="16,10 21,13 21,19 16,22 11,19 11,13"/>
+        </svg>
+      </a>
+      <a href="#contact" class="svc" data-reveal data-d="70" data-type="Motion design">
+        <span class="svc__num">04</span>
+        <div class="svc__body">
           <h3 class="svc__title">MOTION DESIGN</h3>
+          <p class="svc__text">Animation graphique, habillage vidéo, titrage broadcast. Motion adapté aux formats TV, digital et événementiel.</p>
+          <span class="svc__cta">DEMANDER UN DEVIS <span class="svc__cta-arrow">→</span></span>
         </div>
-        <p class="svc__text">Animation graphique, habillage vidéo, titrage broadcast. Motion adapté aux formats TV, digital et événementiel.</p>
-      </div>
+        <svg class="svc__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <line x1="2" y1="16" x2="30" y2="16"/>
+          <rect x="6" y="12" width="8" height="8" transform="rotate(45 10 16)"/>
+          <rect x="20" y="12" width="8" height="8" transform="rotate(45 24 16)"/>
+        </svg>
+      </a>
     </div>
   </div>
 </section>
@@ -334,8 +363,8 @@
       <div>
         <div class="footer__col-title">RÉSEAUX</div>
         <div class="footer__col-links">
-          <a href="#">LinkedIn</a>
-          <a href="#">Instagram</a>
+          <a href="https://www.linkedin.com/in/bastien-agus-53ba7216b/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://www.instagram.com/abcreazion/" target="_blank" rel="noopener noreferrer">Instagram</a>
           <a href="#">Vimeo</a>
         </div>
       </div>
@@ -354,6 +383,7 @@
 </footer>
 
 <script src="js/projects.js"></script>
+<script src="js/motion.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
