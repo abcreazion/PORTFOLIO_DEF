@@ -420,6 +420,19 @@
       });
     });
 
+    // Références aux enfants internes résolues une seule fois (au lieu d'un
+    // querySelector par carte à chaque frame de scroll dans applyCardEffects,
+    // appelé jusqu'à 60x/s pour chacune des N cartes — coût CPU pur, aucun
+    // changement de comportement).
+    var cardData = cards.map(function (card) {
+      return {
+        card: card,
+        shift: card.querySelector('[data-media-shift]'),
+        img: card.querySelector('[data-media-img]'),
+        peek: card.querySelector('[data-peek]')
+      };
+    });
+
     var GAP = 40;
     var getCardW = function () { return cards[0] ? cards[0].offsetWidth : 760; };
 
@@ -451,11 +464,11 @@
        - zoom Ken Burns (classe .is-kenburns) uniquement sur la carte focalisée —
          piloté par une @keyframes CSS, pas par du JS à chaque tick (gratuit,
          compositor-only, continue même si le scroll s'arrête pendant qu'on dwell) */
-    function applyCardEffects(card, dist, absDist) {
+    function applyCardEffects(entry, dist, absDist) {
       var focused = absDist < FOCUS_THRESHOLD;
-      card.classList.toggle('is-focused', focused);
+      entry.card.classList.toggle('is-focused', focused);
 
-      var shift = card.querySelector('[data-media-shift]');
+      var shift = entry.shift;
       if (shift) {
         var panX = Math.max(-26, Math.min(26, dist * -22));
         var panY = Math.min(14, absDist * 6);
@@ -468,10 +481,10 @@
         }
       }
 
-      var img = card.querySelector('[data-media-img]');
+      var img = entry.img;
       if (img && !REDUCE) img.classList.toggle('is-kenburns', focused);
 
-      var peek = card.querySelector('[data-peek]');
+      var peek = entry.peek;
       if (peek) {
         if (absDist < 0.35) {
           peek.style.opacity = '1';
@@ -493,7 +506,17 @@
       var getStep = function () { return getCardW() + GAP; };
       var getIdx = function () { return Math.round(stage.scrollLeft / getStep()); };
 
-      var update = function () {
+      // Le scroll natif du stage (scrollLeft) reste la seule source de vérité pour la
+      // position réelle (snap CSS, barre de progression, compteur) — rien n'est retardé
+      // là-dessus. Seul le rendu visuel des cartes (parallax interne + mise au point,
+      // dérivés de `dist`) est lissé par interpolation JS pour éviter les sauts brusques
+      // pendant un scroll rapide/saccadé. Pas de transition CSS ajoutée (cf. audit sur
+      // .card__media-shift) : le lissage se fait uniquement en amont, sur la valeur.
+      var currentLeft = stage.scrollLeft;
+      var rafId = null;
+      var LERP = 0.22;
+
+      var renderChrome = function () {
         var max = Math.max(1, stage.scrollWidth - stage.clientWidth);
         var pct = Math.min(1, stage.scrollLeft / max);
         if (progress) progress.style.width = (((pct * (total - 1)) + 1) / total * 100) + '%';
@@ -501,18 +524,39 @@
           var idx = Math.min(total, getIdx() + 1);
           counter.textContent = String(idx).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
         }
+      };
 
+      var renderCards = function (scrollLeftVal) {
         var cardW = getCardW();
         var stageCenterX = stage.clientWidth / 2;
-        cards.forEach(function (card, i) {
-          var cardLeft = i * getStep() - stage.scrollLeft;
+        cardData.forEach(function (entry, i) {
+          var cardLeft = i * getStep() - scrollLeftVal;
           var cardCenter = cardLeft + cardW / 2;
           var dist = (cardCenter - stageCenterX) / stageCenterX;
-          applyCardEffects(card, dist, Math.abs(dist));
+          applyCardEffects(entry, dist, Math.abs(dist));
         });
       };
-      stage.addEventListener('scroll', rafThrottle(update), { passive: true });
-      update();
+
+      var loop = function () {
+        rafId = null;
+        var target = stage.scrollLeft;
+        if (REDUCE) {
+          currentLeft = target;
+        } else {
+          currentLeft += (target - currentLeft) * LERP;
+          if (Math.abs(target - currentLeft) < 0.5) currentLeft = target;
+        }
+        renderCards(currentLeft);
+        if (currentLeft !== target) rafId = requestAnimationFrame(loop);
+      };
+      var requestRender = function () {
+        renderChrome();
+        if (rafId == null) rafId = requestAnimationFrame(loop);
+      };
+
+      stage.addEventListener('scroll', requestRender, { passive: true });
+      renderChrome();
+      renderCards(currentLeft);
 
       var goTo = function (idx) {
         idx = Math.max(0, Math.min(total - 1, idx));
@@ -551,19 +595,38 @@
         outer.style.height = (window.innerHeight + getScrollDist()) + 'px';
       };
       setHeight();
-      window.addEventListener('resize', setHeight);
+      window.addEventListener('resize', function () { setHeight(); requestRender(); });
 
-      var updateCarousel = function () {
+      // Le carrousel était calé en 1:1 direct sur la position de scroll brute : chaque
+      // évènement `scroll` (qui arrive par rafales — trackpad, molette, momentum)
+      // recalculait `pct` et l'appliquait instantanément, d'où l'effet haché/brutal
+      // (retour utilisateur). Ici la cible (`getTargetPct`) reste dérivée du scroll
+      // natif — le scroll de page lui-même n'est jamais touché, aucune inertie
+      // ajoutée au geste — mais la valeur *rendue* (`currentPct`) rattrape la cible
+      // par interpolation (lerp) à chaque frame plutôt que de la copier au pixel
+      // près. Différent de la transition CSS sur `transform`/`filter` déjà testée et
+      // rejetée (cf. commentaires css/styles.css) : celle-ci ajoutait un lissage à
+      // durée fixe (~600ms) par-dessus une valeur déjà mise à jour par JS, d'où un
+      // double retard "poisseux". Ici il n'y a qu'une seule étape de lissage, réglée
+      // pour rester nerveuse (LERP=0.18 ≈ rattrapage en ~150-200ms).
+      var currentPct = 0;
+      var rafId = null;
+      var LERP = 0.18;
+
+      var getTargetPct = function () {
         var rect = outer.getBoundingClientRect();
         var scrolled = Math.max(0, -rect.top);
+        return Math.min(1, scrolled / getScrollDist());
+      };
+
+      var render = function (pct) {
         var travel = Math.max(1, getMaxScroll());
-        var pct = Math.min(1, scrolled / getScrollDist());
         var cardW = getCardW();
         var centerX = window.innerWidth / 2;
 
         track.style.transform = 'translateX(' + (-pct * travel) + 'px)';
 
-        cards.forEach(function (card, i) {
+        cardData.forEach(function (entry, i) {
           var cardLeft = (cardW + GAP) * i - (pct * travel) + (window.innerWidth - cardW) / 2;
           var cardCenter = cardLeft + cardW / 2;
           var dist = (cardCenter - centerX) / centerX; // dépasse largement ±1 pour les cartes loin du centre (6 cartes de 760px+)
@@ -577,11 +640,11 @@
           var opacity = 1 - absDist * 0.35;
           var tz = -absDist * 80;
 
-          card.style.transform = 'perspective(1200px) rotateY(' + rotY + 'deg) scale(' +
+          entry.card.style.transform = 'perspective(1200px) rotateY(' + rotY + 'deg) scale(' +
             Math.max(0.85, scale) + ') translateZ(' + tz + 'px)';
-          card.style.opacity = Math.max(0.5, opacity);
+          entry.card.style.opacity = Math.max(0.5, opacity);
 
-          applyCardEffects(card, dist, absDist);
+          applyCardEffects(entry, dist, absDist);
         });
 
         if (progress) {
@@ -593,8 +656,26 @@
         }
       };
 
-      window.addEventListener('scroll', rafThrottle(updateCarousel), { passive: true });
-      updateCarousel();
+      var loop = function () {
+        rafId = null;
+        var target = getTargetPct();
+        if (REDUCE) {
+          currentPct = target;
+        } else {
+          currentPct += (target - currentPct) * LERP;
+          if (Math.abs(target - currentPct) < 0.0008) currentPct = target;
+        }
+        render(currentPct);
+        if (currentPct !== target) rafId = requestAnimationFrame(loop);
+      };
+      var requestRender = function () {
+        if (rafId == null) rafId = requestAnimationFrame(loop);
+      };
+
+      currentPct = getTargetPct();
+      render(currentPct);
+
+      window.addEventListener('scroll', requestRender, { passive: true });
 
       // ——— Snap-to-card (desktop uniquement) ———
       // Le carrousel desktop est en scroll libre (scroll vertical de page → position
