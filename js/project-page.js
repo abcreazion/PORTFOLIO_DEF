@@ -10,7 +10,11 @@
   // Domaine de prod à confirmer — même valeur que le <link rel="canonical"> statique de index.html/projet.html.
   var SITE_URL = 'https://bastienagus.com';
 
-  function absUrl(path) { return SITE_URL + '/' + String(path).replace(/^\//, ''); }
+  function absUrl(path) {
+    var p = String(path || '');
+    if (/^https?:\/\//i.test(p)) return p;
+    return SITE_URL + '/' + p.replace(/^\//, '');
+  }
 
   function setMeta(id, attr, value) {
     var el = document.getElementById(id);
@@ -76,6 +80,7 @@
   }
 
   function ytThumb(id, kind) { return 'https://img.youtube.com/vi/' + id + '/' + (kind || 'maxresdefault') + '.jpg'; }
+  function isYoutubeThumbUrl(url) { return /^https?:\/\/img\.youtube\.com\//.test(String(url || '')); }
 
   function videoHtml(p) {
     var yt = p.youtube;
@@ -154,10 +159,12 @@
   }
 
   function heroHtml(p) {
-    // Projet avec lien YouTube → le hero est la miniature du clip (maxres, fallback hqdefault
-    // via fixYtHero() pour les vidéos sans miniature HD). Sinon l'image du projet.
-    var heroImg = p.youtube ? ytThumb(p.youtube) : p.image;
-    var heroHq = p.youtube ? ' data-hqfallback="' + ytThumb(p.youtube, 'hqdefault') + '"' : '';
+    // L'image personnalisée du projet (`image`, importée via le CMS) est toujours
+    // prioritaire. Pour un projet YouTube sans image personnalisée, le hero retombe
+    // sur la miniature du clip (maxres, fallback hqdefault via fixYtHero() pour les
+    // vidéos sans miniature HD).
+    var heroImg = p.image || (p.youtube ? ytThumb(p.youtube) : '');
+    var heroHq = (p.youtube && isYoutubeThumbUrl(heroImg)) ? ' data-hqfallback="' + ytThumb(p.youtube, 'hqdefault') + '"' : '';
     return '<header class="ph">' +
       '<div class="ph__media"' + heroHq + ' style="background-image:url(\'' + heroImg + '\')"></div>' +
       '<div class="ph__scrim"></div>' +

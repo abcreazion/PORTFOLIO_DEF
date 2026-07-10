@@ -51,8 +51,48 @@
 
 window.PROJECTS = [
   {
+    slug: "hakai-allumer",
+    image: "assets/img/hakai-allumer.jpg",
+    watermark: "HAKAI ALLUMER",
+    watermarkScript: "hakai",
+    client: "HAKAI",
+    title: "CLIP<br>D'HAKAI ALLUMER",
+    stats: [["465K", "VUES"], ["13K", "ENGAGEMENTS"]],
+    year: "2023",
+    role: "Direction artistique · Réalisation",
+    focal: "53% 29%",
+    intro: "Un clip à couper le souffle pour ALLUMER, extrait de l'album AKUMA d'Hakai — une terre ocre et brûlée qui épouse le morceau, en direction artistique et réalisation.",
+    context: [
+      "Pour porter la sortie de son album AKUMA, Hakai voulait un clip singulier, à la hauteur du morceau ALLUMER. Le défi : un décor unique, à couper le souffle, capable de devenir un personnage à part entière.",
+      "Direction artistique et réalisation dans un paysage de terre ocre et brûlée : chaque plan a été composé pour que la matière et la lumière du lieu servent l'intensité du titre.",
+      "Un clip immersif au fort impact visuel, devenu un vrai succès sur les plateformes : 465K vues, 13K engagements."
+    ],
+    galleryCount: 8,
+    video: null,
+    youtube: "iPqWPpsW8dg"
+  },
+  {
+    slug: "mathieu-tsunami",
+    image: "assets/img/mathieu-tsunami.jpg",
+    watermark: "TSUNAMI",
+    watermarkScript: "Freestyle",
+    client: "MATHIEU TSUNAMI · FREESTYLE",
+    title: "CAPTATION<br>FREESTYLE",
+    stats: [],
+    year: "2026",
+    role: "Réalisation · Photographie sportive",
+    intro: "Une captation sportive et une série photo dédiées au footballer freestyle Mathieu Tsunami, entre salle d'entraînement et décor naturel.",
+    context: [
+      "Restituer la technique et l'énergie d'un footballer freestyle demande de capter le geste au bon instant, en salle comme en extérieur. Mathieu Tsunami voulait des images fidèles à sa pratique, prêtes pour sa communication sportive.",
+      "Réalisation et photographie construites en deux temps : le travail technique sur tapis de course en salle, puis une série en extérieur, sur les toits de la ville, pour donner du relief à chaque figure.",
+      "Un ensemble d'images et de plans qui documentent le geste freestyle avec précision, pensés pour accompagner la communication de l'athlète."
+    ],
+    galleryCount: 6,
+    video: { src: "assets/video/mathieu-tsunami.mp4", poster: "assets/img/mathieu-tsunami.jpg" }
+  },
+  {
     slug: "wsc-affichage",
-    image: "assets/img/card-1-wsc-affichage.jpg",
+    image: "assets/img/wsc-affichage.jpg",
     watermark: "WELLNESS",
     watermarkScript: "Sport Club",
     client: "WELLNESS SPORT CLUB",
@@ -66,71 +106,71 @@ window.PROJECTS = [
       "J'ai pris en charge la direction artistique et la réalisation de bout en bout — conception créative, direction photo, puis déclinaison rigoureuse sur l'ensemble des supports urbains (abribus, 4×3, réseau JCDecaux) et leurs formats digitaux.",
       "Le résultat : une identité forte et cohérente, pensée pour l'extérieur comme pour les réseaux, diffusée en continu sur deux pays pendant douze mois."
     ],
-    galleryCount: 4,
+    galleryCount: 5,
     video: null
   },
   {
-    slug: "hakai-lune",
-    image: "assets/img/card-1-wsc-affichage.jpg",
-    watermark: "HAKAI LUNE",
-    watermarkScript: "hakai",
-    client: "HAKAI",
-    title: "CLIP<br>D'HAKAI LUNE",
-    stats: [["244K", "VUES"], ["+7K", "ENGAGEMENTS"]],
-    year: "2023",
-    role: "Direction artistique · Réalisation",
-    intro: "Un clip immersif tourné dans les rues de Lyon pour LUNE, le single d'Hakai — direction artistique et étalonnage cinématographique.",
+    slug: "maison-lyne-st-andre",
+    image: "assets/img/maison-lyne-st-andre.jpg",
+    watermark: "Maison Lyne St. André",
+    watermarkScript: "Direction artistique",
+    client: "MAISON LYNE ST. ANDRÉ · 3 FILMS",
+    title: "SHOOTING<br>DE COLLECTION",
+    stats: [["+50", "visuels livrés"], ["1", "film de marque"]],
+    year: "2026",
+    role: "Photographie et réalisation",
+    focal: "49% 32%",
+    intro: "Un shooting de collection et un film de marque pour la Maison Lyne St. André, au service de la créatrice et de son savoir-faire.",
     context: [
-      "Pour accompagner la sortie de LUNE, Hakai voulait un clip qui vive au rythme de la ville. La direction : capter l'énergie d'un Lyon un soir de concert, entre lumières urbaines et intimité du morceau.",
-      "Direction artistique, réalisation et étalonnage cinématographique : chaque plan a été pensé pour servir le tempo du titre, avec un traitement colorimétrique dense qui ancre l'image dans une esthétique nocturne et contrastée.",
-      "Un clip musical immersif, taillé pour les plateformes de streaming et les réseaux, qui prolonge l'univers de l'artiste au-delà du son."
+      "La Maison Lyne St. André voulait des images à la hauteur de son exigence : valoriser une collection et la main de la créatrice avec la précision qu'impose l'univers de la mode.",
+      "Photographie et réalisation d'un film de marque : direction artistique, lumière travaillée et cadrage soigné pour révéler la matière, les détails et le geste couture.",
+      "Une bibliothèque de plus de cinquante visuels et un film de marque, prêts pour le e-commerce, la presse et les réseaux — une identité visuelle fidèle au raffinement de la Maison."
     ],
-    galleryCount: 4,
-    video: null,
-    youtube: "46kiss-VKco"
+    galleryCount: 19,
+    video: { src: "assets/video/techteam.mp4", poster: "assets/img/maison-lyne-st-andre.jpg" }
   },
   {
-    slug: "hakai-allumer",
-    image: "https://img.youtube.com/vi/iPqWPpsW8dg/maxresdefault.jpg",
-    watermark: "HAKAI ALLUMER",
-    watermarkScript: "hakai",
-    client: "HAKAI",
-    title: "CLIP<br>D'HAKAI ALLUMER",
-    stats: [["465K", "VUES"], ["12K", "LIKES"], ["800", "COMMENTAIRES"]],
-    year: "2023",
-    role: "Direction artistique · Réalisation",
-    intro: "Un clip à couper le souffle pour ALLUMER, extrait de l'album AKUMA d'Hakai — une terre ocre et brûlée qui épouse le morceau, en direction artistique et réalisation.",
+    slug: "docks40",
+    image: "assets/img/docks40.jpg",
+    watermark: "DOCKS40",
+    watermarkScript: "Lyon",
+    client: "LE DOCKS40 · LYON",
+    title: "DIRECTION<br>PHOTO",
+    stats: [],
+    year: "2025",
+    role: "Direction photo",
+    focal: "51% 61%",
+    intro: "La direction photo d'une soirée événementielle au Docks40, à Lyon — reportage nocturne entre club, portraits et performances.",
     context: [
-      "Pour porter la sortie de son album AKUMA, Hakai voulait un clip singulier, à la hauteur du morceau ALLUMER. Le défi : un décor unique, à couper le souffle, capable de devenir un personnage à part entière.",
-      "Direction artistique et réalisation dans un paysage de terre ocre et brûlée : chaque plan a été composé pour que la matière et la lumière du lieu servent l'intensité du titre.",
-      "Un clip immersif au fort impact visuel, devenu un vrai succès sur les plateformes : 465K vues, 12K likes et 800 commentaires."
+      "Capturer l'atmosphère d'un club en une nuit, sans jamais trahir son énergie : c'est tout l'enjeu d'un reportage événementiel au Docks40.",
+      "Direction photo complète : ambiance de soirée, portraits, performances de cirque et captation du lieu, travaillées entièrement à la lumière disponible.",
+      "Un reportage nocturne à la fois vivant et léché, décliné pour le print comme pour le digital, qui restitue l'ADN du lieu."
     ],
-    galleryCount: 4,
-    video: null,
-    youtube: "iPqWPpsW8dg"
+    galleryCount: 16,
+    video: { src: "assets/video/docks40.mp4", poster: "assets/img/docks40.jpg" }
   },
   {
-    slug: "smaa-alterations",
-    image: "assets/img/card-1-wsc-affichage.jpg",
-    watermark: "SMAA ALTERATIONS",
-    watermarkScript: "smaa",
-    client: "SMAA ALTERATIONS",
-    title: "POCHETTE<br>D'ALBUM",
-    stats: [["360°", "ACCOMPAGNEMENT"], ["EP", "6 TITRES INÉDITS"]],
-    year: "2022",
-    role: "Direction artistique · Photographie",
-    intro: "Direction artistique et photographie pour la pochette et les visuels de l'EP « Alterations » de SMAA — six titres, deux visages d'un artiste.",
+    slug: "wsc-boutique",
+    image: "assets/img/wsc-boutique.jpg",
+    watermark: "WELLNESS",
+    watermarkScript: "Boutique",
+    client: "WELLNESS SPORT CLUB",
+    title: "PHOTO PRODUIT<br>& LIFESTYLE",
+    stats: [],
+    year: "2024",
+    role: "Photographie produit · Lifestyle",
+    intro: "Photographie produit et lifestyle pour la boutique en ligne Wellness Sport Club — packs training et looks du quotidien, en studio et en extérieur.",
     context: [
-      "SMAA arrive avec un EP intime : six morceaux inédits qui basculent de l'ombre à la lumière. Le brief — une direction artistique capable de porter cette dualité sans la trahir.",
-      "Direction artistique et photographie pensées comme un fil narratif : une palette sombre et texturée sur les titres introspectifs, qui glisse vers des tons plus chauds et colorés à mesure que le projet s'éclaire.",
-      "Résultat : une pochette d'album et une série de visuels promotionnels cohérents, déclinables sur toutes les plateformes de streaming et les réseaux, qui donnent un visage à l'univers de l'artiste."
+      "Une boutique en ligne se joue sur la qualité de ses visuels : Wellness Sport Club avait besoin d'un catalogue photo cohérent pour présenter ses packs et articles à la vente.",
+      "Photographie produit en studio pour les packs training, complétée par une série lifestyle en extérieur mettant en scène les pièces portées, dans une lumière naturelle et urbaine.",
+      "Un ensemble de visuels prêts pour la fiche produit comme pour les réseaux, qui donne à la boutique en ligne une image soignée et engageante."
     ],
-    galleryCount: 4,
-    video: null
+    galleryCount: 11,
+    video: { src: "assets/video/wsc-boutique.mp4", poster: "assets/img/wsc-boutique.jpg" }
   },
   {
     slug: "97-cafe",
-    image: "assets/img/card-1-wsc-affichage.jpg",
+    image: "assets/img/97-cafe.jpg",
     watermark: "97 CAFÉ",
     watermarkScript: "97cafe",
     client: "97 CAFÉ",
@@ -144,7 +184,65 @@ window.PROJECTS = [
       "Accompagnement à 360° : direction artistique, shooting photo culinaire et lifestyle, réalisation d'une vidéo promotionnelle, puis déclinaison de l'ensemble sur les réseaux sociaux.",
       "Une image de marque appétissante et cohérente sur tous les canaux, qui a donné au lieu la visibilité d'un établissement déjà installé dès ses premières semaines."
     ],
-    galleryCount: 4,
+    galleryCount: 6,
+    video: { src: "assets/video/97-cafe.mp4", poster: "assets/img/97-cafe.jpg" }
+  },
+  {
+    slug: "smaa-alterations",
+    image: "assets/img/card-10-smaa-alterations.jpg",
+    watermark: "SMAA ALTERATIONS",
+    watermarkScript: "smaa",
+    client: "SMAA ALTERATIONS",
+    title: "POCHETTE<br>D'ALBUM",
+    stats: [["360°", "ACCOMPAGNEMENT"], ["EP", "6 TITRES INÉDITS"]],
+    year: "2022",
+    role: "Direction artistique · Photographie",
+    intro: "Direction artistique et photographie pour la pochette et les visuels de l'EP « Alterations » de SMAA — six titres, deux visages d'un artiste.",
+    context: [
+      "SMAA arrive avec un EP intime : six morceaux inédits qui basculent de l'ombre à la lumière. Le brief — une direction artistique capable de porter cette dualité sans la trahir.",
+      "Direction artistique et photographie pensées comme un fil narratif : une palette sombre et texturée sur les titres introspectifs, qui glisse vers des tons plus chauds et colorés à mesure que le projet s'éclaire.",
+      "Résultat : une pochette d'album et une série de visuels promotionnels cohérents, déclinables sur toutes les plateformes de streaming et les réseaux, qui donnent un visage à l'univers de l'artiste."
+    ],
+    galleryCount: 1,
+    video: { src: "assets/video/smaa-alterations.mp4", poster: "assets/img/card-10-smaa-alterations.jpg" }
+  },
+  {
+    slug: "hakai-lune",
+    image: "https://img.youtube.com/vi/46kiss-VKco/maxresdefault.jpg",
+    watermark: "HAKAI LUNE",
+    watermarkScript: "hakai",
+    client: "HAKAI",
+    title: "CLIP<br>D'HAKAI LUNE",
+    stats: [["244K", "VUES"], ["+7K", "ENGAGEMENTS"]],
+    year: "2023",
+    role: "Direction artistique · Réalisation",
+    intro: "Un clip immersif tourné dans les rues de Lyon pour LUNE, le single d'Hakai — direction artistique et étalonnage cinématographique.",
+    context: [
+      "Pour accompagner la sortie de LUNE, Hakai voulait un clip qui vive au rythme de la ville. La direction : capter l'énergie d'un Lyon un soir de concert, entre lumières urbaines et intimité du morceau.",
+      "Direction artistique, réalisation et étalonnage cinématographique : chaque plan a été pensé pour servir le tempo du titre, avec un traitement colorimétrique dense qui ancre l'image dans une esthétique nocturne et contrastée.",
+      "Un clip musical immersif, taillé pour les plateformes de streaming et les réseaux, qui prolonge l'univers de l'artiste au-delà du son."
+    ],
+    galleryCount: 0,
+    video: null,
+    youtube: "46kiss-VKco"
+  },
+  {
+    slug: "loan-cc",
+    image: "assets/img/card-9-loan-cc.jpg",
+    watermark: "LOAN",
+    watermarkScript: "Conatus",
+    client: "LOAN",
+    title: "PORTRAIT<br>& POCHETTE",
+    stats: [],
+    year: "2022",
+    role: "Direction artistique · Photographie",
+    intro: "Un portrait et une identité visuelle signés pour le projet musical de Loan — direction artistique, photographie et pochette du titre « Conatus ».",
+    context: [
+      "Habiller un projet musical d'une image forte commence souvent par un portrait qui campe le personnage. Loan cherchait une identité visuelle capable de porter son titre « Conatus ».",
+      "Direction artistique et photographie en lumière colorée et cadrage resserré, jusqu'à la composition de la pochette finale du titre.",
+      "Un portrait et une pochette cohérents, prêts à accompagner la sortie du titre sur les plateformes et les réseaux."
+    ],
+    galleryCount: 6,
     video: null
   },
   {
@@ -168,7 +266,7 @@ window.PROJECTS = [
   },
   {
     slug: "ludeo",
-    image: "assets/img/card-2-dimension.jpg",
+    image: "https://img.youtube.com/vi/2bMtH2pRMXk/maxresdefault.jpg",
     watermark: "LUDEO",
     watermarkScript: "LUDEO",
     client: "LUDEO",
@@ -182,51 +280,12 @@ window.PROJECTS = [
       "Direction artistique et réalisation de bout en bout : une mise en scène qui croise plusieurs arts pour plonger le spectateur dans le monde de l'artiste, entièrement au service du morceau.",
       "Un clip immersif, calibré pour les plateformes et les réseaux, qui prolonge l'identité de Ludeo au-delà de la musique."
     ],
-    galleryCount: 6,
+    galleryCount: 0,
     video: null,
     youtube: "2bMtH2pRMXk"
   },
   {
-    slug: "maison-lyne-st-andre",
-    image: "assets/img/card-3-techteam.jpg",
-    watermark: "Maison Lyne St. André",
-    watermarkScript: "Direction artistique",
-    client: "MAISON LYNE ST. ANDRÉ · 3 FILMS",
-    title: "SHOOTING<br>DE COLLECTION",
-    stats: [["+50", "visuels livrés"], ["1", "film de marque"]],
-    year: "2026",
-    role: "Photographie et réalisation",
-    intro: "Un shooting de collection et un film de marque pour la Maison Lyne St. André, au service de la créatrice et de son savoir-faire.",
-    context: [
-      "La Maison Lyne St. André voulait des images à la hauteur de son exigence : valoriser une collection et la main de la créatrice avec la précision qu'impose l'univers de la mode.",
-      "Photographie et réalisation d'un film de marque : direction artistique, lumière travaillée et cadrage soigné pour révéler la matière, les détails et le geste couture.",
-      "Une bibliothèque de plus de cinquante visuels et un film de marque, prêts pour le e-commerce, la presse et les réseaux — une identité visuelle fidèle au raffinement de la Maison."
-    ],
-    galleryCount: 6,
-    video: { src: "assets/video/techteam.mp4", poster: "assets/img/card-3-techteam.jpg" }
-  },
-  {
-    slug: "docks40",
-    image: "assets/img/card-4-docks40.jpg",
-    watermark: "DOCKS40",
-    watermarkScript: "Lyon",
-    client: "LE DOCKS40 · LYON",
-    title: "DIRECTION<br>PHOTO",
-    stats: [],
-    year: "2025",
-    role: "Direction photo",
-    focal: "50% 56%",
-    intro: "La direction photo d'une soirée événementielle au Docks40, à Lyon — reportage nocturne entre club, portraits et performances.",
-    context: [
-      "Capturer l'atmosphère d'un club en une nuit, sans jamais trahir son énergie : c'est tout l'enjeu d'un reportage événementiel au Docks40.",
-      "Direction photo complète : ambiance de soirée, portraits, performances de cirque et captation du lieu, travaillées entièrement à la lumière disponible.",
-      "Un reportage nocturne à la fois vivant et léché, décliné pour le print comme pour le digital, qui restitue l'ADN du lieu."
-    ],
-    galleryCount: 8,
-    video: null
-  },
-  {
-    slug: "solerys",
+    slug: "solerys-rse",
     image: "assets/img/card-5-solerys.jpg",
     watermark: "SOLERYS",
     watermarkScript: "Nationale",
