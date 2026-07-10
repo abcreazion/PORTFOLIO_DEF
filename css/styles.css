@@ -480,6 +480,61 @@ img { display: block; max-width: 100%; }
 .about__social-link:hover, .about__social-link:focus-visible { color: var(--ink); border-color: var(--red); }
 
 /* ============================== SERVICES ============================== */
+/* ——— VOYAGES — galerie photo personnelle (masonry, distincte des projets
+   clients). Même fond que .pgal (galerie de page projet, #0a0a0a) pour une
+   cohérence de traitement des deux galeries photo du site. ——— */
+.gallery { background: #0a0a0a; padding: 160px 56px; position: relative; }
+.gallery__inner { max-width: 1340px; margin: 0 auto; }
+.gallery__head { display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap; }
+.gallery__title { font-size: min(8vw,96px); max-width: 800px; }
+.gallery__script { font-size: min(4.5vw,52px); color: rgba(217,4,41,.65); margin-top: -4px; }
+.gallery__lead {
+  font: 400 17px/1.6 var(--sans); color: var(--ink-dim);
+  max-width: 640px; margin: 24px 0 56px;
+}
+.gallery__grid { column-count: 4; column-gap: 16px; }
+.vgal__item { break-inside: avoid; overflow: hidden; margin: 0 0 16px; }
+.vgal__btn { display: block; width: 100%; border: none; background: none; padding: 0; cursor: pointer; }
+.vgal__item img { width: 100%; height: auto; display: block; transition: transform var(--dur-slowest) var(--ease-out); }
+.vgal__item:hover img { transform: scale(1.04); }
+@media (max-width: 1100px) { .gallery__grid { column-count: 2; } }
+
+/* ——— LIGHTBOX GALERIE VOYAGES (même grammaire visuelle que .lightbox de
+   css/project.css — dupliquée car les deux galeries vivent sur des pages
+   différentes, pas de feuille de style commune chargée sur les deux). ——— */
+.vlightbox {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(5,5,5,.96);
+  display: flex; align-items: center; justify-content: center;
+}
+.vlightbox[hidden] { display: none; }
+.vlightbox__img { max-width: 88vw; max-height: 82vh; object-fit: contain; }
+.vlightbox__close {
+  position: absolute; top: 24px; right: 24px; width: 44px; height: 44px;
+  background: transparent; border: 1px solid rgba(255,255,255,.25); color: var(--ink);
+  font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.vlightbox__nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 52px; height: 52px; border: 1px solid rgba(255,255,255,.25); background: transparent;
+  color: var(--ink); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.vlightbox__nav--prev { left: 24px; }
+.vlightbox__nav--next { right: 24px; }
+.vlightbox__nav:hover, .vlightbox__close:hover { border-color: var(--red); color: var(--red); }
+.vlightbox__counter {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  font: 500 12px/1 var(--mono); letter-spacing: .14em; color: rgba(245,245,245,.6);
+}
+@media (max-width: 700px) {
+  .vlightbox__nav { width: 44px; height: 44px; }
+  .vlightbox__nav--prev { left: 8px; }
+  .vlightbox__nav--next { right: 8px; }
+  .vlightbox__close { top: 12px; right: 12px; }
+}
+
 .services {
   background: var(--cream); padding: 160px 56px;
   position: relative; overflow: hidden; color: var(--bg);
@@ -722,7 +777,16 @@ a.contact__detail-value:hover { color: var(--red-text); }
      + CTA restent ensemble, toujours visibles) — jamais de split, jamais de
      burger ici. Le burger/panel restent strictement réservés au mobile. */
   .nav.is-split {
-    top: 16px; width: 66vw;
+    /* clamp() plutôt que 66vw fixe : à 66vw pur, entre ~901-1050px de viewport
+       le bandeau devient trop étroit pour les 4 liens + CTA (le lien VOYAGES
+       ajouté a fait passer la marque "BASTIEN AGUS" à la ligne, cassé constaté
+       en preview) — le plancher de 720px garantit assez de place à ces largeurs
+       intermédiaires tout en gardant le resserrement proportionnel au-delà. */
+    top: 16px; width: clamp(800px, 66vw, 920px);
+    /* Le padding de base (0 56px, pensé pour le bandeau plein largeur au repos)
+       laisse trop peu de place aux 4 liens + CTA une fois le bandeau resserré en
+       pilule — resserré ici pour la même raison que le clamp() ci-dessus. */
+    padding: 0 28px;
     background: var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
@@ -731,6 +795,7 @@ a.contact__detail-value:hover { color: var(--red-text); }
   }
   .nav__burger { display: none; }
   .nav__mobile-panel { display: none; }
+  .nav.is-split .nav__links { gap: 26px; }
 }
 
 @media (max-width: 900px) {
@@ -787,7 +852,10 @@ a.contact__detail-value:hover { color: var(--red-text); }
     touch-action: manipulation; /* supprime aussi le délai de détection double-tap-zoom sur le lien lui-même */
   }
   .carousel-progress { margin: 0 24px 20px; }
-  .about, .services, .contact { padding: 100px 24px; }
+  .about, .gallery, .services, .contact { padding: 100px 24px; }
+  .gallery__lead { margin: 20px 0 40px; }
+  .gallery__grid { column-gap: 12px; }
+  .vgal__item { margin-bottom: 12px; }
   .about__grid, .contact__grid { grid-template-columns: 1fr; gap: 48px; }
   .about__title { font-size: 56px; }
   /* num+icon partagent une ligne d'en-tête, body (titre+texte+cta) passe en dessous

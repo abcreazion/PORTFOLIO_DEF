@@ -14,9 +14,12 @@
   function stripTags(s) { return String(s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
 
   // Miniature YouTube (maxres HD par défaut). Un projet avec un champ `youtube`
-  // affiche cette miniature sur sa carte carrousel + sa vignette « projet suivant ».
+  // ET sans image personnalisée affiche cette miniature sur sa carte carrousel
+  // + sa vignette « projet suivant ». Une image personnalisée (`image`, importée
+  // via le CMS) est toujours prioritaire sur la miniature YouTube automatique.
   function ytThumb(id, kind) { return 'https://img.youtube.com/vi/' + id + '/' + (kind || 'maxresdefault') + '.jpg'; }
-  function cardImage(p) { return p.youtube ? ytThumb(p.youtube) : p.image; }
+  function isYoutubeThumbUrl(url) { return /^https?:\/\/img\.youtube\.com\//.test(String(url || '')); }
+  function cardImage(p) { return p.image || (p.youtube ? ytThumb(p.youtube) : ''); }
 
   /* ——— Build the project cards from js/projects.js ———
      Cards are data-driven: the peek "projet suivant" thumbnail, the last-card
@@ -49,7 +52,7 @@
           '<div class="card__frame">' +
             '<div class="card__media" data-media>' +
               '<div class="card__media-shift" data-media-shift>' +
-                '<img class="card__media-img" data-media-img src="' + cardImage(p) + '"' + (p.youtube ? ' data-hqfallback="' + ytThumb(p.youtube, 'hqdefault') + '"' : '') + ' alt="' + cardLabel + '" loading="lazy" style="object-position:' + focal + '">' +
+                '<img class="card__media-img" data-media-img src="' + cardImage(p) + '"' + (p.youtube && isYoutubeThumbUrl(cardImage(p)) ? ' data-hqfallback="' + ytThumb(p.youtube, 'hqdefault') + '"' : '') + ' alt="' + cardLabel + '" loading="lazy" style="object-position:' + focal + '">' +
               '</div>' +
             '</div>' +
             '<div class="card__scrim-b"></div>' +
@@ -66,7 +69,7 @@
             '</div>' +
             '<div class="card__peek" data-peek aria-hidden="true">' +
               '<div class="card__peek-inner">' +
-                '<div class="card__peek-thumb"' + (next.youtube ? ' data-hqfallback="' + ytThumb(next.youtube, 'hqdefault') + '"' : '') + ' style="background-image:url(\'' + cardImage(next) + '\')"></div>' +
+                '<div class="card__peek-thumb"' + (next.youtube && isYoutubeThumbUrl(cardImage(next)) ? ' data-hqfallback="' + ytThumb(next.youtube, 'hqdefault') + '"' : '') + ' style="background-image:url(\'' + cardImage(next) + '\')"></div>' +
                 '<div class="card__peek-label">' + (last ? 'RETOUR DÉBUT' : 'PROJET SUIVANT') + ' <span>↗</span></div>' +
               '</div>' +
             '</div>' +
