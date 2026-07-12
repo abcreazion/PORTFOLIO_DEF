@@ -245,7 +245,7 @@ window.PROJECTS = [
     galleryCount: 6,
     video: null
   },
-  {
+  /*{
     slug: "dimension",
     image: "assets/img/card-2-dimension.jpg",
     watermark: "DIMENSION",
@@ -263,7 +263,7 @@ window.PROJECTS = [
     ],
     galleryCount: 6,
     video: null
-  },
+  },*/
   {
     slug: "ludeo",
     image: "https://img.youtube.com/vi/2bMtH2pRMXk/maxresdefault.jpg",
@@ -284,7 +284,7 @@ window.PROJECTS = [
     video: null,
     youtube: "2bMtH2pRMXk"
   },
-  {
+  /*{
     slug: "solerys-rse",
     image: "assets/img/card-5-solerys.jpg",
     watermark: "SOLERYS",
@@ -303,7 +303,7 @@ window.PROJECTS = [
     ],
     galleryCount: 8,
     video: null
-  },
+  },*/
   {
     slug: "wsc-spot",
     image: "assets/img/card-6-wsc-spot.jpg",
