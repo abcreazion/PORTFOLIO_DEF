@@ -86,18 +86,17 @@ Les images de galerie ont été générées via un script **Pillow** (redimensio
 - **Formulaire de contact** (`initContactForm` dans `js/main.js`) : **branché sur Formspree, opérationnel**. `<form action="https://formspree.io/f/xbdvqbor" method="POST">` dans `index.html`. JS fait un vrai `fetch()` POST en JSON (`Accept: application/json` pour éviter la redirection par défaut de Formspree) avec 3 issues gérées dans l'UI existante (`#contactStatus`, `role="status" aria-live="polite"`) :
   1. Succès (`res.ok`) → message de succès + `form.reset()`.
   2. Formspree répond mais refuse (ID invalide, quota, anti-spam) → message d'erreur inline avec détail, **pas** de repli mailto (le service est joignable, ce n'est pas une panne).
-  3. Échec réseau total (`fetch` rejette — hors ligne, Formspree injoignable) → repli automatique sur `mailto:contact@bastienagus.com` pré-rempli.
+  3. Échec réseau total (`fetch` rejette — hors ligne, Formspree injoignable) → repli automatique sur `mailto:abcreazion@gmail.com` pré-rempli.
   Testé en conditions réelles : soumission de test envoyée avec succès (`200 OK`) sur le compte Formspree du client. Plan Free (50 soumissions/mois), usage attendu ~10/mois.
-- **SEO/partage** : favicon SVG, meta Open Graph + Twitter Card (statiques sur l'accueil, réécrites par projet via JS), `robots.txt` + `sitemap.xml`. **Toutes les URLs absolues utilisent `https://bastienagus.com` en dur** (déduit de l'email de contact, domaine réel non confirmé) — voir TODO.
+- **SEO/partage** : favicon SVG, meta Open Graph + Twitter Card (statiques sur l'accueil, réécrites par projet via JS), `robots.txt` + `sitemap.xml`. **Toutes les URLs absolues utilisent `https://bastienagus.vercel.app` en dur** (hébergement gratuit Vercel, pas de nom de domaine acheté pour l'instant — voir TODO).
 
 ## TODO / dette connue
 
-🔴 **Bloquant** :
-- **Vidéo manquante** : `assets/video/techteam.mp4` (projet `maison-lyne-st-andre`) n'existe pas — le client doit fournir les rushes sources (procédure de compression déjà documentée dans `assets/video/README.txt`, ffmpeg requis). `wsc-spot` ne nécessite plus de `.mp4` : il passe désormais par un embed YouTube.
-
 🟡 **À faire mais pas urgent** :
-- **Domaine en dur** : `https://bastienagus.com` est utilisé partout (meta OG/Twitter/canonical statiques d'`index.html`/`projet.html`, constante `SITE_URL` en tête de `js/project-page.js`, `robots.txt`, `sitemap.xml`). Si le domaine réel de prod diffère, mettre à jour ces emplacements (recherche/remplacement simple, tout est centralisé en quelques endroits documentés).
-- **Hébergement / CMS** : pas encore choisi. Site 100% statique aujourd'hui (compatible n'importe quel hébergement statique : Netlify, Vercel, GitHub Pages, OVH, etc.) — décision à prendre plus tard, aucune urgence technique.
+- **Vidéo manquante** : `assets/video/techteam.mp4` (projet `maison-lyne-st-andre`) n'existe pas — le client doit fournir les rushes sources (procédure de compression déjà documentée dans `assets/video/README.txt`, ffmpeg requis). Non bloquant pour la mise en ligne : la page affiche un repli propre (« vidéo bientôt disponible ») tant que le fichier manque. `wsc-spot` ne nécessite plus de `.mp4` : il passe désormais par un embed YouTube.
+- **Domaine provisoire** : `https://bastienagus.vercel.app` (sous-domaine gratuit Vercel) est utilisé partout (meta OG/Twitter/canonical statiques d'`index.html`/`projet.html`/`voyages.html`, constante `SITE_URL` en tête de `js/project-page.js`, `robots.txt`, `sitemap.xml`). Si un nom de domaine personnalisé est acheté plus tard et branché sur Vercel, mettre à jour ces emplacements (recherche/remplacement simple, tout est centralisé en quelques endroits documentés).
+- **Projets retirés temporairement** : `dimension` et `solerys-rse` sont commentés dans `js/projects.js` (le client s'en occupe plus tard) et donc absents de `sitemap.xml`. Les images/vidéos associées restent dans le repo au cas où ils seraient réactivés.
+- **Dossier `project/`** : prototype de handoff Claude Design (`.dc.html`, captures, uploads), non destiné au public. Exclu du déploiement via `.vercelignore` (racine du repo) — ne pas le retirer de `.vercelignore` sans une bonne raison, sous peine d'exposer publiquement ces fichiers internes sur le déploiement Vercel.
 
 🟢 **Dette mineure restante (issue de l'audit WCAG, non bloquante)** :
 - Sous-titres/captions pour les vidéos projet (à intégrer *au moment* de l'upload des vidéos manquantes, pas séparément).

@@ -7,8 +7,8 @@
 
   var REDUCE = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  // Domaine de prod à confirmer — même valeur que le <link rel="canonical"> statique de index.html/projet.html.
-  var SITE_URL = 'https://bastienagus.com';
+  // Hébergement gratuit Vercel — même valeur que le <link rel="canonical"> statique de index.html/projet.html.
+  var SITE_URL = 'https://bastienagus.vercel.app';
 
   function absUrl(path) {
     var p = String(path || '');

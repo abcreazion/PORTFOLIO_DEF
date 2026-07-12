@@ -290,7 +290,7 @@
         'Email : ' + payload.email + '\n' +
         'Type de projet : ' + payload.type + '\n\n' +
         payload.message;
-      return 'mailto:contact@bastienagus.com' +
+      return 'mailto:abcreazion@gmail.com' +
         '?subject=' + encodeURIComponent(subject) +
         '&body=' + encodeURIComponent(body);
     }
@@ -342,7 +342,7 @@
               ? json.errors.map(function (er) { return er.message; }).join(' ')
               : 'Le service d’envoi a refusé la demande (formulaire pas encore configuré ?).';
             status.className = 'field__status is-error';
-            status.textContent = detail + ' Vous pouvez réessayer ou écrire directement à contact@bastienagus.com.';
+            status.textContent = detail + ' Vous pouvez réessayer ou écrire directement à abcreazion@gmail.com.';
             submitBtn.disabled = false;
           });
         })
