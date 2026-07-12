@@ -236,9 +236,9 @@ window.PROJECTS = [
     stats: [],
     year: "2022",
     role: "Direction artistique · Photographie",
-    intro: "La pochette de l'album « Conatus » de Loan, coproduite avec le beatmaker Uisox — une image qui renvoie à chaque titre à travers un décor construit sur mesure.",
+    intro: "La pochette de l'album « Conatus » de Loan, coproduite avec le beatmaker Isox — une image qui renvoie à chaque titre à travers un décor construit sur mesure.",
     context: [
-      "Habiller un album d'une image forte commence par un concept capable de tenir toutes ses pistes ensemble. Loan et le beatmaker Uisox voulaient une pochette à la hauteur de « Conatus », coproduit à deux voix.",
+      "Habiller un album d'une image forte commence par un concept capable de tenir toutes ses pistes ensemble. Loan et le beatmaker Isox voulaient une pochette à la hauteur de « Conatus », coproduit à deux voix.",
       "Direction artistique et photographie autour d'un décor construit sur mesure, pensé pour qu'un détail renvoie à chaque titre de l'album — une lecture différente à chaque écoute.",
       "Une pochette dense et cohérente, où chaque titre trouve sa trace visuelle, prête à accompagner la sortie de l'album sur les plateformes et les réseaux."
     ],
