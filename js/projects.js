@@ -306,7 +306,7 @@ window.PROJECTS = [
   },
   {
     slug: "wsc-spot",
-    image: "assets/img/card-6-wsc-spot.jpg",
+    image: "assets/img/wsc-spot.jpg",
     watermark: "WELLNESS",
     watermarkScript: "Sport Club",
     client: "WELLNESS SPORT CLUB",
@@ -320,7 +320,7 @@ window.PROJECTS = [
       "Direction artistique et réalisation de bout en bout, en collaboration avec l'agence Innolive : de la stratégie créative au tournage, jusqu'à la livraison multi-format.",
       "Un film de trente secondes décliné pour la TV, le cinéma et le digital, pensé comme la pièce maîtresse de la campagne nationale."
     ],
-    galleryCount: 0,
+    galleryCount: 7,
     video: null,
     youtube: "8XN_C3yKQ9Y"
   }
