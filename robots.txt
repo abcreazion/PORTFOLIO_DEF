@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://bastienagus.com/sitemap.xml
+Sitemap: https://bastienagus.vercel.app/sitemap.xml
