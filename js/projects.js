@@ -127,7 +127,8 @@ window.PROJECTS = [
       "Une bibliothèque de plus de cinquante visuels et un film de marque, prêts pour le e-commerce, la presse et les réseaux — une identité visuelle fidèle au raffinement de la Maison."
     ],
     galleryCount: 19,
-    video: { src: "assets/video/techteam.mp4", poster: "assets/img/maison-lyne-st-andre.jpg" }
+    video: null,
+    youtube: "OfZet5qsKLE"
   },
   {
     slug: "docks40",
@@ -245,25 +246,6 @@ window.PROJECTS = [
     galleryCount: 7,
     video: null
   },
-  /*{
-    slug: "dimension",
-    image: "assets/img/card-2-dimension.jpg",
-    watermark: "DIMENSION",
-    watermarkScript: "Stores",
-    client: "DIMENSION STORES",
-    title: "IDENTITÉ<br>RETAIL",
-    stats: [["+157k", "vues"], ["+10%", "d'engagements"]],
-    year: "2025",
-    role: "Direction artistique · Motion design",
-    intro: "Le film d'annonce en motion design qui a dévoilé la nouvelle identité visuelle de Dimension Stores.",
-    context: [
-      "Changer d'identité visuelle, c'est un moment de vérité pour une marque retail. Dimension Stores voulait annoncer sa transformation avec un geste fort, pensé pour Instagram.",
-      "Direction artistique et motion design : un film d'annonce animé qui met en scène le passage de l'ancienne à la nouvelle identité, rythmé pour capter l'attention dès la première seconde du feed.",
-      "Une prise de parole soignée qui installe le nouveau territoire de marque et donne le ton de sa communication à venir."
-    ],
-    galleryCount: 6,
-    video: null
-  },*/
   {
     slug: "ludeo",
     image: "assets/img/ludeo.jpg",
@@ -284,26 +266,6 @@ window.PROJECTS = [
     video: null,
     youtube: "2bMtH2pRMXk"
   },
-  /*{
-    slug: "solerys-rse",
-    image: "assets/img/card-5-solerys.jpg",
-    watermark: "SOLERYS",
-    watermarkScript: "Nationale",
-    client: "SOLERYS · NATIONALE",
-    title: "VIDÉO<br>RSE",
-    stats: [["FR", "diffusion nationale"], ["RSE", "vidéo sociale"]],
-    year: "2026",
-    role: "Motion design · Direction artistique",
-    focal: "50% 20%",
-    intro: "Une vidéo RSE à diffusion nationale, portée par une direction artistique éditoriale et un motion design au service du propos.",
-    context: [
-      "Faire le bilan RSE d'une année et le rendre désirable en interne : Solerys voulait une vidéo capable de parler à tous ses collaborateurs, sans tomber dans le rapport institutionnel.",
-      "Direction artistique et motion design : un film de quatre minutes au traitement éditorial et humain, qui met en récit les actions de l'entreprise en matière de responsabilité sociale.",
-      "Une prise de parole claire et incarnée, diffusée à l'ensemble des collaborateurs à l'échelle nationale."
-    ],
-    galleryCount: 8,
-    video: null
-  },*/
   {
     slug: "wsc-spot",
     image: "assets/img/wsc-spot.jpg",

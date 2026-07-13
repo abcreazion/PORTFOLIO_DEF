@@ -1,2 +1,5 @@
 .DS_Store
 Thumbs.db
+
+# Vidéo trop volumineuse pour GitHub (limite 100 Mo) — servie via YouTube (champ `youtube` dans js/projects.js)
+assets/video/maison-lyne-st-andre.mp4
