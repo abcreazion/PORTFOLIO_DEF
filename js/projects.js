@@ -81,11 +81,11 @@ window.PROJECTS = [
     stats: [],
     year: "2026",
     role: "Réalisation · Photographie sportive",
-    intro: "Une captation sportive et une série photo dédiées au footballer freestyle Mathieu Tsunami, entre salle d'entraînement et décor naturel.",
+    intro: "Une captation sportive et une série photo pour les réseaux sociaux du footballer freestyle Mathieu Tsunami, à l'occasion de la Coupe du Monde 2026.",
     context: [
-      "Restituer la technique et l'énergie d'un footballer freestyle demande de capter le geste au bon instant, en salle comme en extérieur. Mathieu Tsunami voulait des images fidèles à sa pratique, prêtes pour sa communication sportive.",
+      "À l'occasion de la Coupe du Monde 2026, Mathieu Tsunami voulait des images fidèles à sa pratique du freestyle, pensées spécifiquement pour ses réseaux sociaux — un contenu capable de capter l'attention pendant la ferveur de la compétition.",
       "Réalisation et photographie construites en deux temps : le travail technique sur tapis de course en salle, puis une série en extérieur, sur les toits de la ville, pour donner du relief à chaque figure.",
-      "Un ensemble d'images et de plans qui documentent le geste freestyle avec précision, pensés pour accompagner la communication de l'athlète."
+      "Une série de clichés et de plans diffusés sur les réseaux sociaux de l'athlète pendant la Coupe du Monde 2026, documentant son geste freestyle avec précision."
     ],
     galleryCount: 6,
     video: { src: "assets/video/mathieu-tsunami.mp4", poster: "assets/img/mathieu-tsunami.jpg" }
@@ -103,7 +103,7 @@ window.PROJECTS = [
     intro: "La campagne d'affichage annuelle de Wellness Sport Club — direction artistique et réalisation, déployées en France et en Suisse.",
     context: [
       "Chaque année, Wellness Sport Club doit réaffirmer sa présence dans le paysage urbain de deux pays. Le défi : une campagne d'affichage qui garde le même impact sur un 4×3 en bord de route comme sur un écran mobile.",
-      "J'ai pris en charge la direction artistique et la réalisation de bout en bout — conception créative, direction photo, puis déclinaison rigoureuse sur l'ensemble des supports urbains (abribus, 4×3, réseau JCDecaux) et leurs formats digitaux.",
+      "En collaboration avec l'agence Chouchou, j'ai pu prendre part à la direction artistique et j'ai pu réaliser ces clichés en studio, puis un travail de post-production rigoureux sur l'ensemble des supports urbains (abribus, 4×3, réseau JCDecaux) et leurs formats digitaux.",
       "Le résultat : une identité forte et cohérente, pensée pour l'extérieur comme pour les réseaux, diffusée en continu sur deux pays pendant douze mois."
     ],
     galleryCount: 5,
@@ -236,13 +236,13 @@ window.PROJECTS = [
     stats: [],
     year: "2022",
     role: "Direction artistique · Photographie",
-    intro: "Un portrait et une identité visuelle signés pour le projet musical de Loan — direction artistique, photographie et pochette du titre « Conatus ».",
+    intro: "La pochette de l'album « Conatus » de Loan, coproduite avec le beatmaker Isox — une image qui renvoie à chaque titre à travers un décor construit sur mesure.",
     context: [
-      "Habiller un projet musical d'une image forte commence souvent par un portrait qui campe le personnage. Loan cherchait une identité visuelle capable de porter son titre « Conatus ».",
-      "Direction artistique et photographie en lumière colorée et cadrage resserré, jusqu'à la composition de la pochette finale du titre.",
-      "Un portrait et une pochette cohérents, prêts à accompagner la sortie du titre sur les plateformes et les réseaux."
+      "Habiller un album d'une image forte commence par un concept capable de tenir toutes ses pistes ensemble. Loan et le beatmaker Isox voulaient une pochette à la hauteur de « Conatus », coproduit à deux voix.",
+      "Direction artistique et photographie autour d'un décor construit sur mesure, pensé pour qu'un détail renvoie à chaque titre de l'album — une lecture différente à chaque écoute.",
+      "Une pochette dense et cohérente, où chaque titre trouve sa trace visuelle, prête à accompagner la sortie de l'album sur les plateformes et les réseaux."
     ],
-    galleryCount: 6,
+    galleryCount: 7,
     video: null
   },
   {
@@ -314,13 +314,13 @@ window.PROJECTS = [
     stats: [["TV", "cinéma · digital"], ["30\"", "spot national"]],
     year: "2026",
     role: "Direction artistique · Réalisation",
-    intro: "Le spot national Wellness Sport Club — direction artistique et réalisation, diffusé en TV, au cinéma et en digital.",
+    intro: "Le spot national Wellness Sport Club, réalisé en collaboration avec l'agence Innolive — diffusé en TV, au cinéma et en digital.",
     context: [
       "Porter une marque sportive à l'échelle nationale demande un film qui fonctionne partout : sur grand écran comme dans un feed. Wellness Sport Club voulait un spot au cœur de son dispositif de campagne.",
-      "Direction artistique et réalisation de bout en bout : de la stratégie créative au tournage, jusqu'à la livraison multi-format.",
+      "Direction artistique et réalisation de bout en bout, en collaboration avec l'agence Innolive : de la stratégie créative au tournage, jusqu'à la livraison multi-format.",
       "Un film de trente secondes décliné pour la TV, le cinéma et le digital, pensé comme la pièce maîtresse de la campagne nationale."
     ],
-    galleryCount: 4,
+    galleryCount: 0,
     video: null,
     youtube: "8XN_C3yKQ9Y"
   }
