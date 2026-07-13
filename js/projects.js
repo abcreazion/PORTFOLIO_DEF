@@ -208,7 +208,7 @@ window.PROJECTS = [
   },
   {
     slug: "hakai-lune",
-    image: "https://img.youtube.com/vi/46kiss-VKco/maxresdefault.jpg",
+    image: "assets/img/hakai-lune.jpg",
     watermark: "HAKAI LUNE",
     watermarkScript: "hakai",
     client: "HAKAI",
@@ -222,7 +222,7 @@ window.PROJECTS = [
       "Direction artistique, réalisation et étalonnage cinématographique : chaque plan a été pensé pour servir le tempo du titre, avec un traitement colorimétrique dense qui ancre l'image dans une esthétique nocturne et contrastée.",
       "Un clip musical immersif, taillé pour les plateformes de streaming et les réseaux, qui prolonge l'univers de l'artiste au-delà du son."
     ],
-    galleryCount: 0,
+    galleryCount: 4,
     video: null,
     youtube: "46kiss-VKco"
   },
@@ -266,7 +266,7 @@ window.PROJECTS = [
   },
   {
     slug: "ludeo",
-    image: "https://img.youtube.com/vi/2bMtH2pRMXk/maxresdefault.jpg",
+    image: "assets/img/ludeo.jpg",
     watermark: "LUDEO",
     watermarkScript: "LUDEO",
     client: "LUDEO",
@@ -280,7 +280,7 @@ window.PROJECTS = [
       "Direction artistique et réalisation de bout en bout : une mise en scène qui croise plusieurs arts pour plonger le spectateur dans le monde de l'artiste, entièrement au service du morceau.",
       "Un clip immersif, calibré pour les plateformes et les réseaux, qui prolonge l'identité de Ludeo au-delà de la musique."
     ],
-    galleryCount: 0,
+    galleryCount: 4,
     video: null,
     youtube: "2bMtH2pRMXk"
   },
