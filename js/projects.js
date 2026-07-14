@@ -148,7 +148,7 @@ window.PROJECTS = [
       "Un reportage nocturne à la fois vivant et léché, décliné pour le print comme pour le digital, qui restitue l'ADN du lieu."
     ],
     galleryCount: 16,
-    video: { src: "assets/video/docks40.mp4", poster: "assets/img/docks40.jpg" }
+    video: null
   },
   {
     slug: "wsc-boutique",
