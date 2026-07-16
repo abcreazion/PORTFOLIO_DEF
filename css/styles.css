@@ -881,20 +881,45 @@ a.contact__detail-value:hover { color: var(--red-text); }
      sticky 100vh casserait la mise en page tactile (cf. garde JS qui efface aussi
      la hauteur inline, comme l'ancien carrousel). */
   .showcase.is-locked .showcase__sticky { position: static; height: auto; overflow: visible; display: block; }
-  .showcase.is-locked .showcase__stage { flex: none; height: 52vh; min-height: 400px; margin: 0 20px; }
+  .showcase.is-locked .showcase__stage { flex: none; margin: 0 20px; }
   .showcase__header { padding: 96px 24px 20px; }
-  .showcase__stage { margin: 0 20px; height: 52vh; min-height: 400px; }
-  /* Texte replié en haut de la photo (au lieu de bas-gauche) pour ne pas entrer en
-     collision avec le cluster vignettes qui reste en overlay bas — même construction
-     "photo unique" qu'en desktop, juste réagencée pour un hero plus court. */
+  /* Mobile : le texte ET le cluster vignettes sortent du positionnement absolu et
+     sont empilés en flux par flexbox.
+     En desktop, les deux sont des calques absolus qui cohabitent (texte bas-gauche,
+     vignettes bas-droite). En mobile ils prennent toute la largeur : superposés, ils
+     se percutent. Le texte était ancré en haut (top:20px), les vignettes en bas, dans
+     une stage à hauteur FIXE (52vh/min 400px) — dès que la stage touchait son plancher
+     de 400px (tout viewport de moins de ~770px de haut : iPhone SE, Galaxy, mais aussi
+     un iPhone 390x844 barre d'URL affichée), le bloc texte percutait la bande de
+     vignettes. Celle-ci étant au-dessus (z-index 5 > 3), elle avalait le tap sur le CTA
+     « VOIR LE PROJET » : mesuré mort sur 10 projets sur 12 en 375x667.
+     En flux, c'est le navigateur qui calcule la place : le chevauchement devient
+     impossible quelle que soit la hauteur d'écran ou la longueur du titre (les titres
+     à <br> sur 2 lignes ne collisionnent plus non plus). D'où `height:auto` + un simple
+     plancher `min-height` : la stage s'allonge si besoin au lieu de laisser deux calques
+     se marcher dessus. Fonds et scrim restent en absolute derrière et la couvrent
+     toujours entièrement. Ne pas revenir à une hauteur fixe + overlays absolus ici. */
+  .showcase__stage {
+    margin: 0 20px;
+    height: auto; min-height: max(52vh, 400px);
+    display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
+    padding: 20px 0 16px;
+  }
   .showcase__scrim {
     background: linear-gradient(to bottom, rgba(10,10,10,.8) 0%, rgba(10,10,10,.15) 32%, rgba(10,10,10,.15) 58%, rgba(10,10,10,.85) 100%);
   }
-  .showcase__content { left: 20px; right: 20px; top: 20px; bottom: auto; max-width: none; }
+  .showcase__content {
+    position: static; left: auto; right: auto; top: auto; bottom: auto;
+    max-width: none; padding: 0 20px;
+  }
   .showcase__title { font-size: 9.5vw; }
   .showcase__lead { display: none; } /* accroche masquée sur mobile (dispo sur la page projet) — garde le hero court lisible */
   .showcase__hint { display: none; } /* le peek des vignettes suffit comme affordance tactile */
-  .showcase__thumbs { left: 16px; right: 16px; bottom: 16px; max-width: none; align-items: stretch; }
+  .showcase__cta { min-height: 44px; } /* cible tactile WCAG 2.5.5 — mesurée à 39px avant */
+  .showcase__thumbs {
+    position: static; left: auto; right: auto; bottom: auto;
+    max-width: none; align-items: stretch; padding: 0 16px;
+  }
   .showcase__thumbs-controls { justify-content: flex-end; }
   .showcase__thumbs-btn { display: none; }
   .showcase__counter { font-size: 24px; }
