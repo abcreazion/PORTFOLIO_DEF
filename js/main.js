@@ -386,20 +386,33 @@
     // Roulette : scale au pic (centre / survol) → plancher (loin). Delta doux pour
     // éviter tout chevauchement (le gap CSS de 22px absorbe le +14%) et rester fluide.
     var PEAK = 1.14, FLOOR = 0.90, RADIUS = 3;
+    // Coefficients de lissage exprimés POUR UNE FRAME À 60Hz, puis convertis en
+    // fonction du delta-time réel (voir `smooth`). Un lerp brut `v += (t-v)*k` est
+    // lié à la cadence : à 120Hz il rattrape deux fois plus vite (animation trop
+    // sèche sur écran rapide) et à chaque frame sautée il avance d'un à-coup —
+    // c'est une des causes du rendu haché. La conversion rend la course identique
+    // en temps réel quelle que soit la cadence (60, 120, 144Hz) ou les frames perdues.
     var PROG_LERP = 0.20;   // rattrapage de la position de bande (~120ms)
     var BOOST_LERP = 0.22;  // rattrapage du pic de survol
+    function smooth(k, dt) { return 1 - Math.pow(1 - k, dt / 16.667); }
 
     // ——— Géométrie (mesurée une fois, recalculée au resize) ———
+    // Tout ce qui coûte une lecture de layout est mesuré ICI et mis en cache : la
+    // boucle de rendu ne doit lire aucune géométrie (cf. `renderFrame`).
     var thumbW = 0, gap = 0, step = 1, padSide = 0;
+    var trackClientW = 0, trackMaxSL = 0;
     function measure() {
       if (!thumbs.length) return;
       thumbW = thumbs[0].offsetWidth || 128;
       var cs = window.getComputedStyle(track);
       gap = parseFloat(cs.columnGap || cs.gap) || 22;
       step = thumbW + gap;
-      padSide = Math.max(0, (track.clientWidth - thumbW) / 2);
+      trackClientW = track.clientWidth;
+      padSide = Math.max(0, (trackClientW - thumbW) / 2);
       track.style.paddingLeft = padSide + 'px';
       track.style.paddingRight = padSide + 'px';
+      // après écriture du padding : la largeur scrollable a changé
+      trackMaxSL = Math.max(0, track.scrollWidth - trackClientW);
     }
 
     // Split-letters SANS casser les mots : chaque mot est un conteneur inline-block
@@ -459,6 +472,12 @@
     var rafId = null;
 
     // Cible de progression : dérivée du scroll page en lock, du scrollLeft en natif.
+    // La lecture de rect reste volontairement ici : elle est faite UNE fois, tout en
+    // haut de la frame, avant la moindre écriture — le layout vient d'être peint, elle
+    // ne force donc aucun recalcul. La mettre en cache au chargement la figerait, et
+    // tout décalage ultérieur de la page (polices, images) désynchroniserait la
+    // roulette du scroll. Ce qu'il ne faut pas faire, c'est lire de la géométrie DANS
+    // la boucle des vignettes, entre deux écritures (cf. § layout thrashing).
     function progressTarget() {
       if (LOCK) {
         var scrolled = Math.max(0, -outer.getBoundingClientRect().top);
@@ -467,42 +486,69 @@
       return track.scrollLeft / step;
     }
 
-    function renderFrame() {
-      // 1) Lisse la position de bande + les pics de survol.
+    // Mémo des dernières valeurs écrites : réécrire une propriété inchangée déclenche
+    // quand même un recalcul de style. Avec 12 vignettes × 2 propriétés × 60 fps, ça
+    // fait 1440 écritures/s dont l'immense majorité sont identiques.
+    var lastScale = [], lastZ = [], lastProgW = -1, lastTx = null;
+    for (var m = 0; m < n; m++) { lastScale.push(-1); lastZ.push(-1); }
+
+    var prevTs = 0;
+    function renderFrame(ts) {
+      // dt borné à 50ms : après un onglet en arrière-plan ou un gros freeze, un dt
+      // énorme ferait sauter l'animation d'un coup à la cible (effet de téléportation).
+      var dt = prevTs ? Math.min(50, ts - prevTs) : 16.667;
+      prevTs = ts;
+
+      // 1) Lisse la position de bande + les pics de survol (indépendant de la cadence).
       var tgt = progressTarget();
       if (REDUCE) currentProgress = tgt;
       else {
-        currentProgress += (tgt - currentProgress) * PROG_LERP;
+        currentProgress += (tgt - currentProgress) * smooth(PROG_LERP, dt);
         if (Math.abs(tgt - currentProgress) < 0.0006) currentProgress = tgt;
       }
       var animating = Math.abs(tgt - currentProgress) > 0.0006;
 
-      // 2) En lock, la bande est positionnée par JS (overflow-x:hidden) pour centrer
-      //    `currentProgress`. En natif, c'est le scroll natif qui l'a déjà positionnée.
+      // 2) En lock, la bande est positionnée par JS pour centrer `currentProgress`.
+      //    On la déplace en `transform` et non plus via `scrollLeft` : écrire scrollLeft
+      //    à chaque frame est un scroll piloté sur le thread principal (repaint du
+      //    conteneur à chaque frame), là où une translation est prise en charge par le
+      //    compositor. `scrollLeft` est remis à 0 car le navigateur scrolle malgré tout
+      //    un conteneur overflow:hidden quand une vignette reçoit le focus clavier —
+      //    ce décalage parasite s'ajouterait à notre translation.
+      //    En natif, c'est le scroll natif qui positionne la bande (on n'y touche pas).
       if (LOCK) {
-        var maxSL = Math.max(0, track.scrollWidth - track.clientWidth);
-        var sl = padSide + currentProgress * step + thumbW / 2 - track.clientWidth / 2;
-        track.scrollLeft = Math.max(0, Math.min(maxSL, sl));
+        var maxTx = Math.max(0, trackMaxSL);
+        var tx = padSide + currentProgress * step + thumbW / 2 - trackClientW / 2;
+        tx = Math.max(0, Math.min(maxTx, tx));
+        if (tx !== lastTx) {
+          track.style.transform = 'translate3d(' + (-tx).toFixed(2) + 'px,0,0)';
+          lastTx = tx;
+        }
+        track.scrollLeft = 0;
       }
 
-      // 3) Scale de chaque vignette (calcul pur, zéro reflow) : roulette + boost survol.
+      // 3) Scale de chaque vignette (calcul pur, zéro lecture de layout).
       for (var i = 0; i < n; i++) {
         if (Math.abs(boost[i] - boostTarget[i]) > 0.001) {
-          boost[i] += (boostTarget[i] - boost[i]) * BOOST_LERP;
+          boost[i] += (boostTarget[i] - boost[i]) * smooth(BOOST_LERP, dt);
           animating = true;
         } else { boost[i] = boostTarget[i]; }
 
         var dist = i - currentProgress;
         var a = Math.min(RADIUS, Math.abs(dist)) / RADIUS;
         var base = PEAK - a * (PEAK - FLOOR);
-        var sc = base * (1 - boost[i]) + PEAK * boost[i];
+        var sc = +(base * (1 - boost[i]) + PEAK * boost[i]).toFixed(3);
+        var z = Math.round(30 - Math.min(20, Math.abs(dist) * 4) + boost[i] * 40);
         var t = thumbs[i];
-        t.style.transform = 'scale(' + sc.toFixed(3) + ')';
-        t.style.zIndex = String(Math.round(30 - Math.min(20, Math.abs(dist) * 4) + boost[i] * 40));
+        if (sc !== lastScale[i]) { t.style.transform = 'scale(' + sc + ')'; lastScale[i] = sc; }
+        if (z !== lastZ[i]) { t.style.zIndex = String(z); lastZ[i] = z; }
       }
 
       // 4) Barre de progression.
-      if (progressFill) progressFill.style.transform = 'scaleX(' + (n > 1 ? (currentProgress / (n - 1)).toFixed(4) : 1) + ')';
+      if (progressFill) {
+        var pw = n > 1 ? +(currentProgress / (n - 1)).toFixed(4) : 1;
+        if (pw !== lastProgW) { progressFill.style.transform = 'scaleX(' + pw + ')'; lastProgW = pw; }
+      }
 
       // 5) Hero. En lock : commit projet par projet (au franchissement du milieu),
       //    sauf pendant un survol qui prévisualise. En natif : géré au settle (debounce).
@@ -513,9 +559,9 @@
       }
 
       if (animating) rafId = requestAnimationFrame(renderFrame);
-      else rafId = null;
+      else { rafId = null; prevTs = 0; }
     }
-    function kick() { if (rafId == null) rafId = requestAnimationFrame(renderFrame); }
+    function kick() { if (rafId == null) { prevTs = 0; rafId = requestAnimationFrame(renderFrame); } }
 
     // ——— Indice de scroll : masqué au 1er geste dans la section ———
     var hintDismissed = false;

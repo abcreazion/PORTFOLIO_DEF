@@ -73,7 +73,6 @@ img { display: block; max-width: 100%; }
 
 /* keyframes */
 @keyframes k-pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
-@keyframes k-slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 /* ============================== NAV ============================== */
 /* Bandeau plein largeur classique au repos (tout en haut de page). Dès que
@@ -231,22 +230,6 @@ img { display: block; max-width: 100%; }
 }
 .btn-primary__arrow--sm { width: 24px; height: 24px; font-size: 12px; }
 
-/* ============================== MARQUEE ============================== */
-.marquee {
-  background: var(--red); padding: 14px 0; overflow: hidden;
-  position: relative; z-index: 10;
-}
-.marquee__track { display: flex; white-space: nowrap; animation: k-slide 20s linear infinite; }
-.marquee__item {
-  font-family: var(--display); font-size: 20px; letter-spacing: .12em;
-  color: #fff; padding: 0 40px;
-}
-.marquee__sep {
-  font-family: var(--display); font-size: 20px; letter-spacing: .12em;
-  color: rgba(255,255,255,.4); padding: 0 40px;
-}
-.marquee__script { font-family: var(--script); font-size: 26px; color: #fff; padding: 0 40px; }
-
 /* ============================== SHARED HEADINGS ============================== */
 .eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .eyebrow__line { width: 28px; height: 2px; background: var(--red); }
@@ -388,7 +371,11 @@ img { display: block; max-width: 100%; }
   padding: 30px 4px 22px; /* marge : laisse respirer le scale + l'ombre-lift sans clip */
 }
 .showcase__thumbs-track::-webkit-scrollbar { display: none; }
-.showcase.is-locked .showcase__thumbs-track { overflow-x: hidden; }
+/* En lock, la bande est déplacée par JS en `transform` (et non plus via scrollLeft) :
+   on la promeut en calque comme les vignettes. Surtout : aucune transition sur
+   `transform` ici — le lissage est déjà fait en amont par le lerp JS, une transition
+   par-dessus une valeur réécrite à chaque frame retraînerait (effet « poisseux »). */
+.showcase.is-locked .showcase__thumbs-track { overflow-x: hidden; will-change: transform; }
 
 /* Aucune transition sur `transform` : le scale (roulette + boost au survol) est
    piloté 100% en JS, interpolé chaque frame (lerp). Une transition CSS par-dessus
