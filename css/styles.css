@@ -371,11 +371,7 @@ img { display: block; max-width: 100%; }
   padding: 30px 4px 22px; /* marge : laisse respirer le scale + l'ombre-lift sans clip */
 }
 .showcase__thumbs-track::-webkit-scrollbar { display: none; }
-/* En lock, la bande est déplacée par JS en `transform` (et non plus via scrollLeft) :
-   on la promeut en calque comme les vignettes. Surtout : aucune transition sur
-   `transform` ici — le lissage est déjà fait en amont par le lerp JS, une transition
-   par-dessus une valeur réécrite à chaque frame retraînerait (effet « poisseux »). */
-.showcase.is-locked .showcase__thumbs-track { overflow-x: hidden; will-change: transform; }
+.showcase.is-locked .showcase__thumbs-track { overflow-x: hidden; }
 
 /* Aucune transition sur `transform` : le scale (roulette + boost au survol) est
    piloté 100% en JS, interpolé chaque frame (lerp). Une transition CSS par-dessus

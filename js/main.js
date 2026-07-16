@@ -489,7 +489,7 @@
     // Mémo des dernières valeurs écrites : réécrire une propriété inchangée déclenche
     // quand même un recalcul de style. Avec 12 vignettes × 2 propriétés × 60 fps, ça
     // fait 1440 écritures/s dont l'immense majorité sont identiques.
-    var lastScale = [], lastZ = [], lastProgW = -1, lastTx = null;
+    var lastScale = [], lastZ = [], lastProgW = -1, lastSL = null;
     for (var m = 0; m < n; m++) { lastScale.push(-1); lastZ.push(-1); }
 
     var prevTs = 0;
@@ -508,23 +508,21 @@
       }
       var animating = Math.abs(tgt - currentProgress) > 0.0006;
 
-      // 2) En lock, la bande est positionnée par JS pour centrer `currentProgress`.
-      //    On la déplace en `transform` et non plus via `scrollLeft` : écrire scrollLeft
-      //    à chaque frame est un scroll piloté sur le thread principal (repaint du
-      //    conteneur à chaque frame), là où une translation est prise en charge par le
-      //    compositor. `scrollLeft` est remis à 0 car le navigateur scrolle malgré tout
-      //    un conteneur overflow:hidden quand une vignette reçoit le focus clavier —
-      //    ce décalage parasite s'ajouterait à notre translation.
-      //    En natif, c'est le scroll natif qui positionne la bande (on n'y touche pas).
+      // 2) En lock, la bande est positionnée par JS (overflow-x:hidden) pour centrer
+      //    `currentProgress`. En natif, c'est le scroll natif qui l'a déjà positionnée.
+      //    ⚠️ Ne PAS remplacer ce `scrollLeft` par un `transform` sur `track` : les deux
+      //    ne sont pas équivalents. `scrollLeft` fait défiler le CONTENU du conteneur,
+      //    alors qu'un transform déplace le CONTENEUR lui-même — la bande entière sort
+      //    du cluster et les vignettes disparaissent de l'écran (régression introduite
+      //    puis corrigée). Une translation ne serait possible qu'en ajoutant un
+      //    conteneur interne à translater, mais `track` doit rester le conteneur de
+      //    scroll pour le mode natif : le gain compositor ne vaut pas ce détour.
+      //    `trackMaxSL`/`trackClientW` sont mis en cache par `measure()` pour ne pas
+      //    relire de géométrie ici.
       if (LOCK) {
-        var maxTx = Math.max(0, trackMaxSL);
-        var tx = padSide + currentProgress * step + thumbW / 2 - trackClientW / 2;
-        tx = Math.max(0, Math.min(maxTx, tx));
-        if (tx !== lastTx) {
-          track.style.transform = 'translate3d(' + (-tx).toFixed(2) + 'px,0,0)';
-          lastTx = tx;
-        }
-        track.scrollLeft = 0;
+        var sl = padSide + currentProgress * step + thumbW / 2 - trackClientW / 2;
+        sl = Math.max(0, Math.min(trackMaxSL, sl));
+        if (sl !== lastSL) { track.scrollLeft = sl; lastSL = sl; }
       }
 
       // 3) Scale de chaque vignette (calcul pur, zéro lecture de layout).
