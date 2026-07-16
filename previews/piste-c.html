@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piste C — Stack cinétique · Preview Carrousel Bastien Agus</title>
+<base href="/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0a; --ink:#f5f5f5; --red:#d90429; --red-text:#ff3b5c;
+  --ink-dim: rgba(245,245,245,.6);
+  --display:'Bebas Neue',sans-serif; --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace; --script:'Ms Madi',cursive;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+
+.preview-back {
+  position: fixed; top: 20px; left: 20px; z-index: 100;
+  padding: 12px 16px; background: rgba(10,10,10,.7); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.15);
+  font: 600 11px/1 var(--mono); letter-spacing: .16em; color: var(--ink);
+  transition: border-color .3s ease, background .3s ease;
+}
+.preview-back:hover { border-color: var(--red); background: rgba(217,4,41,.15); }
+
+/* ——— Intro ——— */
+.c-intro {
+  min-height: 80vh; display: flex; align-items: center;
+  padding: 80px 56px; background: var(--bg);
+}
+.c-intro__inner { max-width: 900px; }
+.c-intro__eyebrow { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.c-intro__eyebrow-line { width: 44px; height: 1px; background: var(--red); }
+.c-intro__eyebrow-text { font: 500 12px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); }
+.c-intro__title { font-family: var(--display); font-size: min(11vw,148px); line-height: .85; letter-spacing: .01em; }
+.c-intro__title .red { color: var(--red); }
+.c-intro__script { font-family: var(--script); font-size: min(4vw,44px); color: rgba(217,4,41,.55); margin-top: 8px; }
+.c-intro__lead { font: 300 18px/1.55 var(--sans); color: var(--ink-dim); max-width: 640px; margin-top: 32px; }
+
+/* ——— Carousel stack ——— */
+.c-carousel { position: relative; background: var(--bg); }
+.c-carousel__sticky {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: auto 1fr auto;
+  padding: 32px 56px;
+  gap: 20px;
+}
+
+.c-carousel__header {
+  grid-column: 1 / -1; grid-row: 1;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.c-carousel__eyebrow { font: 500 11px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); }
+.c-carousel__counter {
+  font: 500 13px/1 var(--mono); letter-spacing: .12em; color: var(--ink-dim);
+  display: flex; align-items: baseline; gap: 8px;
+}
+.c-carousel__counter b { color: var(--ink); font-weight: 600; font-family: var(--display); font-size: 28px; letter-spacing: .04em; }
+
+/* Left info column */
+.c-info {
+  grid-column: 1; grid-row: 2;
+  display: flex; flex-direction: column; justify-content: center;
+  max-width: 360px;
+}
+.c-info__num {
+  font-family: var(--display); font-size: min(16vw,200px); line-height: .82; color: #fff;
+  letter-spacing: -.02em; margin-bottom: 16px;
+}
+.c-info__num .dot { color: var(--red); }
+.c-info__client { font: 600 11px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); margin-bottom: 14px; }
+.c-info__title { font-family: var(--display); font-size: min(4.4vw,52px); line-height: .88; color: #fff; margin-bottom: 14px; }
+.c-info__meta { font: 400 13px/1.55 var(--sans); color: rgba(255,255,255,.7); max-width: 320px; margin-bottom: 22px; }
+.c-info__cta {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px;
+  border: 1px solid rgba(255,255,255,.25); font: 600 11px/1 var(--mono); letter-spacing: .16em;
+  transition: background .3s ease, border-color .3s ease; align-self: flex-start;
+}
+.c-info__cta:hover { background: var(--red); border-color: var(--red); }
+.c-info__num,.c-info__client,.c-info__title,.c-info__meta,.c-info__cta {
+  opacity: 0; transform: translateY(20px); transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.c-info.is-in .c-info__client { opacity: 1; transform: none; transition-delay: .05s; }
+.c-info.is-in .c-info__num { opacity: 1; transform: none; transition-delay: 0s; }
+.c-info.is-in .c-info__title { opacity: 1; transform: none; transition-delay: .12s; }
+.c-info.is-in .c-info__meta { opacity: 1; transform: none; transition-delay: .2s; }
+.c-info.is-in .c-info__cta { opacity: 1; transform: none; transition-delay: .28s; }
+
+/* Center stack */
+.c-stack {
+  grid-column: 2; grid-row: 2;
+  position: relative;
+  width: min(480px, 42vw); aspect-ratio: 4/5;
+  filter: drop-shadow(0 40px 60px rgba(0,0,0,.6));
+  perspective: 1400px;
+}
+.c-card {
+  position: absolute; inset: 0; overflow: hidden;
+  will-change: transform, opacity;
+  transform-origin: 50% 100%;
+  border: 1px solid rgba(255,255,255,.05);
+}
+.c-card__img { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.c-card__scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(10,10,10,.75) 0%, rgba(10,10,10,.15) 50%, transparent 100%);
+}
+.c-card__rail {
+  position: absolute; left: 0; top: 30%; width: 3px; height: 40%; background: var(--red);
+  opacity: 0; transition: opacity .5s var(--ease);
+}
+.c-card.is-top .c-card__rail { opacity: 1; }
+.c-card__watermark {
+  position: absolute; bottom: 20px; left: 20px; right: 20px;
+  font-family: var(--display); font-size: clamp(22px, 3vw, 40px); line-height: .9; color: #fff;
+  letter-spacing: .01em;
+  opacity: 0; transition: opacity .5s var(--ease);
+}
+.c-card.is-top .c-card__watermark { opacity: .85; }
+.c-card__label {
+  position: absolute; top: 20px; right: 20px;
+  font: 600 9px/1 var(--mono); letter-spacing: .18em; color: rgba(255,255,255,.5);
+}
+
+/* Right nav column */
+.c-side {
+  grid-column: 3; grid-row: 2;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+  gap: 16px;
+}
+.c-side__label { font: 500 10px/1 var(--mono); letter-spacing: .2em; color: var(--ink-dim); }
+.c-side__deck {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.c-side__tick {
+  width: 40px; height: 2px; background: rgba(255,255,255,.15);
+  transition: background .3s ease, width .3s ease;
+}
+.c-side__tick.is-active { background: var(--red); width: 60px; }
+.c-side__tick.is-past { background: rgba(255,255,255,.4); }
+
+/* Footer navigation buttons */
+.c-carousel__nav {
+  grid-column: 1 / -1; grid-row: 3;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.c-hint { font: 500 10px/1 var(--mono); letter-spacing: .2em; color: var(--ink-dim); }
+.c-nav-btns { display: flex; gap: 10px; }
+.c-nav__btn {
+  width: 52px; height: 52px; border: 1px solid rgba(255,255,255,.25); background: rgba(10,10,10,.4);
+  backdrop-filter: blur(6px); color: #fff; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .3s ease, background .3s ease;
+  font-family: var(--mono);
+}
+.c-nav__btn:hover { border-color: var(--red); background: rgba(217,4,41,.25); }
+.c-nav__btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* Ambient accent glow */
+.c-glow {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 60%; height: 60%; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at center, rgba(217,4,41,.06) 0%, transparent 65%);
+  transition: opacity .6s ease;
+}
+
+/* ——— Outro ——— */
+.c-outro {
+  padding: 140px 56px 100px; background: var(--bg);
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+}
+.c-outro__label { font: 500 11px/1 var(--mono); letter-spacing: .2em; color: var(--red-text); }
+.c-outro__title { font-family: var(--display); font-size: min(6vw,64px); line-height: .9; text-align: center; }
+.c-outro__back {
+  display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px;
+  border: 1px solid rgba(255,255,255,.2); font: 600 12px/1 var(--mono); letter-spacing: .16em;
+  transition: background .3s ease, border-color .3s ease;
+}
+.c-outro__back:hover { background: var(--red); border-color: var(--red); }
+
+/* ——— Mobile: swipe stack simplifié (vertical) ——— */
+@media (max-width: 900px) {
+  .c-intro { padding: 60px 24px; min-height: 60vh; }
+  .c-carousel__sticky {
+    position: static; height: auto; padding: 32px 24px;
+    grid-template-columns: 1fr; grid-template-rows: auto auto auto auto;
+    gap: 32px;
+  }
+  .c-carousel__header { grid-column: 1; grid-row: 1; }
+  .c-stack {
+    grid-column: 1; grid-row: 2;
+    width: 100%; max-width: none; aspect-ratio: 4/5;
+    margin: 0 auto;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,.5));
+  }
+  .c-info { grid-column: 1; grid-row: 3; max-width: none; align-items: flex-start; }
+  .c-info__num { font-size: min(24vw,140px); }
+  .c-info__title { font-size: min(7vw,42px); }
+  .c-info .is-in { }
+  .c-side { display: none; }
+  .c-carousel__nav { grid-column: 1; grid-row: 4; }
+  .c-outro { padding: 80px 24px; }
+
+  /* On mobile: cards are stacked but scroll native replaced by button-driven index */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-card { transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<a href="previews/index.html" class="preview-back">← RETOUR AUX PISTES</a>
+
+<!-- INTRO -->
+<section class="c-intro">
+  <div class="c-intro__inner">
+    <div class="c-intro__eyebrow">
+      <span class="c-intro__eyebrow-line"></span>
+      <span class="c-intro__eyebrow-text">PISTE C · STACK CINÉTIQUE</span>
+    </div>
+    <h1 class="c-intro__title">TRAVAUX<span class="red">.</span></h1>
+    <div class="c-intro__script">une sélection</div>
+    <p class="c-intro__lead">Une pile de dossiers cinéma. Au scroll, la carte du dessus s'écarte pour laisser place à la suivante. Sensation tactile de feuilleter un book.</p>
+  </div>
+</section>
+
+<!-- CAROUSEL -->
+<section class="c-carousel" id="cCarousel">
+  <div class="c-carousel__sticky">
+    <div class="c-glow"></div>
+
+    <div class="c-carousel__header">
+      <div class="c-carousel__eyebrow">SÉLECTION · <span id="cTotalLabel">12</span> DOSSIERS</div>
+      <div class="c-carousel__counter"><b id="cCurrent">01</b><span>/ <span id="cTotal">12</span></span></div>
+    </div>
+
+    <aside class="c-info" id="cInfo">
+      <div class="c-info__num" id="cInfoNum">01<span class="dot">.</span></div>
+      <div class="c-info__client" id="cInfoClient">CLIENT</div>
+      <h2 class="c-info__title" id="cInfoTitle">Titre</h2>
+      <p class="c-info__meta" id="cInfoMeta">Meta</p>
+      <a class="c-info__cta" id="cInfoCta" href="#" target="_blank">OUVRIR LE PROJET <span>↗</span></a>
+    </aside>
+
+    <div class="c-stack" id="cStack"></div>
+
+    <aside class="c-side">
+      <div class="c-side__label">DOSSIERS</div>
+      <div class="c-side__deck" id="cDeck"></div>
+    </aside>
+
+    <div class="c-carousel__nav">
+      <div class="c-hint">SCROLLE POUR FEUILLETER · <span id="cHintCurrent">01</span> / <span id="cHintTotal">12</span></div>
+      <div class="c-nav-btns">
+        <button class="c-nav__btn" id="cPrev" aria-label="Dossier précédent">←</button>
+        <button class="c-nav__btn" id="cNext" aria-label="Dossier suivant">→</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTRO -->
+<section class="c-outro">
+  <div class="c-outro__label">FIN DE LA PILE</div>
+  <h2 class="c-outro__title">Ton avis compte<span class="red">.</span></h2>
+  <a href="previews/index.html" class="c-outro__back">← REVENIR AUX PISTES</a>
+</section>
+
+<script src="js/projects.js"></script>
+<script>
+(function(){
+  'use strict';
+  var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var IS_MOBILE = window.matchMedia('(max-width: 900px)').matches;
+  var projects = window.PROJECTS || [];
+  var n = projects.length;
+
+  function ytThumb(id) { return 'https://img.youtube.com/vi/' + id + '/maxresdefault.jpg'; }
+  function ytThumbHq(id) { return 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg'; }
+  function cardImage(p) { return p.image || (p.youtube ? ytThumb(p.youtube) : ''); }
+  function stripTags(s) { return String(s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
+
+  var stack = document.getElementById('cStack');
+  var deck = document.getElementById('cDeck');
+  var outer = document.getElementById('cCarousel');
+  var infoEl = document.getElementById('cInfo');
+  var infoNum = document.getElementById('cInfoNum');
+  var infoClient = document.getElementById('cInfoClient');
+  var infoTitle = document.getElementById('cInfoTitle');
+  var infoMeta = document.getElementById('cInfoMeta');
+  var infoCta = document.getElementById('cInfoCta');
+  var currentEl = document.getElementById('cCurrent');
+  var totalEl = document.getElementById('cTotal');
+  var totalLabelEl = document.getElementById('cTotalLabel');
+  var hintCurrent = document.getElementById('cHintCurrent');
+  var hintTotal = document.getElementById('cHintTotal');
+  var prevBtn = document.getElementById('cPrev');
+  var nextBtn = document.getElementById('cNext');
+
+  if (!stack || !n) return;
+
+  totalEl.textContent = String(n).padStart(2, '0');
+  totalLabelEl.textContent = String(n).padStart(2, '0');
+  hintTotal.textContent = String(n).padStart(2, '0');
+
+  // Build stack cards
+  stack.innerHTML = projects.map(function(p, i) {
+    var img = cardImage(p);
+    var label = String(i + 1).padStart(2, '0');
+    return '' +
+      '<div class="c-card" data-c-card data-idx="' + i + '">' +
+        '<div class="c-card__img" style="background-image:url(\'' + img + '\')" data-yt="' + (p.youtube || '') + '"></div>' +
+        '<div class="c-card__scrim"></div>' +
+        '<div class="c-card__rail"></div>' +
+        '<div class="c-card__label">' + label + ' · ' + (p.year || '') + '</div>' +
+        '<div class="c-card__watermark">' + stripTags(p.client) + '<br>' + stripTags(p.title) + '</div>' +
+      '</div>';
+  }).join('');
+
+  // Build deck ticks (side indicator)
+  deck.innerHTML = projects.map(function() { return '<div class="c-side__tick"></div>'; }).join('');
+
+  var cards = Array.prototype.slice.call(stack.querySelectorAll('[data-c-card]'));
+  var ticks = Array.prototype.slice.call(deck.querySelectorAll('.c-side__tick'));
+
+  // YouTube fallback
+  Array.prototype.forEach.call(document.querySelectorAll('.c-card__img[data-yt]'), function(el) {
+    var yt = el.getAttribute('data-yt'); if (!yt) return;
+    var probe = new Image();
+    probe.onload = function() {
+      if (probe.naturalWidth <= 120) el.style.backgroundImage = "url('" + ytThumbHq(yt) + "')";
+    };
+    probe.onerror = function() { el.style.backgroundImage = "url('" + ytThumbHq(yt) + "')"; };
+    probe.src = ytThumb(yt);
+  });
+
+  var currentInfoIdx = -1;
+  function updateInfo(idx) {
+    if (idx === currentInfoIdx) return;
+    currentInfoIdx = idx;
+    var p = projects[idx];
+    if (!p) return;
+    infoEl.classList.remove('is-in');
+    // Force reflow to reset transition
+    void infoEl.offsetWidth;
+    infoNum.innerHTML = String(idx + 1).padStart(2, '0') + '<span class="dot">.</span>';
+    infoClient.textContent = p.client;
+    infoTitle.innerHTML = p.title;
+    infoMeta.textContent = (p.role || '') + (p.year ? ' · ' + p.year : '');
+    infoCta.href = 'projet.html?p=' + (p.slug || '');
+    infoEl.classList.add('is-in');
+  }
+
+  function updateTicks(idx) {
+    ticks.forEach(function(t, i) {
+      t.classList.toggle('is-active', i === idx);
+      t.classList.toggle('is-past', i < idx);
+    });
+  }
+
+  // Base stack transforms (posed once) — cards fanned out slightly
+  function baseTransform(depth) {
+    // depth 0 = top card visible; depth 1,2,3 = behind
+    var y = depth * 10;
+    var rot = depth * -1.2;
+    var scale = 1 - depth * 0.04;
+    var opacity = depth === 0 ? 1 : Math.max(0.55, 1 - depth * 0.18);
+    return {
+      transform: 'translate(-' + (depth * 6) + 'px, ' + y + 'px) rotate(' + rot + 'deg) scale(' + scale.toFixed(3) + ')',
+      opacity: opacity,
+      zIndex: 100 - depth
+    };
+  }
+
+  function render(pct) {
+    var progress = pct * (n - 1);
+    var activeIdx = Math.floor(progress);
+    var t = progress - activeIdx;
+
+    for (var i = 0; i < n; i++) {
+      var card = cards[i];
+      var s;
+      if (i < activeIdx) {
+        // Already passed — hidden below/behind
+        card.style.opacity = 0;
+        card.style.zIndex = 0;
+        card.style.transform = 'translate(-40vw, 30vh) rotate(-18deg) scale(.85)';
+        card.classList.remove('is-top');
+      } else if (i === activeIdx) {
+        // Sliding away
+        var slideX = -t * 55; // vw-ish (in pixels of the container)
+        var slideY = t * 40;
+        var rot = t * -14;
+        var scale = 1 - t * 0.08;
+        card.style.transform = 'translate(' + slideX + '%, ' + slideY + '%) rotate(' + rot + 'deg) scale(' + scale.toFixed(3) + ')';
+        card.style.opacity = 1 - t * 0.7;
+        card.style.zIndex = 100;
+        card.classList.toggle('is-top', t < 0.5);
+      } else {
+        // Behind: depth from t
+        var depth = (i - activeIdx - 1) + (1 - t); // as t → 1, this depth → i - activeIdx - 1
+        depth = Math.max(0, depth);
+        var b = baseTransform(depth);
+        card.style.transform = b.transform;
+        card.style.opacity = b.opacity;
+        card.style.zIndex = b.zIndex;
+        card.classList.toggle('is-top', depth < 0.05);
+      }
+    }
+
+    var displayIdx = t >= 0.5 ? activeIdx + 1 : activeIdx;
+    displayIdx = Math.max(0, Math.min(n - 1, displayIdx));
+    updateInfo(displayIdx);
+    updateTicks(displayIdx);
+    currentEl.textContent = String(displayIdx + 1).padStart(2, '0');
+    hintCurrent.textContent = String(displayIdx + 1).padStart(2, '0');
+
+    prevBtn.disabled = displayIdx === 0 && t < 0.05;
+    nextBtn.disabled = displayIdx === n - 1;
+  }
+
+  var currentPct = 0;
+  var rafId = null;
+  var LERP = 0.16;
+
+  if (IS_MOBILE) {
+    // Mobile: no scroll-lock, index driven by prev/next buttons.
+    // Show all cards stacked at rest, drive activeIdx manually.
+    var mobileIdx = 0;
+    var mobileRender = function() {
+      var pct = mobileIdx / Math.max(1, n - 1);
+      render(pct);
+    };
+    mobileRender();
+    prevBtn.addEventListener('click', function() { mobileIdx = Math.max(0, mobileIdx - 1); mobileRender(); });
+    nextBtn.addEventListener('click', function() { mobileIdx = Math.min(n - 1, mobileIdx + 1); mobileRender(); });
+    return;
+  }
+
+  // Desktop: scroll-lock
+  var STEP_VH = 0.55;
+  var scrollDist = function() { return Math.max(1, (n - 1) * window.innerHeight * STEP_VH); };
+  var setHeight = function() { outer.style.height = (window.innerHeight + scrollDist()) + 'px'; };
+  setHeight();
+  window.addEventListener('resize', function() { setHeight(); requestRender(); });
+
+  function target() {
+    var rect = outer.getBoundingClientRect();
+    var scrolled = Math.max(0, -rect.top);
+    return Math.min(1, scrolled / scrollDist());
+  }
+
+  function loop() {
+    rafId = null;
+    var tgt = target();
+    if (REDUCE) currentPct = tgt;
+    else {
+      currentPct += (tgt - currentPct) * LERP;
+      if (Math.abs(tgt - currentPct) < 0.0005) currentPct = tgt;
+    }
+    render(currentPct);
+    if (currentPct !== tgt) rafId = requestAnimationFrame(loop);
+  }
+  function requestRender() { if (rafId == null) rafId = requestAnimationFrame(loop); }
+
+  currentPct = target();
+  render(currentPct);
+  window.addEventListener('scroll', requestRender, { passive: true });
+
+  function scrollToIdx(idx) {
+    idx = Math.max(0, Math.min(n - 1, idx));
+    var outerTop = window.scrollY + outer.getBoundingClientRect().top;
+    var targetY = outerTop + (idx / (n - 1)) * scrollDist();
+    window.scrollTo({ top: targetY, behavior: REDUCE ? 'auto' : 'smooth' });
+  }
+  prevBtn.addEventListener('click', function() {
+    var progress = currentPct * (n - 1);
+    var idx = Math.round(progress);
+    if (Math.abs(progress - idx) < 0.1) idx -= 1;
+    scrollToIdx(idx);
+  });
+  nextBtn.addEventListener('click', function() {
+    var progress = currentPct * (n - 1);
+    var idx = Math.round(progress);
+    if (Math.abs(progress - idx) < 0.1) idx += 1;
+    scrollToIdx(idx);
+  });
+})();
+</script>
+</body>
+</html>

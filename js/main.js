@@ -21,83 +21,45 @@
   function isYoutubeThumbUrl(url) { return /^https?:\/\/img\.youtube\.com\//.test(String(url || '')); }
   function cardImage(p) { return p.image || (p.youtube ? ytThumb(p.youtube) : ''); }
 
-  /* ——— Build the project cards from js/projects.js ———
-     Cards are data-driven: the peek "projet suivant" thumbnail, the last-card
-     "retour début", and the counter total all derive from the list length. */
-  function renderProjects() {
-    var track = document.getElementById('carouselTrack');
+  /* ——— Build le showcase (fonds cross-fade + vignettes roulette) depuis js/projects.js ———
+     Data-driven comme l'ancien carrousel : le compteur total et le nombre de vignettes
+     dérivent de la liste. La sélection initiale (idx 0) est posée par initShowcase(). */
+  function renderShowcase() {
+    var stage = document.getElementById('showcaseStage');
+    var track = document.getElementById('showcaseThumbs');
     var data = window.PROJECTS;
-    if (!track || !data || !data.length) return;
-    var n = data.length;
+    if (!stage || !track || !data || !data.length) return;
+
+    stage.insertAdjacentHTML('afterbegin', data.map(function (p, i) {
+      var focal = p.focal || 'center';
+      var yt = (p.youtube && isYoutubeThumbUrl(cardImage(p))) ? p.youtube : '';
+      return '<div class="showcase__bg" data-showcase-bg data-idx="' + i + '" data-yt="' + yt + '" style="background-image:url(\'' + cardImage(p) + '\'); background-position:' + focal + '"></div>';
+    }).join(''));
 
     track.innerHTML = data.map(function (p, i) {
-      var next = data[(i + 1) % n];
-      var last = i === n - 1;
-      var href = p.url || (p.slug ? 'projet.html?p=' + p.slug : '#');
-
-      var cardLabel = stripTags(p.client) + ' — ' + stripTags(p.title);
-
-      var statsHtml = (p.stats && p.stats.length)
-        ? '<div class="card__stats">' + p.stats.map(function (s, si) {
-            var gap = si < p.stats.length - 1 ? ' card__stat-label--gap' : '';
-            return '<div class="card__stat-num">' + s[0] + '</div>' +
-                   '<div class="card__stat-label' + gap + '">' + s[1] + '</div>';
-          }).join('') + '</div>'
-        : '';
-
-      var focal = p.focal || 'center';
-
+      var num = String(i + 1).padStart(2, '0');
+      var label = stripTags(p.client) + ' — ' + stripTags(p.title);
+      var yt = (p.youtube && isYoutubeThumbUrl(cardImage(p))) ? p.youtube : '';
       return '' +
-        '<a data-card href="' + href + '" class="card">' +
-          '<div class="card__frame">' +
-            '<div class="card__media" data-media>' +
-              '<div class="card__media-shift" data-media-shift>' +
-                '<img class="card__media-img" data-media-img src="' + cardImage(p) + '"' + (p.youtube && isYoutubeThumbUrl(cardImage(p)) ? ' data-hqfallback="' + ytThumb(p.youtube, 'hqdefault') + '"' : '') + ' alt="' + cardLabel + '" loading="lazy" style="object-position:' + focal + '">' +
-              '</div>' +
-            '</div>' +
-            '<div class="card__scrim-b"></div>' +
-            '<div class="card__scrim-l"></div>' +
-            '<div class="card__watermark">' +
-              '<div class="card__watermark-main">' + p.watermark + '</div>' +
-              '<div class="card__watermark-script">' + p.watermarkScript + '</div>' +
-            '</div>' +
-            statsHtml +
-            '<div class="card__meta">' +
-              '<div class="card__client">' + p.client + '</div>' +
-              '<div class="card__title">' + p.title + '</div>' +
-              '<div class="card__bar" data-bar></div>' +
-            '</div>' +
-            '<div class="card__peek" data-peek aria-hidden="true">' +
-              '<div class="card__peek-inner">' +
-                '<div class="card__peek-thumb"' + (next.youtube && isYoutubeThumbUrl(cardImage(next)) ? ' data-hqfallback="' + ytThumb(next.youtube, 'hqdefault') + '"' : '') + ' style="background-image:url(\'' + cardImage(next) + '\')"></div>' +
-                '<div class="card__peek-label">' + (last ? 'RETOUR DÉBUT' : 'PROJET SUIVANT') + ' <span>↗</span></div>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-        '</a>';
+        '<button class="showcase__thumb" type="button" data-showcase-thumb data-idx="' + i + '" aria-label="Voir ' + label + '">' +
+          '<div class="showcase__thumb-img" data-yt="' + yt + '" style="background-image:url(\'' + cardImage(p) + '\')"></div>' +
+          '<div class="showcase__thumb-scrim"></div>' +
+          '<div class="showcase__thumb-num">' + num + '</div>' +
+          '<div class="showcase__thumb-rail"></div>' +
+          '<div class="showcase__thumb-label">' + stripTags(p.client) + '</div>' +
+        '</button>';
     }).join('');
 
-    var countEl = document.getElementById('carouselCount');
-    if (countEl) countEl.textContent = '01 / ' + String(n).padStart(2, '0');
-
-    fixYtThumbs(track);
+    fixYtFallback(stage.querySelectorAll('[data-showcase-bg][data-yt]:not([data-yt=""])'));
+    fixYtFallback(track.querySelectorAll('.showcase__thumb-img[data-yt]:not([data-yt=""])'));
   }
 
-  /* ——— Fallback miniatures YouTube ———
+  /* ——— Fallback miniature YouTube (fonds background-image) ———
      maxresdefault n'existe pas pour toutes les vidéos (ex. ludeo → placeholder gris 120px
-     renvoyé en succès HTTP). On bascule alors sur hqdefault (toujours dispo). Gère à la fois
-     les <img> (cartes) et les fonds background-image (vignettes « projet suivant »). */
-  function fixYtThumbs(root) {
-    // <img> des cartes
-    Array.prototype.forEach.call(root.querySelectorAll('.card__media-img[data-hqfallback]'), function (img) {
-      var hq = img.getAttribute('data-hqfallback');
-      function swap() { if (img.naturalWidth && img.naturalWidth <= 120) img.src = hq; }
-      img.addEventListener('error', function () { img.src = hq; }, { once: true });
-      if (img.complete) swap(); else img.addEventListener('load', swap, { once: true });
-    });
-    // fonds background-image des vignettes peek
-    Array.prototype.forEach.call(root.querySelectorAll('.card__peek-thumb[data-hqfallback]'), function (el) {
-      var hq = el.getAttribute('data-hqfallback');
+     renvoyé en succès HTTP). On bascule alors sur hqdefault (toujours dispo). */
+  function fixYtFallback(els) {
+    Array.prototype.forEach.call(els, function (el) {
+      var hq = ytThumb(el.getAttribute('data-yt'), 'hqdefault');
       var m = /url\(['"]?(.*?)['"]?\)/.exec(el.style.backgroundImage || '');
       if (!m || !m[1]) return;
       var probe = new Image();
@@ -376,388 +338,359 @@
     requestAnimationFrame(tick);
   }
 
-  /* ——— Carrousel projets : 3D scroll-lock sur desktop, scroll horizontal natif
-     + snap sur mobile. Le scroll-jack (transform piloté par le scroll vertical de
-     la page) est illisible et quasi non-cliquable au tactile — testé en conditions
-     réelles (retours utilisateur), donc pas de patch cosmétique : le mobile utilise
-     un vrai <div overflow-x:auto scroll-snap> où les cartes ne sont jamais
-     transformées par JS et restent des liens natifs pleinement cliquables. Les
-     effets ci-dessous (parallax/Ken Burns/mise au point/reveal) ne touchent JAMAIS
-     .card lui-même (le <a> cliquable) — uniquement ses enfants internes
-     (.card__media-shift, .card__media-img), sur les deux breakpoints. ——— */
-  function initCarousel() {
-    var outer = document.getElementById('carouselOuter');
-    var track = document.getElementById('carouselTrack');
-    var stage = outer && outer.querySelector('.carousel-stage');
-    var progress = document.getElementById('carouselProgress');
-    var counter = document.getElementById('carouselCount');
-    var prevBtn = document.getElementById('prevBtn');
-    var nextBtn = document.getElementById('nextBtn');
-    if (!outer || !track || !stage) return;
+  /* ——— Showcase projets : hero plein cadre + cluster de vignettes « roulette » ———
+     Deux modes tranchés une fois au chargement (comme l'ancien carrousel) :
 
-    var cards = Array.prototype.slice.call(track.querySelectorAll('[data-card]'));
-    var total = cards.length;
-    if (!total) return;
+     • DESKTOP hors reduced-motion → CAPTURE STICKY (`initLock`) : la section se fige
+       (`.showcase.is-locked` → `.showcase__sticky` sticky), le scroll VERTICAL de la
+       page pilote la roulette. Aucune rotation de carte (donc pas le défaut de
+       l'ancien carrousel 3D) : seul un scale continu + un translate horizontal de la
+       bande. Le hero change projet par projet (au franchissement du milieu), et le
+       scroll s'aimante sur le projet le plus proche à l'arrêt.
 
-    // Navigation intra-carrousel (amener une carte au centre). Réassignée par
-    // initDesktop/initMobile car chacun a sa propre mécanique de scroll (scroll de
-    // fenêtre vs scroll horizontal du stage). Le peek s'en sert pour avancer d'une
-    // carte plutôt que d'ouvrir une page projet.
-    var goToCard = function () {};
+     • MOBILE ou reduced-motion → NATIF (`initNative`) : pas de capture, scroll
+       horizontal natif de la bande (overflow-x), hero confirmé à l'arrêt (debounce).
+       Respecte l'interdit "pas de scroll-jack mobile" du CLAUDE.md + prefers-reduced-motion.
 
-    // La carte entière est un <a> vers sa page projet. Le peek « PROJET SUIVANT »
-    // n'ouvre PAS cette page : il fait AVANCER le carrousel d'une carte (comme la
-    // flèche →), pour amener le projet suivant au centre, là où il devient facilement
-    // cliquable. C'est ce qui rend les cartes du milieu accessibles : en scroll libre,
-    // seules la 1re (haut) et la dernière (bas) se posent naturellement au centre ;
-    // avancer carte par carte recentre proprement chaque projet.
-    // preventDefault coupe la navigation par défaut du <a> parent, stopPropagation
-    // évite tout autre handler. Le reste de la carte reste le lien vers sa page.
-    cards.forEach(function (card, i) {
-      var peek = card.querySelector('[data-peek]');
-      if (!peek) return;
-      peek.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        goToCard((i + 1) % total); // wrap : la dernière (« RETOUR DÉBUT ») revient à la 1re
+     Tout le scale (roulette + pic au survol) passe par UNE boucle rAF unique, en
+     calcul mathématique pur (aucun getBoundingClientRect par vignette et par frame →
+     plus de layout thrashing) et sans transition CSS sur `transform` (le lissage est
+     fait en amont par lerp — une transition par-dessus retraînerait, cf. .card). */
+  function initShowcase() {
+    var outer = document.getElementById('showcaseOuter');
+    var stage = document.getElementById('showcaseStage');
+    var track = document.getElementById('showcaseThumbs');
+    var content = document.getElementById('showcaseContent');
+    var clientEl = document.getElementById('showcaseClient');
+    var titleEl = document.getElementById('showcaseTitle');
+    var leadEl = document.getElementById('showcaseLead');
+    var metaEl = document.getElementById('showcaseMeta');
+    var ctaEl = document.getElementById('showcaseCta');
+    var counterEl = document.getElementById('showcaseCounter');
+    var progressFill = document.getElementById('showcaseProgress');
+    var hint = document.getElementById('showcaseHint');
+    var prevBtn = document.getElementById('showcasePrev');
+    var nextBtn = document.getElementById('showcaseNext');
+    if (!outer || !stage || !track || !content) return;
+
+    var data = window.PROJECTS || [];
+    var n = data.length;
+    if (!n) return;
+
+    var bgs = Array.prototype.slice.call(stage.querySelectorAll('[data-showcase-bg]'));
+    var thumbs = Array.prototype.slice.call(track.querySelectorAll('[data-showcase-thumb]'));
+
+    var IS_MOBILE = !!(window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
+    var LOCK = !REDUCE && !IS_MOBILE;
+
+    // Roulette : scale au pic (centre / survol) → plancher (loin). Delta doux pour
+    // éviter tout chevauchement (le gap CSS de 22px absorbe le +14%) et rester fluide.
+    var PEAK = 1.14, FLOOR = 0.90, RADIUS = 3;
+    var PROG_LERP = 0.20;   // rattrapage de la position de bande (~120ms)
+    var BOOST_LERP = 0.22;  // rattrapage du pic de survol
+
+    // ——— Géométrie (mesurée une fois, recalculée au resize) ———
+    var thumbW = 0, gap = 0, step = 1, padSide = 0;
+    function measure() {
+      if (!thumbs.length) return;
+      thumbW = thumbs[0].offsetWidth || 128;
+      var cs = window.getComputedStyle(track);
+      gap = parseFloat(cs.columnGap || cs.gap) || 22;
+      step = thumbW + gap;
+      padSide = Math.max(0, (track.clientWidth - thumbW) / 2);
+      track.style.paddingLeft = padSide + 'px';
+      track.style.paddingRight = padSide + 'px';
+    }
+
+    // Split-letters SANS casser les mots : chaque mot est un conteneur inline-block
+    // insécable (.showcase__word) → un retour à la ligne ne peut tomber qu'ENTRE deux
+    // mots (nœud texte espace), jamais au milieu ("COLLECTIO"/"N"). Le compteur --i
+    // reste global pour que la cascade balaye tout le titre de gauche à droite.
+    function splitTitle(el, text) {
+      var frag = document.createDocumentFragment();
+      var words = String(text).split(' ');
+      var i = 0;
+      words.forEach(function (word, w) {
+        var wordEl = document.createElement('span');
+        wordEl.className = 'showcase__word';
+        for (var c = 0; c < word.length; c++) {
+          var span = document.createElement('span');
+          span.className = 'showcase__letter';
+          span.style.setProperty('--i', i++);
+          span.textContent = word[c];
+          wordEl.appendChild(span);
+        }
+        frag.appendChild(wordEl);
+        if (w < words.length - 1) frag.appendChild(document.createTextNode(' '));
       });
-    });
-
-    // Références aux enfants internes résolues une seule fois (au lieu d'un
-    // querySelector par carte à chaque frame de scroll dans applyCardEffects,
-    // appelé jusqu'à 60x/s pour chacune des N cartes — coût CPU pur, aucun
-    // changement de comportement).
-    var cardData = cards.map(function (card) {
-      return {
-        card: card,
-        shift: card.querySelector('[data-media-shift]'),
-        img: card.querySelector('[data-media-img]'),
-        peek: card.querySelector('[data-peek]')
-      };
-    });
-
-    var GAP = 40;
-    var getCardW = function () { return cards[0] ? cards[0].offsetWidth : 760; };
-
-    // Un seul scroll listener qui déclenche potentiellement plusieurs fois par
-    // frame native : on ne garde que le dernier appel par frame (rAF), le calcul
-    // réel ne tourne jamais plus d'une fois par 16ms. Aucune dépendance, même
-    // principe que Lenis/GSAP visaient mais sans intercepter le scroll lui-même.
-    function rafThrottle(fn) {
-      var scheduled = false;
-      return function () {
-        if (scheduled) return;
-        scheduled = true;
-        requestAnimationFrame(function () { scheduled = false; fn(); });
-      };
+      el.innerHTML = '';
+      el.appendChild(frag);
     }
 
-    // Seuil sous lequel une carte est considérée "au centre" : révèle son texte
-    // (client/titre/stats/barre, via la classe .is-focused) et déclenche le zoom
-    // Ken Burns. Volontairement plus large que le seuil du peek (0.35) — sinon les
-    // voisines immédiates (absDist ~1.11 au repos) n'auraient jamais leur texte.
-    var FOCUS_THRESHOLD = 0.5;
+    // ——— Affichage du hero (cross-fade + cascade texte). Séparé de la sélection :
+    //     le survol prévisualise sans toucher confirmedIdx. ———
+    var displayIdx = -1;
+    function showDisplay(idx) {
+      if (idx === displayIdx) return;
+      displayIdx = idx;
+      var p = data[idx];
 
-    /* Applique aux enfants internes d'une carte (jamais à .card) :
-       - reveal bidirectionnel du texte (classe .is-focused, réversible par construction
-         puisque dérivée de dist/absDist — remonter rejoue juste l'autre sens)
-       - parallax interne à l'image (translate proportionnel à dist, indépendant
-         de la rotation/scale de la carte parente)
-       - mise au point : flou + désaturation croissants avec absDist (Concept 2)
-       - zoom Ken Burns (classe .is-kenburns) uniquement sur la carte focalisée —
-         piloté par une @keyframes CSS, pas par du JS à chaque tick (gratuit,
-         compositor-only, continue même si le scroll s'arrête pendant qu'on dwell) */
-    function applyCardEffects(entry, dist, absDist) {
-      var focused = absDist < FOCUS_THRESHOLD;
-      entry.card.classList.toggle('is-focused', focused);
+      bgs.forEach(function (bg, i) { bg.classList.toggle('is-active', i === idx); });
+      thumbs.forEach(function (t, i) { t.classList.toggle('is-active', i === idx); });
+      if (counterEl) counterEl.innerHTML = String(idx + 1).padStart(2, '0') + '<span>/ ' + String(n).padStart(2, '0') + '</span>';
 
-      var shift = entry.shift;
-      if (shift) {
-        var panX = Math.max(-26, Math.min(26, dist * -22));
-        var panY = Math.min(14, absDist * 6);
-        var t = 'scale(1.1) translate(' + panX.toFixed(1) + 'px,' + panY.toFixed(1) + 'px)';
-        shift.style.transform = t;
-        if (!REDUCE) {
-          var blur = Math.min(6, absDist * 4.5);
-          var gray = Math.min(70, absDist * 46);
-          shift.style.filter = 'blur(' + blur.toFixed(2) + 'px) grayscale(' + gray.toFixed(0) + '%)';
-        }
+      content.classList.remove('is-in');
+      void content.offsetWidth; // reflow → rejoue la cascade même si is-in était déjà posé
+      clientEl.textContent = p.client;
+      splitTitle(titleEl, stripTags(p.title));
+      if (leadEl) leadEl.textContent = p.intro || '';
+      metaEl.textContent = (p.role || '') + (p.year ? ' · ' + p.year : '');
+      ctaEl.href = p.url || (p.slug ? 'projet.html?p=' + p.slug : '#');
+      requestAnimationFrame(function () { content.classList.add('is-in'); });
+    }
+
+    // ——— État partagé + boucle de rendu unique ———
+    var confirmedIdx = 0;
+    var hoveredIdx = null;
+    var currentProgress = 0;     // position float de la bande (index centré)
+    var boost = [];              // pic de survol courant par vignette
+    var boostTarget = [];
+    for (var b = 0; b < n; b++) { boost.push(0); boostTarget.push(0); }
+    var rafId = null;
+
+    // Cible de progression : dérivée du scroll page en lock, du scrollLeft en natif.
+    function progressTarget() {
+      if (LOCK) {
+        var scrolled = Math.max(0, -outer.getBoundingClientRect().top);
+        return Math.min(1, scrolled / lockScrollDist()) * (n - 1);
+      }
+      return track.scrollLeft / step;
+    }
+
+    function renderFrame() {
+      // 1) Lisse la position de bande + les pics de survol.
+      var tgt = progressTarget();
+      if (REDUCE) currentProgress = tgt;
+      else {
+        currentProgress += (tgt - currentProgress) * PROG_LERP;
+        if (Math.abs(tgt - currentProgress) < 0.0006) currentProgress = tgt;
+      }
+      var animating = Math.abs(tgt - currentProgress) > 0.0006;
+
+      // 2) En lock, la bande est positionnée par JS (overflow-x:hidden) pour centrer
+      //    `currentProgress`. En natif, c'est le scroll natif qui l'a déjà positionnée.
+      if (LOCK) {
+        var maxSL = Math.max(0, track.scrollWidth - track.clientWidth);
+        var sl = padSide + currentProgress * step + thumbW / 2 - track.clientWidth / 2;
+        track.scrollLeft = Math.max(0, Math.min(maxSL, sl));
       }
 
-      var img = entry.img;
-      if (img && !REDUCE) img.classList.toggle('is-kenburns', focused);
+      // 3) Scale de chaque vignette (calcul pur, zéro reflow) : roulette + boost survol.
+      for (var i = 0; i < n; i++) {
+        if (Math.abs(boost[i] - boostTarget[i]) > 0.001) {
+          boost[i] += (boostTarget[i] - boost[i]) * BOOST_LERP;
+          animating = true;
+        } else { boost[i] = boostTarget[i]; }
 
-      var peek = entry.peek;
-      if (peek) {
-        if (absDist < 0.35) {
-          peek.style.opacity = '1';
-          peek.style.transform = 'translateY(0)';
-        } else {
-          peek.style.opacity = '0';
-          peek.style.transform = 'translateY(8px)';
-        }
+        var dist = i - currentProgress;
+        var a = Math.min(RADIUS, Math.abs(dist)) / RADIUS;
+        var base = PEAK - a * (PEAK - FLOOR);
+        var sc = base * (1 - boost[i]) + PEAK * boost[i];
+        var t = thumbs[i];
+        t.style.transform = 'scale(' + sc.toFixed(3) + ')';
+        t.style.zIndex = String(Math.round(30 - Math.min(20, Math.abs(dist) * 4) + boost[i] * 40));
       }
+
+      // 4) Barre de progression.
+      if (progressFill) progressFill.style.transform = 'scaleX(' + (n > 1 ? (currentProgress / (n - 1)).toFixed(4) : 1) + ')';
+
+      // 5) Hero. En lock : commit projet par projet (au franchissement du milieu),
+      //    sauf pendant un survol qui prévisualise. En natif : géré au settle (debounce).
+      if (LOCK && hoveredIdx === null) {
+        var idxRound = Math.max(0, Math.min(n - 1, Math.round(currentProgress)));
+        if (idxRound !== confirmedIdx) confirmedIdx = idxRound;
+        showDisplay(confirmedIdx);
+      }
+
+      if (animating) rafId = requestAnimationFrame(renderFrame);
+      else rafId = null;
     }
+    function kick() { if (rafId == null) rafId = requestAnimationFrame(renderFrame); }
 
-    if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
-      initMobile();
-    } else {
-      initDesktop();
+    // ——— Indice de scroll : masqué au 1er geste dans la section ———
+    var hintDismissed = false;
+    function dismissHint() {
+      if (hintDismissed || !hint) return;
+      hintDismissed = true;
+      hint.classList.add('is-hidden');
     }
+    if (hint) hint.querySelector('.showcase__hint-label').textContent = LOCK ? 'SCROLLER' : 'GLISSER';
 
-    function initMobile() {
-      var getStep = function () { return getCardW() + GAP; };
-      var getIdx = function () { return Math.round(stage.scrollLeft / getStep()); };
-
-      // Le scroll natif du stage (scrollLeft) reste la seule source de vérité pour la
-      // position réelle (snap CSS, barre de progression, compteur) — rien n'est retardé
-      // là-dessus. Seul le rendu visuel des cartes (parallax interne + mise au point,
-      // dérivés de `dist`) est lissé par interpolation JS pour éviter les sauts brusques
-      // pendant un scroll rapide/saccadé. Pas de transition CSS ajoutée (cf. audit sur
-      // .card__media-shift) : le lissage se fait uniquement en amont, sur la valeur.
-      var currentLeft = stage.scrollLeft;
-      var rafId = null;
-      var LERP = 0.22;
-
-      var renderChrome = function () {
-        var max = Math.max(1, stage.scrollWidth - stage.clientWidth);
-        var pct = Math.min(1, stage.scrollLeft / max);
-        if (progress) progress.style.width = (((pct * (total - 1)) + 1) / total * 100) + '%';
-        if (counter) {
-          var idx = Math.min(total, getIdx() + 1);
-          counter.textContent = String(idx).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
-        }
-      };
-
-      var renderCards = function (scrollLeftVal) {
-        var cardW = getCardW();
-        var stageCenterX = stage.clientWidth / 2;
-        cardData.forEach(function (entry, i) {
-          var cardLeft = i * getStep() - scrollLeftVal;
-          var cardCenter = cardLeft + cardW / 2;
-          var dist = (cardCenter - stageCenterX) / stageCenterX;
-          applyCardEffects(entry, dist, Math.abs(dist));
+    // ——— Survol (pointer fin) : pic de scale lerpé + prévisualisation hero ———
+    var hasFinePointer = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+    thumbs.forEach(function (t, i) {
+      if (hasFinePointer) {
+        t.addEventListener('mouseenter', function () {
+          hoveredIdx = i; boostTarget[i] = 1;
+          showDisplay(i); kick();
         });
-      };
+        t.addEventListener('mouseleave', function () {
+          hoveredIdx = null; boostTarget[i] = 0;
+          showDisplay(confirmedIdx); kick();
+        });
+      }
+    });
 
-      var loop = function () {
-        rafId = null;
-        var target = stage.scrollLeft;
-        if (REDUCE) {
-          currentLeft = target;
-        } else {
-          currentLeft += (target - currentLeft) * LERP;
-          if (Math.abs(target - currentLeft) < 0.5) currentLeft = target;
-        }
-        renderCards(currentLeft);
-        if (currentLeft !== target) rafId = requestAnimationFrame(loop);
-      };
-      var requestRender = function () {
-        renderChrome();
-        if (rafId == null) rafId = requestAnimationFrame(loop);
-      };
+    if (LOCK) initLock(); else initNative();
 
-      stage.addEventListener('scroll', requestRender, { passive: true });
-      renderChrome();
-      renderCards(currentLeft);
+    // ============================ MODE LOCK (desktop) ============================
+    function lockScrollDist() { return Math.max(1, (n - 1) * window.innerHeight * 0.5); }
 
-      var goTo = function (idx) {
-        idx = Math.max(0, Math.min(total - 1, idx));
-        stage.scrollTo({ left: idx * getStep(), behavior: REDUCE ? 'auto' : 'smooth' });
-      };
-      goToCard = goTo; // le peek avance d'une carte (cf. handler plus haut)
-      if (prevBtn) prevBtn.addEventListener('click', function () { goTo(getIdx() - 1); });
-      if (nextBtn) nextBtn.addEventListener('click', function () { goTo(getIdx() + 1); });
-    }
-
-    function initDesktop() {
-      var getMaxScroll = function () {
-        var cardW = getCardW();
-        var trackW = (cardW + GAP) * total - GAP;
-        var viewW = window.innerWidth;
-        var padLeft = (viewW - cardW) / 2; // center first card
-        return Math.max(0, trackW - viewW + padLeft * 2);
-      };
-
-      // The cards travel getMaxScroll() px horizontally, but we only spend a
-      // fraction of that as vertical scroll so the section isn't a long slog.
-      var SCROLL_FACTOR = 0.55;
-      var getScrollDist = function () { return Math.max(1, getMaxScroll() * SCROLL_FACTOR); };
+    function initLock() {
+      outer.classList.add('is-locked');
 
       var setHeight = function () {
-        // Si le viewport descend sous le breakpoint mobile APRÈS un chargement desktop
-        // (redimensionnement de fenêtre, rotation d'écran, preview qui se rétrécit), le CSS
-        // bascule le carrousel en mode natif (`.carousel-sticky` statique) : il faut alors
-        // EFFACER la hauteur desktop, sinon elle reste collée sous un carrousel court et crée
-        // un grand vide avant la section « à propos ». (Le mode/scroll-lock lui-même n'est pas
-        // recalculé — limitation connue et acceptée — mais au moins plus de trou visuel.)
+        // Garde : si le viewport repasse sous 900px après un load desktop, le CSS
+        // neutralise le sticky — on efface la hauteur inline pour ne pas laisser un
+        // grand vide (même correctif que l'ancien carrousel).
         if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
           outer.style.height = '';
           return;
         }
-        outer.style.height = (window.innerHeight + getScrollDist()) + 'px';
+        outer.style.height = (window.innerHeight + lockScrollDist()) + 'px';
       };
+      measure();
       setHeight();
-      window.addEventListener('resize', function () { setHeight(); requestRender(); });
 
-      // Le carrousel était calé en 1:1 direct sur la position de scroll brute : chaque
-      // évènement `scroll` (qui arrive par rafales — trackpad, molette, momentum)
-      // recalculait `pct` et l'appliquait instantanément, d'où l'effet haché/brutal
-      // (retour utilisateur). Ici la cible (`getTargetPct`) reste dérivée du scroll
-      // natif — le scroll de page lui-même n'est jamais touché, aucune inertie
-      // ajoutée au geste — mais la valeur *rendue* (`currentPct`) rattrape la cible
-      // par interpolation (lerp) à chaque frame plutôt que de la copier au pixel
-      // près. Différent de la transition CSS sur `transform`/`filter` déjà testée et
-      // rejetée (cf. commentaires css/styles.css) : celle-ci ajoutait un lissage à
-      // durée fixe (~600ms) par-dessus une valeur déjà mise à jour par JS, d'où un
-      // double retard "poisseux". Ici il n'y a qu'une seule étape de lissage, réglée
-      // pour rester nerveuse (LERP=0.18 ≈ rattrapage en ~150-200ms).
-      var currentPct = 0;
-      var rafId = null;
-      var LERP = 0.18;
+      window.addEventListener('scroll', function () { dismissHint(); kick(); }, { passive: true });
+      window.addEventListener('resize', function () { measure(); setHeight(); kick(); });
 
-      var getTargetPct = function () {
-        var rect = outer.getBoundingClientRect();
-        var scrolled = Math.max(0, -rect.top);
-        return Math.min(1, scrolled / getScrollDist());
+      // Snap : aimante le scroll page sur le projet le plus proche à l'arrêt, mais
+      // uniquement dans la zone épinglée (jamais pendant l'entrée/sortie de section).
+      var isSnapping = false, snapTimer = null, releaseTimer = null;
+      var outerTop = function () { return window.scrollY + outer.getBoundingClientRect().top; };
+      var scrollYForIdx = function (idx) {
+        idx = Math.max(0, Math.min(n - 1, idx));
+        return outerTop() + (idx / (n - 1)) * lockScrollDist();
       };
-
-      var render = function (pct) {
-        var travel = Math.max(1, getMaxScroll());
-        var cardW = getCardW();
-        var centerX = window.innerWidth / 2;
-
-        track.style.transform = 'translateX(' + (-pct * travel) + 'px)';
-
-        cardData.forEach(function (entry, i) {
-          var cardLeft = (cardW + GAP) * i - (pct * travel) + (window.innerWidth - cardW) / 2;
-          var cardCenter = cardLeft + cardW / 2;
-          var dist = (cardCenter - centerX) / centerX; // dépasse largement ±1 pour les cartes loin du centre (6 cartes de 760px+)
-          var absDist = Math.abs(dist);
-
-          // Rotation plafonnée : sans borne, les cartes les plus excentrées atteignaient ~-77 à -90deg
-          // (mesuré), donc quasi sur la tranche à l'écran → zone cliquable réduite à un fil, de fait
-          // impossible à viser malgré un hit-test techniquement correct.
-          var rotY = Math.max(-22, Math.min(22, dist * -18));
-          var scale = 1 - absDist * 0.08;
-          var opacity = 1 - absDist * 0.35;
-          var tz = -absDist * 80;
-
-          entry.card.style.transform = 'perspective(1200px) rotateY(' + rotY + 'deg) scale(' +
-            Math.max(0.85, scale) + ') translateZ(' + tz + 'px)';
-          entry.card.style.opacity = Math.max(0.5, opacity);
-
-          applyCardEffects(entry, dist, absDist);
-        });
-
-        if (progress) {
-          progress.style.width = (((pct * (total - 1)) + 1) / total * 100) + '%';
-        }
-        if (counter) {
-          var idx = Math.min(total, Math.round(pct * (total - 1)) + 1);
-          counter.textContent = String(idx).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
-        }
-      };
-
-      var loop = function () {
-        rafId = null;
-        var target = getTargetPct();
-        if (REDUCE) {
-          currentPct = target;
-        } else {
-          currentPct += (target - currentPct) * LERP;
-          if (Math.abs(target - currentPct) < 0.0008) currentPct = target;
-        }
-        render(currentPct);
-        if (currentPct !== target) rafId = requestAnimationFrame(loop);
-      };
-      var requestRender = function () {
-        if (rafId == null) rafId = requestAnimationFrame(loop);
-      };
-
-      currentPct = getTargetPct();
-      render(currentPct);
-
-      window.addEventListener('scroll', requestRender, { passive: true });
-
-      // ——— Snap-to-card (desktop uniquement) ———
-      // Le carrousel desktop est en scroll libre (scroll vertical de page → position
-      // horizontale des cartes). S'arrêter entre deux cartes laisse une carte à moitié
-      // pivotée, difficile à cliquer (retour utilisateur). On "aimante" donc la carte la
-      // plus proche au centre dès que le scroll s'immobilise — MAIS uniquement dans la
-      // zone épinglée du carrousel (scrolled strictement entre 0 et getScrollDist), jamais
-      // pendant l'entrée depuis le hero ni la sortie vers À propos, pour ne pas piéger le
-      // scroll de page. Ce n'est PAS un smooth-scroll global (Lenis) ni un scroll-jack en
-      // continu : c'est un recentrage ponctuel déclenché seulement à l'arrêt du scroll.
-      // Le mobile a déjà son propre snap natif (scroll-snap-type:x mandatory en CSS).
-      var isSnapping = false;   // verrou : coupe l'auto-snap pendant un scroll programmatique
-      var snapTimer = null;     // debounce du "scroll arrêté"
-      var releaseTimer = null;  // relâche isSnapping une fois le scroll programmatique posé
-
-      var getOuterTop = function () {
-        return window.scrollY + outer.getBoundingClientRect().top;
-      };
-
-      var snapScrollTo = function (top) {
+      var snapTo = function (idx) {
         isSnapping = true;
-        window.scrollTo({ top: top, behavior: REDUCE ? 'auto' : 'smooth' });
+        window.scrollTo({ top: scrollYForIdx(idx), behavior: REDUCE ? 'auto' : 'smooth' });
         window.clearTimeout(releaseTimer);
-        // 700ms couvre la durée d'un smooth scroll. Même si c'était trop court, la
-        // prochaine évaluation trouverait delta<4 et ne ferait rien → aucune boucle possible.
-        releaseTimer = window.setTimeout(function () { isSnapping = false; }, REDUCE ? 60 : 700);
+        releaseTimer = window.setTimeout(function () { isSnapping = false; }, REDUCE ? 60 : 650);
       };
-
-      var scrollToCard = function (idx) {
-        var targetPct = Math.max(0, Math.min(1, idx / (total - 1)));
-        snapScrollTo(getOuterTop() + targetPct * getScrollDist());
-      };
-      goToCard = scrollToCard; // le peek et les flèches amènent une carte au centre
-
-      var getCurrentIdx = function () {
-        var scrolled = Math.max(0, -outer.getBoundingClientRect().top);
-        return Math.round((scrolled / getScrollDist()) * (total - 1));
-      };
-
-      var maybeSnap = function () {
-        if (isSnapping) return;
-        var scrollDist = getScrollDist();
-        var scrolled = -outer.getBoundingClientRect().top;
-        // Hors zone épinglée (au-dessus du carrousel ou déjà passé) → on laisse filer le
-        // scroll de page, aucun aimantage (sinon on piégerait l'entrée/sortie de section).
-        if (scrolled <= 0 || scrolled >= scrollDist) return;
-        var idx = Math.round((scrolled / scrollDist) * (total - 1));
-        var targetTop = getOuterTop() + (idx / (total - 1)) * scrollDist;
-        if (Math.abs(targetTop - window.scrollY) < 4) return; // déjà centré, rien à faire
-        snapScrollTo(targetTop);
-      };
-
       window.addEventListener('scroll', function () {
         if (isSnapping) return;
         window.clearTimeout(snapTimer);
-        // attend ~140ms sans scroll (inclut le momentum trackpad) avant de recentrer
-        snapTimer = window.setTimeout(maybeSnap, 140);
+        snapTimer = window.setTimeout(function () {
+          if (isSnapping) return;
+          var scrolled = -outer.getBoundingClientRect().top;
+          var dist = lockScrollDist();
+          if (scrolled <= 0 || scrolled >= dist) return;
+          var idx = Math.round((scrolled / dist) * (n - 1));
+          if (Math.abs(scrollYForIdx(idx) - window.scrollY) > 4) snapTo(idx);
+        }, 140);
       }, { passive: true });
 
-      if (prevBtn) prevBtn.addEventListener('click', function () { scrollToCard(Math.max(0, getCurrentIdx() - 1)); });
-      if (nextBtn) nextBtn.addEventListener('click', function () { scrollToCard(Math.min(total - 1, getCurrentIdx() + 1)); });
+      // Clic vignette / flèches / clavier → déplacent le SCROLL PAGE (source de vérité
+      // en lock), pour que roulette et hero restent synchronisés.
+      thumbs.forEach(function (t, i) { t.addEventListener('click', function () { dismissHint(); snapTo(i); }); });
+      if (prevBtn) prevBtn.addEventListener('click', function () { dismissHint(); snapTo(confirmedIdx - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { dismissHint(); snapTo(confirmedIdx + 1); });
+      document.addEventListener('keydown', function (e) {
+        var rect = stage.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); dismissHint(); snapTo(confirmedIdx + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); dismissHint(); snapTo(confirmedIdx - 1); }
+      });
+
+      currentProgress = progressTarget();
+      showDisplay(Math.round(currentProgress));
+      kick();
+    }
+
+    // ============================ MODE NATIF (mobile / reduced-motion) ============================
+    function initNative() {
+      measure();
+
+      var settleTimer = null;
+      var nearest = function () { return Math.max(0, Math.min(n - 1, Math.round(track.scrollLeft / step))); };
+      var centerTo = function (idx, instant) {
+        track.scrollTo({ left: Math.max(0, Math.min(n - 1, idx)) * step, behavior: (REDUCE || instant) ? 'auto' : 'smooth' });
+      };
+
+      track.addEventListener('scroll', function () {
+        dismissHint(); kick();
+        if (hoveredIdx !== null) return;
+        window.clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(function () {
+          confirmedIdx = nearest();
+          showDisplay(confirmedIdx);
+        }, 140);
+      }, { passive: true });
+
+      // Molette verticale → défilement horizontal (trackpad/swipe natifs déjà OK).
+      track.addEventListener('wheel', function (e) {
+        if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+        var atStart = track.scrollLeft <= 0;
+        var atEnd = track.scrollLeft >= track.scrollWidth - track.clientWidth - 1;
+        if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
+        e.preventDefault();
+        track.scrollLeft += e.deltaY;
+      }, { passive: false });
+
+      var go = function (idx) {
+        confirmedIdx = Math.max(0, Math.min(n - 1, idx));
+        showDisplay(confirmedIdx);
+        centerTo(confirmedIdx);
+      };
+      thumbs.forEach(function (t, i) { t.addEventListener('click', function () { dismissHint(); go(i); }); });
+      if (prevBtn) prevBtn.addEventListener('click', function () { dismissHint(); go(confirmedIdx - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { dismissHint(); go(confirmedIdx + 1); });
+      document.addEventListener('keydown', function (e) {
+        var rect = stage.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); dismissHint(); go(confirmedIdx + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); dismissHint(); go(confirmedIdx - 1); }
+      });
+
+      // Swipe tactile sur la stage entière (avance/recule d'un projet).
+      var tX = 0, tY = 0, tOn = false;
+      stage.addEventListener('touchstart', function (e) {
+        if (!e.touches[0]) return;
+        tX = e.touches[0].clientX; tY = e.touches[0].clientY; tOn = true;
+      }, { passive: true });
+      stage.addEventListener('touchend', function (e) {
+        if (!tOn || !e.changedTouches[0]) return;
+        tOn = false;
+        var dx = e.changedTouches[0].clientX - tX;
+        var dy = e.changedTouches[0].clientY - tY;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) { dismissHint(); go(dx < 0 ? confirmedIdx + 1 : confirmedIdx - 1); }
+      }, { passive: true });
+
+      window.addEventListener('resize', function () { measure(); centerTo(confirmedIdx, true); kick(); });
+
+      centerTo(0, true);
+      showDisplay(0);
+      kick();
     }
   }
 
   /* ——— Micro-interactions premium (curseur magnétique + parallax scrubbé) ———
-     Additif, isolé dans window.Motion (js/motion.js). Ne touche jamais .card ni
-     la section #projets (scroll-lock). Court-circuité sous reduced-motion / tactile
-     directement dans les primitives. */
+     Additif, isolé dans window.Motion (js/motion.js). Ne touche jamais aux
+     vignettes du showcase (leur scale roulette est piloté par initShowcase).
+     Court-circuité sous reduced-motion / tactile directement dans les primitives. */
   function initMotion() {
     var M = window.Motion;
     if (!M) return;
-    // Curseur magnétique : réservé aux CTA focaux + flèches du carrousel.
-    M.magnetic('.btn-primary, .nav__cta, .carousel-nav__btn', { strength: 0.3, ease: 0.16 });
+    // Curseur magnétique : réservé aux CTA focaux + flèches du showcase.
+    M.magnetic('.btn-primary, .nav__cta, .showcase__thumbs-btn', { strength: 0.3, ease: 0.16 });
     // Parallax scrubbé : uniquement les grands mots décoratifs de fond.
     M.parallax('.about__bgword, .services__bgword, .contact__bgword', { speed: 0.14 });
   }
 
   function init() {
-    renderProjects();
+    renderShowcase();
     initReveals();
     initNav();
     initMobileNav();
@@ -766,7 +699,7 @@
     initContactForm();
     initHeroVideo();
     initParallax();
-    initCarousel();
+    initShowcase();
     initMotion();
   }
 

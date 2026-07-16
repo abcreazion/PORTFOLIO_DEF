@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Previews — Refonte Carrousel · Bastien Agus</title>
+<base href="/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --ink: #f5f5f5; --red: #d90429; --red-text: #ff3b5c;
+    --ink-dim: rgba(245,245,245,.6); --cream: #f0ede8;
+    --display: 'Bebas Neue', sans-serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --script: 'Ms Madi', cursive;
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); min-height: 100vh; }
+  a { color: inherit; text-decoration: none; }
+
+  .hub { max-width: 1400px; margin: 0 auto; padding: 80px 56px 120px; }
+  .hub__eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .hub__eyebrow-line { width: 44px; height: 1px; background: var(--red); }
+  .hub__eyebrow-text { font: 500 12px/1 var(--mono); letter-spacing: .16em; color: var(--red-text); }
+  .hub__title { font-family: var(--display); font-size: min(9vw,120px); line-height: .85; letter-spacing: .01em; margin-bottom: 20px; }
+  .hub__title .red { color: var(--red); }
+  .hub__lead { max-width: 720px; font: 300 18px/1.55 var(--sans); color: var(--ink-dim); margin-bottom: 64px; }
+
+  .hub__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+  @media (max-width: 900px) { .hub__grid { grid-template-columns: 1fr; gap: 20px; } .hub { padding: 60px 24px 80px; } }
+
+  .card {
+    position: relative; display: block; overflow: hidden;
+    aspect-ratio: 4/3; background: #131313;
+    border: 1px solid rgba(255,255,255,.06);
+    transition: transform .5s cubic-bezier(.22,.61,.36,1), border-color .3s ease;
+  }
+  .card:hover { border-color: rgba(255,255,255,.2); }
+  .card:hover .card__bg { transform: scale(1.06); filter: none; }
+  .card:hover .card__rail { height: 60%; }
+
+  .card__bg {
+    position: absolute; inset: 0; background-size: cover; background-position: center;
+    filter: grayscale(30%) brightness(.55);
+    transition: transform 1s cubic-bezier(.22,.61,.36,1), filter .5s ease;
+  }
+  .card__scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,10,10,.95) 0%, rgba(10,10,10,.4) 50%, rgba(10,10,10,.2) 100%);
+  }
+  .card__rail {
+    position: absolute; left: 0; top: 20%; width: 3px; height: 30%; background: var(--red);
+    transition: height .5s cubic-bezier(.22,.61,.36,1);
+  }
+  .card__body {
+    position: absolute; left: 32px; right: 32px; bottom: 28px; z-index: 2;
+  }
+  .card__num {
+    font: 600 11px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); margin-bottom: 14px;
+  }
+  .card__title {
+    font-family: var(--display); font-size: min(5.2vw,52px); line-height: .88; letter-spacing: .01em;
+    color: #fff; margin-bottom: 10px;
+  }
+  .card__title .red { color: var(--red); }
+  .card__lead {
+    font: 300 14px/1.55 var(--sans); color: rgba(245,245,245,.72); max-width: 480px;
+  }
+  .card__cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 18px; font: 600 11px/1 var(--mono); letter-spacing: .16em; color: #fff;
+    padding: 12px 16px; border: 1px solid rgba(255,255,255,.25);
+    transition: background .3s ease, border-color .3s ease;
+  }
+  .card:hover .card__cta { background: var(--red); border-color: var(--red); }
+  .card__cta-arrow { display: inline-block; transition: transform .3s ease; }
+  .card:hover .card__cta-arrow { transform: translate(3px,-3px); }
+
+  .card--current .card__bg { filter: grayscale(0%) brightness(.7); }
+  .card--current .card__num { color: var(--ink-dim); }
+  .card--current .card__rail { background: var(--ink); }
+  .card--current:hover .card__cta { background: transparent; border-color: var(--ink); }
+
+  .footer-note {
+    margin-top: 64px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,.08);
+    font: 400 13px/1.6 var(--sans); color: var(--ink-dim); max-width: 720px;
+  }
+  .footer-note strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<main class="hub">
+  <div class="hub__eyebrow">
+    <span class="hub__eyebrow-line"></span>
+    <span class="hub__eyebrow-text">ATELIER · REFONTE CARROUSEL</span>
+  </div>
+  <h1 class="hub__title">3 pistes<span class="red">.</span><br>1 signature.</h1>
+  <p class="hub__lead">Trois directions radicalement différentes pour la section « Travaux », chacune fonctionnelle en desktop et mobile. Compare-les côte à côte, teste le scroll et le hover, puis on écrit celle qui gagne.</p>
+
+  <div class="hub__grid">
+
+    <a href="/" class="card card--current" target="_blank" rel="noopener">
+      <div class="card__bg" style="background-image:url('assets/img/hakai-allumer.jpg')"></div>
+      <div class="card__scrim"></div>
+      <div class="card__rail"></div>
+      <div class="card__body">
+        <div class="card__num">00 · ACTUEL</div>
+        <div class="card__title">CARROUSEL 3D<br>SCROLL-LOCK<span class="red">.</span></div>
+        <p class="card__lead">L'existant : carrousel 3D scroll-lock desktop, scroll natif snap mobile. Watermark, stats rouge, peek, 5 zones de texte par carte.</p>
+        <span class="card__cta">OUVRIR LE SITE <span class="card__cta-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a href="previews/piste-a.html" class="card">
+      <div class="card__bg" style="background-image:url('assets/img/wsc-spot.jpg')"></div>
+      <div class="card__scrim"></div>
+      <div class="card__rail"></div>
+      <div class="card__body">
+        <div class="card__num">A · SALLE DE PROJECTION</div>
+        <div class="card__title">FORMAT<br>CINÉMA<span class="red">.</span></div>
+        <p class="card__lead">Une carte à la fois, plein cadre 16:9. Cross-fade entre projets, timeline segmentée, numéro Bebas géant. Signature réalisateur.</p>
+        <span class="card__cta">VOIR LA PISTE A <span class="card__cta-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a href="previews/piste-b.html" class="card">
+      <div class="card__bg" style="background-image:url('assets/img/wsc-affichage.jpg')"></div>
+      <div class="card__scrim"></div>
+      <div class="card__rail"></div>
+      <div class="card__body">
+        <div class="card__num">B · INDEX ÉDITORIAL</div>
+        <div class="card__title">MUR<br>ASYMÉTRIQUE<span class="red">.</span></div>
+        <p class="card__lead">Exit le carrousel. Grille curatée : les projets phares en 2×2, les autres en 1×1. Focus au hover, filet rouge, image nette.</p>
+        <span class="card__cta">VOIR LA PISTE B <span class="card__cta-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a href="previews/piste-c.html" class="card">
+      <div class="card__bg" style="background-image:url('assets/img/maison-lyne-st-andre.jpg')"></div>
+      <div class="card__scrim"></div>
+      <div class="card__rail"></div>
+      <div class="card__body">
+        <div class="card__num">C · STACK CINÉTIQUE</div>
+        <div class="card__title">PILE DE<br>DOSSIERS<span class="red">.</span></div>
+        <p class="card__lead">Cartes empilées en pile 3D. Au scroll, la carte du dessus s'écarte et révèle la suivante. Format portrait, dossier feuilleté.</p>
+        <span class="card__cta">VOIR LA PISTE C <span class="card__cta-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a href="previews/piste-d.html" class="card" style="grid-column: 1 / -1; aspect-ratio: 8/3;">
+      <div class="card__bg" style="background-image:url('assets/img/docks40.jpg')"></div>
+      <div class="card__scrim"></div>
+      <div class="card__rail"></div>
+      <div class="card__body">
+        <div class="card__num">D · SNAP 3D <span style="color:var(--red-text);margin-left:8px">· NOUVEAU</span></div>
+        <div class="card__title">TRANSITIONS<br>SNAP + 3D<span class="red">.</span></div>
+        <p class="card__lead">Retravaillée après ton feedback : snap net (pas de lerp mou), perspective 3D marquée avant/arrière-plan, typo qui s'anime avec la carte. Slide horizontal net à la Dribbble.</p>
+        <span class="card__cta">VOIR LA PISTE D <span class="card__cta-arrow">↗</span></span>
+      </div>
+    </a>
+
+  </div>
+
+  <p class="footer-note">
+    <strong>Rappel technique</strong> — chaque piste est un prototype isolé dans <code style="color:var(--red-text)">previews/</code>. Elles n'affectent PAS le site prod ni la branche <code>master</code>. Zéro dépendance ajoutée (vanilla JS + CSS, comme le reste du projet). Chaque piste utilise les vraies images des projets pour que tu juges sur pièce.
+  </p>
+</main>
+</body>
+</html>

@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css?v=dev3">
 </head>
 <body>
 
@@ -119,41 +119,56 @@
   </div>
 </div>
 
-<!-- ============================== PROJETS — 3D CAROUSEL ============================== -->
+<!-- ============================== PROJETS — SHOWCASE (hero select + roulette) ============================== -->
 <section id="projets" class="projets">
-  <div class="carousel-outer" id="carouselOuter">
-    <div class="carousel-sticky">
+  <div class="showcase" id="showcaseOuter">
+    <div class="showcase__sticky">
 
-      <!-- header -->
-      <div class="carousel-header">
-        <div>
-          <div class="eyebrow" data-reveal data-d="0">
-            <span class="eyebrow__line"></span>
-            <span class="eyebrow__text">SÉLECTION DE PROJETS</span>
+      <div class="showcase__header">
+        <div class="eyebrow" data-reveal data-d="0">
+          <span class="eyebrow__line"></span>
+          <span class="eyebrow__text">SÉLECTION DE PROJETS</span>
+        </div>
+        <div class="showcase__titles">
+          <h2 class="section-title section-title--dark" data-reveal data-split data-d="80">TRAVAUX<span class="red">.</span></h2>
+          <span class="script script--muted" data-reveal data-d="120">une sélection</span>
+        </div>
+      </div>
+
+      <div class="showcase__stage" id="showcaseStage">
+        <!-- .showcase__bg (une par projet, cross-fade) injectées depuis js/main.js -->
+        <div class="showcase__scrim"></div>
+
+        <div class="showcase__content" id="showcaseContent">
+          <div class="showcase__eyebrow">
+            <span class="showcase__dot"></span>
+            <span class="showcase__client" id="showcaseClient">CLIENT</span>
           </div>
-          <div class="carousel-header__titles">
-            <h2 class="section-title section-title--dark" data-reveal data-split data-d="80">TRAVAUX<span class="red">.</span></h2>
-            <span class="script script--muted" data-reveal data-d="120">une sélection</span>
+          <h3 class="showcase__title" id="showcaseTitle"></h3>
+          <p class="showcase__lead" id="showcaseLead"></p>
+          <p class="showcase__meta" id="showcaseMeta"></p>
+          <a class="showcase__cta" id="showcaseCta" href="#">
+            VOIR LE PROJET <span class="showcase__cta-arrow">↗</span>
+          </a>
+        </div>
+
+        <div class="showcase__hint" id="showcaseHint" aria-hidden="true">
+          <span class="showcase__hint-label">SCROLLER</span>
+          <span class="showcase__hint-track"><span class="showcase__hint-dot"></span></span>
+        </div>
+
+        <div class="showcase__thumbs">
+          <div class="showcase__thumbs-track" id="showcaseThumbs"></div>
+          <div class="showcase__thumbs-controls">
+            <button class="showcase__thumbs-btn" id="showcasePrev" aria-label="Projet précédent">←</button>
+            <button class="showcase__thumbs-btn" id="showcaseNext" aria-label="Projet suivant">→</button>
+            <div class="showcase__counter" id="showcaseCounter">01<span>/ 12</span></div>
           </div>
         </div>
-        <div class="carousel-nav" data-reveal data-d="160">
-          <span class="carousel-nav__count" id="carouselCount">01 / 06</span>
-          <button class="carousel-nav__btn" id="prevBtn" aria-label="Projet précédent">←</button>
-          <button class="carousel-nav__btn" id="nextBtn" aria-label="Projet suivant">→</button>
-        </div>
+
+        <div class="showcase__progress" aria-hidden="true"><div class="showcase__progress-fill" id="showcaseProgress"></div></div>
       </div>
 
-      <!-- 3D perspective track -->
-      <div class="carousel-stage">
-        <div class="carousel-track" id="carouselTrack">
-          <!-- Cartes générées automatiquement depuis js/projects.js -->
-        </div>
-      </div>
-
-      <!-- progress bar -->
-      <div class="carousel-progress">
-        <div class="carousel-progress__fill" id="carouselProgress"></div>
-      </div>
     </div>
   </div>
 </section>
@@ -384,8 +399,8 @@
   </div>
 </footer>
 
-<script src="js/projects.js"></script>
-<script src="js/motion.js"></script>
-<script src="js/main.js"></script>
+<script src="js/projects.js?v=dev3"></script>
+<script src="js/motion.js?v=dev3"></script>
+<script src="js/main.js?v=dev3"></script>
 </body>
 </html>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piste D · Flat — Proto mécanique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0a; --ink:#f5f5f5; --red:#d90429; --red-text:#ff3b5c;
+  --ink-dim: rgba(245,245,245,.6);
+  --display:'Bebas Neue',sans-serif; --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --ease-snap: cubic-bezier(.72,0,.12,1);
+  --dur-card: .72s;
+  --dur-txt: .55s;
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+/* ——— Intro (court) ——— */
+.fd-intro {
+  min-height: 60vh; display: flex; align-items: center; padding: 80px 56px;
+}
+.fd-intro__inner { max-width: 700px; }
+.fd-intro__eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); margin-bottom: 16px; }
+.fd-intro__title { font-family: var(--display); font-size: min(10vw,120px); line-height: .85; letter-spacing: .01em; }
+.fd-intro__title .red { color: var(--red); }
+.fd-intro__lead { font: 300 15px/1.55 var(--sans); color: var(--ink-dim); margin-top: 20px; }
+
+/* ——— Carousel ——— */
+.fd-carousel { position: relative; background: var(--bg); }
+.fd-carousel__sticky {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: grid; grid-template-rows: auto 1fr auto;
+}
+
+/* ——— Header ——— */
+.fd-header {
+  padding: 32px 56px 0;
+  display: flex; justify-content: space-between; align-items: center; gap: 20px;
+}
+.fd-header__eyebrow { font: 500 11px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); }
+.fd-header__right { display: flex; align-items: center; gap: 24px; }
+.fd-counter {
+  font: 500 12px/1 var(--mono); letter-spacing: .12em; color: var(--ink-dim);
+  display: flex; align-items: baseline; gap: 6px;
+}
+.fd-counter b { color: var(--ink); font-weight: 600; font-family: var(--display); font-size: 22px; letter-spacing: .04em; }
+.fd-nav { display: flex; gap: 8px; }
+.fd-nav__btn {
+  width: 44px; height: 44px; border: 1px solid rgba(255,255,255,.2); background: transparent;
+  color: #fff; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .25s ease, background .25s ease, transform .2s ease;
+  font-family: var(--mono);
+}
+.fd-nav__btn:hover:not(:disabled) { border-color: var(--red); background: rgba(217,4,41,.15); }
+.fd-nav__btn:active:not(:disabled) { transform: scale(.94); }
+.fd-nav__btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* ——— Deck (flat, scale-only hierarchy) ——— */
+.fd-deck { position: relative; overflow: hidden; }
+
+.fd-card {
+  position: absolute; top: 50%; left: 50%;
+  width: min(50vw, 720px); height: min(56vh, 560px);
+  transform-origin: 50% 50%;
+  transition:
+    transform var(--dur-card) var(--ease-snap),
+    opacity var(--dur-txt) ease;
+  will-change: transform, opacity;
+  pointer-events: none;
+  background: #141414;
+  border: 1px solid rgba(255,255,255,.06);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.3);
+}
+
+/* Position states (set by JS) */
+.fd-card.is-pos-0 {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1; z-index: 30; pointer-events: auto;
+}
+.fd-card.is-pos--1 { transform: translate(-50%, -50%) translateX(-64%) scale(.56); opacity: .55; z-index: 20; }
+.fd-card.is-pos-1  { transform: translate(-50%, -50%) translateX(64%)  scale(.56); opacity: .55; z-index: 20; }
+.fd-card.is-pos--2 { transform: translate(-50%, -50%) translateX(-112%) scale(.4); opacity: .2; z-index: 10; }
+.fd-card.is-pos-2  { transform: translate(-50%, -50%) translateX(112%)  scale(.4); opacity: .2; z-index: 10; }
+.fd-card.is-hidden { display: none; }
+
+/* Card content — pure typo, no images */
+.fd-card__num {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 18vw; line-height: 1; letter-spacing: -.02em;
+  color: rgba(255,255,255,.08);
+  pointer-events: none;
+}
+.fd-card__label {
+  position: absolute; top: 20px; left: 20px;
+  font: 600 10px/1 var(--mono); letter-spacing: .18em; color: rgba(255,255,255,.4);
+}
+.fd-card__rail {
+  position: absolute; left: 0; top: 25%; width: 3px; height: 50%; background: var(--red);
+  transform: scaleY(0); transform-origin: top;
+  transition: transform .7s var(--ease-snap) .18s;
+}
+.fd-card.is-pos-0 .fd-card__rail { transform: scaleY(1); }
+.fd-card__caption {
+  position: absolute; left: 20px; bottom: 20px;
+  font-family: var(--display); font-size: clamp(22px, 3vw, 42px); line-height: .88;
+  color: rgba(255,255,255,.92);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .5s ease .25s, transform .5s var(--ease-snap) .25s;
+}
+.fd-card.is-pos-0 .fd-card__caption { opacity: 1; transform: none; }
+
+/* ——— Footer (num + client + split-letter title + meta) ——— */
+.fd-footer {
+  padding: 20px 56px 40px;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 32px;
+}
+.fd-footer__num {
+  font-family: var(--display); font-size: min(12vw,160px); line-height: .78; color: #fff;
+  letter-spacing: -.02em;
+}
+.fd-footer__num .dot { color: var(--red); }
+.fd-footer__block { padding-bottom: 12px; max-width: 720px; }
+.fd-footer__client {
+  font: 600 11px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); margin-bottom: 12px;
+  opacity: 0; transform: translateY(18px);
+  transition: opacity var(--dur-txt) ease .08s, transform var(--dur-txt) var(--ease-snap) .08s;
+}
+.fd-footer.is-in .fd-footer__client { opacity: 1; transform: none; }
+.fd-footer__title {
+  font-family: var(--display); font-size: min(4.5vw,54px); line-height: .88; color: #fff;
+  overflow: hidden; padding-bottom: 6px;
+}
+.fd-letter {
+  display: inline-block;
+  transform: translateY(102%); opacity: 0;
+  transition: transform .7s var(--ease-snap), opacity .45s ease;
+  transition-delay: calc(var(--i, 0) * 32ms + 120ms);
+}
+.fd-letter.is-space { width: .32em; height: 1em; }
+.fd-footer.is-in .fd-letter { transform: translateY(0); opacity: 1; }
+.fd-footer__meta {
+  padding-bottom: 18px; text-align: right;
+  font: 400 12px/1.55 var(--sans); color: rgba(255,255,255,.55);
+  opacity: 0; transform: translateY(14px);
+  transition: opacity .5s ease .28s, transform .5s var(--ease-snap) .28s;
+}
+.fd-footer.is-in .fd-footer__meta { opacity: 1; transform: none; }
+.fd-footer__year { display: block; font-family: var(--display); font-size: 22px; color: #fff; letter-spacing: .04em; margin-bottom: 4px; }
+
+/* ——— Timeline ——— */
+.fd-timeline {
+  position: absolute; left: 56px; right: 56px; bottom: 20px;
+  display: flex; gap: 4px; align-items: center; z-index: 4; pointer-events: none;
+}
+.fd-tick { flex: 1; height: 2px; background: rgba(255,255,255,.1); position: relative; overflow: hidden; }
+.fd-tick__fill {
+  position: absolute; inset: 0; background: var(--red);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .45s var(--ease-snap);
+}
+.fd-tick.is-past .fd-tick__fill,
+.fd-tick.is-active .fd-tick__fill { transform: scaleX(1); }
+
+/* ——— Outro ——— */
+.fd-outro { padding: 100px 56px; text-align: center; }
+.fd-outro__label { font: 500 11px/1 var(--mono); letter-spacing: .2em; color: var(--red-text); margin-bottom: 16px; }
+.fd-outro__title { font-family: var(--display); font-size: min(6vw,56px); line-height: .9; }
+
+/* ——— Mobile ——— */
+@media (max-width: 900px) {
+  .fd-intro { padding: 60px 24px; }
+  .fd-header { padding: 24px 20px 0; flex-wrap: wrap; gap: 12px; }
+  .fd-header__eyebrow { flex-basis: 100%; }
+  .fd-header__right { flex-basis: 100%; justify-content: space-between; }
+  .fd-card { width: 76vw; height: 46vh; }
+  .fd-card.is-pos--1 { transform: translate(-50%, -50%) translateX(-88%) scale(.55); }
+  .fd-card.is-pos-1  { transform: translate(-50%, -50%) translateX(88%)  scale(.55); }
+  .fd-card.is-pos--2, .fd-card.is-pos-2 { display: none; }
+  .fd-footer { padding: 12px 20px 32px; gap: 14px; grid-template-columns: auto 1fr; }
+  .fd-footer__num { font-size: 18vw; }
+  .fd-footer__title { font-size: 7vw; }
+  .fd-footer__meta { grid-column: 1 / -1; text-align: left; }
+  .fd-timeline { left: 20px; right: 20px; bottom: 8px; }
+  .fd-outro { padding: 60px 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fd-card, .fd-letter, .fd-footer__client, .fd-footer__meta, .fd-card__caption, .fd-card__rail { transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<section class="fd-intro">
+  <div class="fd-intro__inner">
+    <div class="fd-intro__eyebrow">PROTO MÉCANIQUE · PISTE D FLAT</div>
+    <h1 class="fd-intro__title">SCALE ONLY<span class="red">.</span></h1>
+    <p class="fd-intro__lead">Snap net, hiérarchie par le scale uniquement, zéro 3D. Placeholders volontairement anonymes — on juge le mouvement, pas le contenu. Scrolle, clic ←→, swipe (mobile).</p>
+  </div>
+</section>
+
+<!-- CAROUSEL -->
+<section class="fd-carousel" id="fdCarousel">
+  <div class="fd-carousel__sticky">
+
+    <header class="fd-header">
+      <div class="fd-header__eyebrow">SÉLECTION · <span id="fdTotalLabel">12</span> PROJETS</div>
+      <div class="fd-header__right">
+        <div class="fd-counter"><b id="fdCurrent">01</b><span>/ <span id="fdTotal">12</span></span></div>
+        <div class="fd-nav">
+          <button class="fd-nav__btn" id="fdPrev" aria-label="Précédent">←</button>
+          <button class="fd-nav__btn" id="fdNext" aria-label="Suivant">→</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="fd-deck" id="fdDeck"></div>
+
+    <footer class="fd-footer" id="fdFooter">
+      <div class="fd-footer__num" id="fdFooterNum">01<span class="dot">.</span></div>
+      <div class="fd-footer__block">
+        <div class="fd-footer__client" id="fdFooterClient">CLIENT 01</div>
+        <h2 class="fd-footer__title" id="fdFooterTitle"></h2>
+      </div>
+      <div class="fd-footer__meta" id="fdFooterMeta">
+        <span class="fd-footer__year" id="fdFooterYear">2026</span>
+        <span id="fdFooterRole">Rôle placeholder</span>
+      </div>
+    </footer>
+
+    <div class="fd-timeline" id="fdTimeline"></div>
+  </div>
+</section>
+
+<!-- OUTRO -->
+<section class="fd-outro">
+  <div class="fd-outro__label">FIN DU PROTO</div>
+  <h2 class="fd-outro__title">Judge la mécanique<span style="color:var(--red)">.</span></h2>
+</section>
+
+<script>
+(function(){
+  'use strict';
+  var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 12 placeholder projects — varying title lengths to stress-test the split cascade
+  var TITLES = [
+    'DIRECTION ARTISTIQUE',
+    'PRODUCTION AUDIOVISUELLE',
+    'PHOTOGRAPHIE',
+    'MOTION DESIGN',
+    'ÉTUDE DE CAS',
+    'ÉDITION PRINT',
+    'IDENTITÉ VISUELLE',
+    'STORYBOARD',
+    'POST-PRODUCTION',
+    'RETOUCHE PRO',
+    'SOUND DESIGN',
+    'GÉNÉRIQUE'
+  ];
+  var n = TITLES.length;
+  var projects = [];
+  for (var k = 0; k < n; k++) {
+    projects.push({
+      client: 'CLIENT · ' + String(k + 1).padStart(2, '0'),
+      title: TITLES[k],
+      year: String(2020 + (k % 7)),
+      role: 'Rôle placeholder'
+    });
+  }
+
+  var deck = document.getElementById('fdDeck');
+  var timeline = document.getElementById('fdTimeline');
+  var footer = document.getElementById('fdFooter');
+  var footerNum = document.getElementById('fdFooterNum');
+  var footerClient = document.getElementById('fdFooterClient');
+  var footerTitle = document.getElementById('fdFooterTitle');
+  var footerYear = document.getElementById('fdFooterYear');
+  var footerRole = document.getElementById('fdFooterRole');
+  var currentEl = document.getElementById('fdCurrent');
+  var totalEl = document.getElementById('fdTotal');
+  var totalLabelEl = document.getElementById('fdTotalLabel');
+  var prevBtn = document.getElementById('fdPrev');
+  var nextBtn = document.getElementById('fdNext');
+  var outer = document.getElementById('fdCarousel');
+
+  totalEl.textContent = String(n).padStart(2, '0');
+  totalLabelEl.textContent = String(n).padStart(2, '0');
+
+  deck.innerHTML = projects.map(function(p, i) {
+    var num = String(i + 1).padStart(2, '0');
+    return '' +
+      '<article class="fd-card" data-fd-card data-idx="' + i + '">' +
+        '<div class="fd-card__label">PROJET · ' + num + '</div>' +
+        '<div class="fd-card__num">' + num + '</div>' +
+        '<div class="fd-card__rail"></div>' +
+        '<div class="fd-card__caption">' + p.title + '</div>' +
+      '</article>';
+  }).join('');
+
+  timeline.innerHTML = projects.map(function(){ return '<div class="fd-tick"><div class="fd-tick__fill"></div></div>'; }).join('');
+
+  var cards = Array.prototype.slice.call(deck.querySelectorAll('[data-fd-card]'));
+  var ticks = Array.prototype.slice.call(timeline.querySelectorAll('.fd-tick'));
+
+  function splitTitle(el, text) {
+    var frag = document.createDocumentFragment();
+    for (var c = 0; c < text.length; c++) {
+      var ch = text[c];
+      var span = document.createElement('span');
+      span.className = 'fd-letter' + (ch === ' ' ? ' is-space' : '');
+      span.style.setProperty('--i', c);
+      span.textContent = ch === ' ' ? ' ' : ch;
+      frag.appendChild(span);
+    }
+    el.innerHTML = '';
+    el.appendChild(frag);
+  }
+
+  var currentIdx = -1;
+
+  function setActive(newIdx) {
+    if (newIdx === currentIdx) return;
+    newIdx = Math.max(0, Math.min(n - 1, newIdx));
+    currentIdx = newIdx;
+
+    cards.forEach(function(card, i) {
+      var off = i - newIdx;
+      var cls = card.className.replace(/\b(is-pos-[^\s]+|is-hidden)\b/g, '').trim().replace(/\s+/g, ' ');
+      if (Math.abs(off) > 2) {
+        card.className = cls + ' is-hidden';
+      } else {
+        card.className = cls + ' is-pos-' + (off === 0 ? '0' : (off < 0 ? '-' + Math.abs(off) : off));
+      }
+    });
+
+    ticks.forEach(function(t, j) {
+      t.classList.toggle('is-past', j < newIdx);
+      t.classList.toggle('is-active', j === newIdx);
+    });
+
+    currentEl.textContent = String(newIdx + 1).padStart(2, '0');
+
+    var p = projects[newIdx];
+    footer.classList.remove('is-in');
+    void footer.offsetWidth;
+    footerNum.innerHTML = String(newIdx + 1).padStart(2, '0') + '<span class="dot">.</span>';
+    footerClient.textContent = p.client;
+    splitTitle(footerTitle, p.title);
+    footerYear.textContent = p.year;
+    footerRole.textContent = p.role;
+    requestAnimationFrame(function(){ footer.classList.add('is-in'); });
+
+    prevBtn.disabled = newIdx === 0;
+    nextBtn.disabled = newIdx === n - 1;
+  }
+
+  // Scroll driven state, snap on end
+  var STEP_VH = 0.55;
+  var scrollDist = function(){ return Math.max(1, (n - 1) * window.innerHeight * STEP_VH); };
+  var setHeight = function(){ outer.style.height = (window.innerHeight + scrollDist()) + 'px'; };
+  setHeight();
+  window.addEventListener('resize', setHeight);
+
+  function progressIdx() {
+    var rect = outer.getBoundingClientRect();
+    var scrolled = Math.max(0, -rect.top);
+    var pct = Math.min(1, scrolled / scrollDist());
+    return Math.round(pct * (n - 1));
+  }
+
+  var snapTimer = null, isSnapping = false, releaseTimer = null;
+  function outerTop(){ return window.scrollY + outer.getBoundingClientRect().top; }
+  function scrollY_for(idx){ idx = Math.max(0, Math.min(n - 1, idx)); return outerTop() + (idx / (n - 1)) * scrollDist(); }
+  function snapTo(idx){
+    isSnapping = true;
+    window.scrollTo({ top: scrollY_for(idx), behavior: REDUCE ? 'auto' : 'smooth' });
+    setActive(idx);
+    window.clearTimeout(releaseTimer);
+    releaseTimer = window.setTimeout(function(){ isSnapping = false; }, REDUCE ? 60 : 650);
+  }
+
+  window.addEventListener('scroll', function(){
+    if (isSnapping) return;
+    var rect = outer.getBoundingClientRect();
+    var scrolled = -rect.top;
+    if (scrolled >= 0 && scrolled <= scrollDist()) {
+      var pct = scrolled / scrollDist();
+      setActive(Math.round(pct * (n - 1)));
+    }
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(function(){
+      if (isSnapping) return;
+      var r2 = outer.getBoundingClientRect();
+      var s2 = -r2.top;
+      if (s2 <= 0 || s2 >= scrollDist()) return;
+      var idx = progressIdx();
+      if (Math.abs(scrollY_for(idx) - window.scrollY) > 4) snapTo(idx);
+    }, 140);
+  }, { passive: true });
+
+  setActive(progressIdx());
+
+  prevBtn.addEventListener('click', function(){ snapTo(currentIdx - 1); });
+  nextBtn.addEventListener('click', function(){ snapTo(currentIdx + 1); });
+
+  document.addEventListener('keydown', function(e){
+    var rect = outer.getBoundingClientRect();
+    if (rect.top > 0 || rect.bottom < window.innerHeight) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); snapTo(currentIdx + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp')   { e.preventDefault(); snapTo(currentIdx - 1); }
+  });
+
+  var tX = 0, tY = 0, tOn = false;
+  deck.addEventListener('touchstart', function(e){ if (!e.touches[0]) return; tX = e.touches[0].clientX; tY = e.touches[0].clientY; tOn = true; }, { passive: true });
+  deck.addEventListener('touchend', function(e){
+    if (!tOn || !e.changedTouches[0]) return;
+    tOn = false;
+    var dx = e.changedTouches[0].clientX - tX;
+    var dy = e.changedTouches[0].clientY - tY;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      if (dx < 0) snapTo(currentIdx + 1); else snapTo(currentIdx - 1);
+    }
+  }, { passive: true });
+
+  cards.forEach(function(card){
+    card.addEventListener('click', function(e){
+      var idx = parseInt(card.getAttribute('data-idx'), 10);
+      if (idx === currentIdx) return;
+      e.preventDefault();
+      snapTo(idx);
+    });
+  });
+})();
+</script>
+</body>
+</html>

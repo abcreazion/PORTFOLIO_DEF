@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piste E — Hero Select · Preview Carrousel Bastien Agus</title>
+<base href="/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0a; --ink:#f5f5f5; --red:#d90429; --red-text:#ff3b5c;
+  --ink-dim: rgba(245,245,245,.6);
+  --display:'Bebas Neue',sans-serif; --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace; --script:'Ms Madi',cursive;
+  --ease-out: cubic-bezier(.22,1,.36,1);
+  --dur-fast: .32s;
+  --dur-med: .48s;
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+.preview-back {
+  position: fixed; top: 20px; left: 20px; z-index: 100;
+  padding: 12px 16px; background: rgba(10,10,10,.7); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.15);
+  font: 600 11px/1 var(--mono); letter-spacing: .16em; color: var(--ink);
+  transition: border-color .3s ease, background .3s ease;
+}
+.preview-back:hover { border-color: var(--red); background: rgba(217,4,41,.15); }
+
+/* ——— Intro (court) ——— */
+.he-intro { min-height: 46vh; display: flex; align-items: center; padding: 80px 56px 40px; }
+.he-intro__inner { max-width: 760px; }
+.he-intro__eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); margin-bottom: 16px; }
+.he-intro__title { font-family: var(--display); font-size: min(9vw,104px); line-height: .85; letter-spacing: .01em; }
+.he-intro__title .red { color: var(--red); }
+.he-intro__lead { font: 300 15px/1.55 var(--sans); color: var(--ink-dim); margin-top: 20px; max-width: 620px; }
+
+/* ============================== HERO SELECT ============================== */
+.hs-section {
+  position: relative;
+  height: 100vh; min-height: 640px; max-height: 980px;
+  display: flex; flex-direction: column;
+  background: var(--bg);
+}
+
+/* Top bar: eyebrow + section title (matches carousel-header convention) */
+.hs-topbar {
+  flex: none; padding: 32px 56px 20px;
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;
+  position: relative; z-index: 5;
+}
+.hs-topbar__eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.hs-topbar__eyebrow-line { width: 36px; height: 1px; background: var(--red); }
+.hs-topbar__eyebrow-text { font: 500 11px/1 var(--mono); letter-spacing: .18em; color: var(--red-text); }
+.hs-topbar__title { font-family: var(--display); font-size: min(4.2vw,44px); line-height: .85; letter-spacing: .01em; }
+.hs-topbar__title .red { color: var(--red); }
+
+/* Stage: full-bleed image + text overlay */
+.hs-stage {
+  position: relative; flex: 1; overflow: hidden;
+  margin: 0 56px;
+}
+.hs-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity var(--dur-med) var(--ease-out);
+  pointer-events: none;
+}
+.hs-bg.is-active { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .hs-bg.is-active .hs-bg__zoom { animation: hsKenBurns 10s var(--ease-out) forwards; }
+}
+.hs-bg__zoom { position: absolute; inset: 0; background: inherit; background-size: cover; background-position: inherit; transform: scale(1); }
+/* actual zoom applied to the bg itself since it's a single div per project */
+.hs-bg.is-active { animation: hsKenBurnsBg 10s var(--ease-out) forwards; }
+@keyframes hsKenBurnsBg { from { transform: scale(1); } to { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) {
+  .hs-bg.is-active { animation: none; }
+}
+
+.hs-scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(10,10,10,.88) 0%, rgba(10,10,10,.4) 42%, rgba(10,10,10,.12) 68%, transparent 100%),
+    linear-gradient(to top, rgba(10,10,10,.7) 0%, transparent 40%);
+}
+
+.hs-content {
+  position: absolute; left: 40px; bottom: 40px; z-index: 3; max-width: 560px;
+}
+.hs-content__eyebrow {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.hs-content__dot { width: 7px; height: 7px; background: var(--red); flex: none; }
+.hs-content__client {
+  font: 600 11px/1 var(--mono); letter-spacing: .2em; color: var(--red-text);
+}
+.hs-content__title {
+  font-family: var(--display); font-size: min(6.2vw,72px); line-height: .86; letter-spacing: .01em;
+  color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.5);
+  overflow: hidden; padding-bottom: 6px; margin-bottom: 14px;
+}
+.he-letter {
+  display: inline-block;
+  transform: translateY(102%); opacity: 0;
+  transition: transform var(--dur-med) var(--ease-out), opacity var(--dur-fast) ease;
+  transition-delay: calc(var(--i, 0) * 20ms + 60ms);
+}
+.he-letter.is-space { width: .28em; height: 1em; }
+.hs-content.is-in .he-letter { transform: translateY(0); opacity: 1; }
+
+.hs-content__meta {
+  font: 400 13px/1.5 var(--sans); color: rgba(255,255,255,.68); margin-bottom: 22px;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--dur-fast) ease .18s, transform var(--dur-med) var(--ease-out) .18s;
+}
+.hs-content.is-in .hs-content__meta { opacity: 1; transform: none; }
+
+.hs-content__cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 20px; border: 1px solid rgba(255,255,255,.35);
+  font: 600 11px/1 var(--mono); letter-spacing: .16em; color: #fff;
+  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  opacity: 0; transform: translateY(10px);
+}
+.hs-content.is-in .hs-content__cta { opacity: 1; transform: none; transition: opacity var(--dur-fast) ease .26s, transform var(--dur-med) var(--ease-out) .26s, background var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.hs-content__cta:hover { background: var(--red); border-color: var(--red); }
+.hs-content__cta-arrow { display: inline-block; transition: transform var(--dur-fast) ease; }
+.hs-content__cta:hover .hs-content__cta-arrow { transform: translate(3px,-3px); }
+
+/* ——— Thumbs cluster : overlay bas-droite de la stage — fidèle à la référence
+   (photo + texte bas-gauche + vignettes flottantes bas-droite, pas de bande séparée) ——— */
+.hs-thumbs-cluster {
+  position: absolute; right: 32px; bottom: 28px; z-index: 5;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
+  max-width: min(58vw, 640px);
+}
+.hs-thumbs-track {
+  width: 100%;
+  display: flex; gap: 12px; overflow-x: auto; scroll-behavior: smooth;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  padding: 2px;
+}
+.hs-thumbs-track::-webkit-scrollbar { display: none; }
+
+.hs-thumbs-controls { display: flex; align-items: center; gap: 12px; }
+.hs-thumbs-nav {
+  width: 40px; height: 40px; flex: none;
+  border: 1px solid rgba(255,255,255,.25); background: rgba(10,10,10,.35); backdrop-filter: blur(6px);
+  color: #fff; font-size: 15px; cursor: pointer; font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease, transform .2s ease;
+}
+.hs-thumbs-nav:hover { border-color: var(--red); background: rgba(217,4,41,.25); }
+.hs-thumbs-nav:active { transform: scale(.94); }
+
+.hs-counter {
+  font-family: var(--display); font-size: 30px; line-height: 1; letter-spacing: .02em;
+  color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.6);
+  display: flex; align-items: baseline; gap: 6px; margin-left: 4px;
+}
+.hs-counter span { font: 500 11px/1 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.55); }
+
+.hs-thumb {
+  flex: none; width: 128px; aspect-ratio: 3/4;
+  position: relative; overflow: hidden; cursor: pointer;
+  background: #131313; border: 1px solid rgba(255,255,255,.08);
+  scroll-snap-align: start;
+  transition: border-color var(--dur-fast) ease;
+}
+.hs-thumb__img {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  filter: grayscale(55%) brightness(.6);
+  transition: filter var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+  transform: scale(1.04);
+}
+.hs-thumb__scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(10,10,10,.85) 0%, transparent 60%);
+}
+.hs-thumb__rail {
+  position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background: var(--red);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.hs-thumb__label {
+  position: absolute; left: 10px; right: 10px; bottom: 10px;
+  font: 600 9px/1.3 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.65);
+  text-transform: uppercase;
+  opacity: .7; transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.hs-thumb__num {
+  position: absolute; top: 8px; left: 10px;
+  font: 600 9px/1 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.35);
+}
+
+.hs-thumb:hover .hs-thumb__img { filter: grayscale(20%) brightness(.75); }
+.hs-thumb.is-active { border-color: rgba(255,255,255,.25); }
+.hs-thumb.is-active .hs-thumb__img { filter: grayscale(0%) brightness(1); transform: scale(1); }
+.hs-thumb.is-active .hs-thumb__rail { transform: scaleX(1); }
+.hs-thumb.is-active .hs-thumb__label { opacity: 1; color: #fff; }
+
+/* Focus-visible (keyboard nav) */
+.hs-thumb:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+/* ——— Outro ——— */
+.he-outro { padding: 100px 56px; text-align: center; }
+.he-outro__label { font: 500 11px/1 var(--mono); letter-spacing: .2em; color: var(--red-text); margin-bottom: 16px; }
+.he-outro__title { font-family: var(--display); font-size: min(6vw,56px); line-height: .9; }
+
+/* ——— Mobile ——— */
+@media (max-width: 900px) {
+  .he-intro { padding: 60px 24px 32px; min-height: 34vh; }
+  .hs-section { height: auto; min-height: 0; max-height: none; }
+  .hs-topbar { padding: 24px 20px 16px; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .hs-stage { margin: 0 20px; height: 52vh; min-height: 400px; }
+  /* Texte replié en haut de la photo (au lieu de bas-gauche) pour ne pas
+     entrer en collision avec la cluster vignettes qui reste en overlay bas
+     (même construction "photo unique" qu'en desktop, juste réagencée). */
+  .hs-scrim { background: linear-gradient(to bottom, rgba(10,10,10,.8) 0%, rgba(10,10,10,.15) 32%, rgba(10,10,10,.15) 58%, rgba(10,10,10,.85) 100%); }
+  .hs-content { left: 20px; right: 20px; top: 20px; bottom: auto; max-width: none; }
+  .hs-content__title { font-size: 9.5vw; }
+  .hs-thumbs-cluster { left: 16px; right: 16px; bottom: 16px; max-width: none; align-items: stretch; }
+  .hs-thumbs-controls { justify-content: flex-end; }
+  .hs-thumbs-nav { display: none; }
+  .hs-counter { font-size: 24px; }
+  .hs-thumb { width: 84px; }
+  .he-outro { padding: 70px 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-bg, .he-letter, .hs-content__meta, .hs-content__cta, .hs-thumb__img, .hs-thumb__rail, .hs-thumb__label { transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<a href="previews/index.html" class="preview-back">← RETOUR AUX PISTES</a>
+
+<!-- INTRO -->
+<section class="he-intro">
+  <div class="he-intro__inner">
+    <div class="he-intro__eyebrow">PISTE E · HERO SELECT</div>
+    <h1 class="he-intro__title">SÉLECTION<span class="red">.</span></h1>
+    <p class="he-intro__lead">Aucun scroll-jack. Une image plein cadre + une bande de miniatures cliquables. Clic sur une vignette → l'image de fond et le texte changent, transition nette et rapide. Zéro listener de scroll — la mécanique la plus légère des 5 pistes.</p>
+  </div>
+</section>
+
+<!-- HERO SELECT -->
+<section class="hs-section" id="heSection">
+  <div class="hs-topbar">
+    <div>
+      <div class="hs-topbar__eyebrow">
+        <span class="hs-topbar__eyebrow-line"></span>
+        <span class="hs-topbar__eyebrow-text">SÉLECTION DE PROJETS</span>
+      </div>
+      <h2 class="hs-topbar__title">TRAVAUX<span class="red">.</span></h2>
+    </div>
+  </div>
+
+  <div class="hs-stage" id="heStage">
+    <!-- .hs-bg divs injected here -->
+    <div class="hs-scrim"></div>
+
+    <div class="hs-content" id="heContent">
+      <div class="hs-content__eyebrow">
+        <span class="hs-content__dot"></span>
+        <span class="hs-content__client" id="heClient">CLIENT</span>
+      </div>
+      <h3 class="hs-content__title" id="heTitle"></h3>
+      <p class="hs-content__meta" id="heMeta">Rôle · Année</p>
+      <a class="hs-content__cta" id="heCta" href="#" target="_blank">
+        VOIR LE PROJET <span class="hs-content__cta-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="hs-thumbs-cluster">
+      <div class="hs-thumbs-track" id="heThumbs"></div>
+      <div class="hs-thumbs-controls">
+        <button class="hs-thumbs-nav" id="hePrev" aria-label="Défiler vers la gauche">←</button>
+        <button class="hs-thumbs-nav" id="heNext" aria-label="Défiler vers la droite">→</button>
+        <div class="hs-counter" id="heCounter">01<span>/ 12</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTRO -->
+<section class="he-outro">
+  <div class="he-outro__label">FIN DU PROTO</div>
+  <h2 class="he-outro__title">Juge le look<span style="color:var(--red)">.</span></h2>
+</section>
+
+<script src="js/projects.js"></script>
+<script>
+(function(){
+  'use strict';
+  var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var projects = window.PROJECTS || [];
+  var n = projects.length;
+  if (!n) return;
+
+  function ytThumb(id) { return 'https://img.youtube.com/vi/' + id + '/maxresdefault.jpg'; }
+  function ytThumbHq(id) { return 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg'; }
+  function cardImage(p) { return p.image || (p.youtube ? ytThumb(p.youtube) : ''); }
+  function stripTags(s) { return String(s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
+
+  var stage = document.getElementById('heStage');
+  var thumbsRow = document.getElementById('heThumbs');
+  var content = document.getElementById('heContent');
+  var clientEl = document.getElementById('heClient');
+  var titleEl = document.getElementById('heTitle');
+  var metaEl = document.getElementById('heMeta');
+  var ctaEl = document.getElementById('heCta');
+  var counterEl = document.getElementById('heCounter');
+  var prevBtn = document.getElementById('hePrev');
+  var nextBtn = document.getElementById('heNext');
+  var section = document.getElementById('heSection');
+
+  // Build backgrounds (one absolutely-positioned div per project, cross-faded via opacity)
+  stage.insertAdjacentHTML('afterbegin', projects.map(function(p, i) {
+    var focal = p.focal || 'center';
+    return '<div class="hs-bg" data-hs-bg data-idx="' + i + '" data-yt="' + (p.youtube || '') + '" style="background-image:url(\'' + cardImage(p) + '\'); background-position:' + focal + '"></div>';
+  }).join(''));
+
+  // Build thumbnails
+  thumbsRow.innerHTML = projects.map(function(p, i) {
+    var num = String(i + 1).padStart(2, '0');
+    var label = stripTags(p.client);
+    return '' +
+      '<button class="hs-thumb" data-hs-thumb data-idx="' + i + '" type="button" aria-label="Voir ' + label + '">' +
+        '<div class="hs-thumb__img" style="background-image:url(\'' + cardImage(p) + '\')" data-yt="' + (p.youtube || '') + '"></div>' +
+        '<div class="hs-thumb__scrim"></div>' +
+        '<div class="hs-thumb__num">' + num + '</div>' +
+        '<div class="hs-thumb__rail"></div>' +
+        '<div class="hs-thumb__label">' + label + '</div>' +
+      '</button>';
+  }).join('');
+
+  var bgs = Array.prototype.slice.call(stage.querySelectorAll('[data-hs-bg]'));
+  var thumbs = Array.prototype.slice.call(thumbsRow.querySelectorAll('[data-hs-thumb]'));
+
+  // YouTube thumbnail fallback (applies to both hero bg and thumb img)
+  function wireYtFallback(el) {
+    var yt = el.getAttribute('data-yt'); if (!yt) return;
+    var probe = new Image();
+    probe.onload = function() { if (probe.naturalWidth <= 120) el.style.backgroundImage = "url('" + ytThumbHq(yt) + "')"; };
+    probe.onerror = function() { el.style.backgroundImage = "url('" + ytThumbHq(yt) + "')"; };
+    probe.src = ytThumb(yt);
+  }
+  bgs.forEach(wireYtFallback);
+  Array.prototype.forEach.call(document.querySelectorAll('.hs-thumb__img[data-yt]'), wireYtFallback);
+
+  function splitTitle(el, text) {
+    var frag = document.createDocumentFragment();
+    for (var c = 0; c < text.length; c++) {
+      var ch = text[c];
+      var span = document.createElement('span');
+      span.className = 'he-letter' + (ch === ' ' ? ' is-space' : '');
+      span.style.setProperty('--i', c);
+      span.textContent = ch === ' ' ? ' ' : ch;
+      frag.appendChild(span);
+    }
+    el.innerHTML = '';
+    el.appendChild(frag);
+  }
+
+  var currentIdx = -1;
+
+  function setActive(idx, opts) {
+    idx = Math.max(0, Math.min(n - 1, idx));
+    if (idx === currentIdx) return;
+    currentIdx = idx;
+    var p = projects[idx];
+
+    bgs.forEach(function(bg, i) { bg.classList.toggle('is-active', i === idx); });
+    thumbs.forEach(function(t, i) { t.classList.toggle('is-active', i === idx); });
+
+    counterEl.innerHTML = String(idx + 1).padStart(2, '0') + '<span>/ ' + String(n).padStart(2, '0') + '</span>';
+
+    content.classList.remove('is-in');
+    void content.offsetWidth;
+    clientEl.textContent = p.client;
+    splitTitle(titleEl, stripTags(p.title));
+    metaEl.textContent = (p.role || '') + (p.year ? ' · ' + p.year : '');
+    ctaEl.href = 'projet.html?p=' + (p.slug || '');
+    requestAnimationFrame(function() { content.classList.add('is-in'); });
+
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
+
+    if (!opts || opts.centerThumb !== false) {
+      var thumb = thumbs[idx];
+      if (thumb) {
+        var rowRect = thumbsRow.getBoundingClientRect();
+        var thumbRect = thumb.getBoundingClientRect();
+        var offset = (thumbRect.left + thumbRect.width / 2) - (rowRect.left + rowRect.width / 2);
+        thumbsRow.scrollBy({ left: offset, behavior: REDUCE ? 'auto' : 'smooth' });
+      }
+    }
+  }
+
+  thumbs.forEach(function(t) {
+    t.addEventListener('click', function() {
+      setActive(parseInt(t.getAttribute('data-idx'), 10));
+    });
+  });
+
+  prevBtn.addEventListener('click', function() { setActive(currentIdx - 1); });
+  nextBtn.addEventListener('click', function() { setActive(currentIdx + 1); });
+
+  document.addEventListener('keydown', function(e) {
+    var rect = section.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); setActive(currentIdx + 1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); setActive(currentIdx - 1); }
+  });
+
+  // Touch swipe on the stage itself (not just the thumb strip)
+  var tX = 0, tY = 0, tOn = false;
+  stage.addEventListener('touchstart', function(e) { if (!e.touches[0]) return; tX = e.touches[0].clientX; tY = e.touches[0].clientY; tOn = true; }, { passive: true });
+  stage.addEventListener('touchend', function(e) {
+    if (!tOn || !e.changedTouches[0]) return;
+    tOn = false;
+    var dx = e.changedTouches[0].clientX - tX;
+    var dy = e.changedTouches[0].clientY - tY;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      if (dx < 0) setActive(currentIdx + 1); else setActive(currentIdx - 1);
+    }
+  }, { passive: true });
+
+  setActive(0, { centerThumb: false });
+})();
+</script>
+</body>
+</html>

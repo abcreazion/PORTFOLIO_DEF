@@ -264,163 +264,210 @@ img { display: block; max-width: 100%; }
 .script { font-family: var(--script); line-height: 1; }
 .script--muted { font-size: min(3.5vw,38px); color: rgba(217,4,41,.6); }
 
-/* ============================== PROJETS CAROUSEL ============================== */
+/* ============================== PROJETS — SHOWCASE (hero select + roulette) ============================== */
+/* Fond crème : rupture éditoriale hero(dark) → showcase(clair) → about(dark).
+   La stage reste une "fenêtre" sombre cadrée qui claque sur le crème. */
 .projets { position: relative; background: var(--cream); }
-.carousel-outer { position: relative; }
-.carousel-sticky {
+.showcase { position: relative; }
+.showcase__sticky { display: block; }
+/* Capture sticky (desktop, hors reduced-motion) : la section se fige, le scroll
+   vertical pilote la roulette. Classe posée par JS (initShowcase) — jamais en
+   mobile ni sous reduced-motion, où l'on retombe sur le scroll horizontal natif. */
+.showcase.is-locked .showcase__sticky {
   position: sticky; top: 0; height: 100vh; overflow: hidden;
   display: flex; flex-direction: column;
 }
-.carousel-header {
-  flex: none; display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 40px; padding: 88px 56px 28px;
-}
-.carousel-header__titles { display: flex; align-items: baseline; gap: 20px; }
+.showcase__header { padding: 88px 56px 24px; }
+.showcase__titles { display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap; }
 .projets .section-title--dark { font-size: min(7vw,76px); }
 .projets .script--muted { font-size: min(3.5vw,38px); }
-.carousel-nav {
-  display: flex; align-items: center; gap: 16px; padding-bottom: 6px;
-}
-.carousel-nav__count {
-  /* .45 tombait à 3.08:1 sur le fond crème (échoue AA pour un repère de nav 12px).
-     .65 → ~5.95:1, passe AA, reste discret. */
-  font: 600 12px/1 var(--mono); letter-spacing: .1em; color: rgba(10,10,10,.65);
-}
-.carousel-nav__btn {
-  width: 44px; height: 44px; border: 1px solid rgba(10,10,10,.15);
-  background: transparent; color: var(--bg); font-size: 18px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
-}
-.carousel-nav__btn:hover { border-color: var(--red); background: rgba(217,4,41,.1); }
+/* --red-text (#ff3b5c) tombe à 2.98:1 sur le crème (échoue AA) — on bascule sur
+   la variante AA dédiée au fond crème (documentée dans :root). */
+.projets .eyebrow__text { color: var(--red-text-on-cream); }
 
-.carousel-stage {
-  flex: 1; position: relative; overflow: hidden;
-  perspective: 1200px; perspective-origin: 50% 50%;
+.showcase__stage {
+  position: relative; overflow: hidden;
+  margin: 0 56px 64px; height: 78vh; min-height: 560px; max-height: 820px;
+  border: 1px solid rgba(10,10,10,.12);
+  box-shadow: 0 30px 90px -34px rgba(10,10,10,.55);
 }
-.carousel-track {
-  position: absolute; top: 12px; left: 0; bottom: 12px;
-  display: flex; gap: 40px; padding: 0 calc(50vw - 380px);
-  will-change: transform; transform-style: preserve-3d;
+.showcase.is-locked .showcase__stage {
+  flex: 1; height: auto; min-height: 0; max-height: none; margin-bottom: 24px;
 }
 
-.card {
-  flex: none; width: min(760px,80vw); height: 100%; display: block; color: inherit;
-  position: relative; overflow: visible; transform-style: preserve-3d;
-  /* Pas de transition sur `transform` : cette propriété est réécrite à chaque tick de
-     scroll (updateCarousel), déjà interpolée en continu par le scroll lui-même. Une
-     transition CSS par-dessus faisait retraîner la carte ~600ms derrière le scroll réel
-     (mesuré) — exactement la sensation « poisseuse » qui avait motivé le retrait de Lenis.
-     Même principe que .card__media-shift (aucune transition, interpolation par le scroll).
-     Les boutons prev/next passent déjà par scrollTo({behavior:'smooth'}), donc le scroll
-     est progressif de lui-même — pas besoin de lissage CSS en plus. On garde la transition
-     `opacity` (mise à jour bien moins fréquemment, pas de retard perceptible). */
-  transition: opacity var(--dur-slow) ease;
+/* Fonds cross-fade — une div par projet, superposées, seule .is-active visible.
+   Ken Burns en CSS pur (compositor, gratuit). */
+.showcase__bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity var(--dur-slow) var(--ease-out);
+  pointer-events: none;
 }
-.card__frame {
-  position: relative; width: 100%; height: 100%; overflow: hidden;
-  background: #0e0e0e; box-shadow: 0 20px 80px -20px rgba(0,0,0,.8);
-}
-.card__media {
-  position: absolute; inset: 0; overflow: hidden; background-color: #0e0e0e;
-}
-/* Enfant interne piloté par JS à chaque tick de scroll (jamais .card lui-même) :
-   parallax (translate) + mise au point (filter). scale(1.1) de base donne de la
-   marge pour le translate sans jamais découvrir le bord du cadre. Pas de transition
-   CSS ici — la valeur est déjà interpolée en continu par le scroll, une transition
-   ajouterait un lissage/retard en plus (cf. audit sur .card lui-même). */
-.card__media-shift {
-  position: absolute; inset: 0; will-change: transform, filter;
-}
-.card__media-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* Zoom Ken Burns : une vraie animation CSS (compositor, gratuite), déclenchée par
-   une classe posée/retirée par JS uniquement au changement d'état (pas à chaque
-   tick) — continue même si le scroll s'arrête pendant qu'on reste sur une carte. */
+.showcase__bg.is-active { opacity: 1; }
 @media (prefers-reduced-motion: no-preference) {
-  .card__media-img.is-kenburns { animation: cardKenBurns 9s var(--ease-out) forwards; }
+  .showcase__bg.is-active { animation: showcaseKenBurns 10s var(--ease-out) forwards; }
 }
-@keyframes cardKenBurns {
-  from { transform: scale(1); }
-  to { transform: scale(1.08); }
-}
-.card__tag {
-  position: absolute; top: 18px; right: 20px;
-  font: 500 10px/1 var(--mono); letter-spacing: .14em; color: rgba(245,245,245,.25);
-}
-.card__scrim-b {
-  position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to top, rgba(10,10,10,.92) 0%, rgba(10,10,10,.3) 35%, transparent 70%);
-}
-.card__scrim-l {
-  position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to right, rgba(10,10,10,.5) 0%, transparent 25%);
-}
-.card__watermark {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-55%);
-  text-align: center; pointer-events: none;
-}
-.card__watermark-main {
-  font-family: var(--display); font-size: min(14vw,140px); line-height: .78;
-  color: rgba(255,255,255,.08); letter-spacing: .04em;
-}
-.card__watermark-script {
-  font-family: var(--script); font-size: min(9vw,100px);
-  color: rgba(217,4,41,.18); line-height: .7; margin-top: -4px;
-}
-.card__stats {
-  position: absolute; left: -20px; top: 50%; transform: translateY(calc(-50% + 14px));
-  background: var(--red); padding: 20px 24px 22px; z-index: 3;
-  box-shadow: 4px 8px 30px rgba(0,0,0,.5);
-  opacity: 0; transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
-}
-/* Reveal bidirectionnel : dérivé de absDist (via .is-focused), donc réversible par
-   construction — remonter recroise le même seuil et rejoue le fondu en sens inverse,
-   sans logique "once" séparée. */
-.card.is-focused .card__stats { opacity: 1; transform: translateY(-50%); }
-.card__stat-num { font-family: var(--display); font-size: 34px; line-height: .82; color: #fff; }
-.card__stat-label { font: 400 9px/1.4 var(--sans); color: rgba(255,255,255,.8); }
-.card__stat-label--gap { margin-bottom: 10px; }
-.card__meta { position: absolute; left: 28px; bottom: 28px; z-index: 2; }
-.card__client {
-  font: 600 10px/1 var(--mono); letter-spacing: .18em;
-  color: rgba(245,245,245,.55); margin-bottom: 10px;
-  opacity: 0; transform: translateY(14px);
-  transition: opacity var(--dur-slow) var(--ease-out) .05s, transform var(--dur-slow) var(--ease-out) .05s;
-}
-.card.is-focused .card__client { opacity: 1; transform: none; }
-.card__title {
-  font-family: var(--display); font-size: min(5.5vw,60px); line-height: .82;
-  color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.5);
-  opacity: 0; transform: translateY(14px);
-  transition: opacity var(--dur-slow) var(--ease-out) .12s, transform var(--dur-slow) var(--ease-out) .12s;
-}
-.card.is-focused .card__title { opacity: 1; transform: none; }
-.card__bar {
-  height: 2px; width: 0%; background: var(--red); margin-top: 14px;
-  max-width: 160px; transition: width var(--dur-slow) var(--ease-out);
-}
-.card:hover .card__bar, .card.is-focused .card__bar { width: 100%; }
-.card__peek {
-  position: absolute; right: 20px; bottom: 20px; z-index: 3;
-  transition: opacity var(--dur-med) ease, transform var(--dur-med) ease;
-}
-.card__peek-inner {
-  width: 130px; overflow: hidden;
-  border: 1px solid rgba(255,255,255,.15); box-shadow: 0 8px 30px rgba(0,0,0,.5);
-}
-.card__peek-thumb {
-  aspect-ratio: 16/10; background-color: #0d0d0d;
-  background-size: cover; background-position: center; background-repeat: no-repeat;
-}
-.card__peek-label {
-  background: var(--red); padding: 5px 8px;
-  font: 600 7.5px/1.2 var(--mono); letter-spacing: .1em; color: #fff;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.card__peek-label span { font-size: 10px; }
+@keyframes showcaseKenBurns { from { transform: scale(1); } to { transform: scale(1.06); } }
 
-.carousel-progress { flex: none; height: 3px; background: rgba(10,10,10,.1); margin: 0 56px 20px; }
-.carousel-progress__fill { height: 100%; background: var(--red); width: 16.67%; transition: width .15s linear; }
+.showcase__scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(10,10,10,.88) 0%, rgba(10,10,10,.4) 42%, rgba(10,10,10,.12) 68%, transparent 100%),
+    linear-gradient(to top, rgba(10,10,10,.7) 0%, transparent 40%);
+}
+
+/* ——— Contenu (client / titre / meta / CTA), bas-gauche de la stage ——— */
+.showcase__content { position: absolute; left: 40px; bottom: 40px; z-index: 3; max-width: 560px; }
+.showcase__eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.showcase__dot { width: 7px; height: 7px; background: var(--red); flex: none; }
+.showcase__client { font: 600 11px/1 var(--mono); letter-spacing: .2em; color: var(--red-text); }
+.showcase__title {
+  font-family: var(--display); font-size: min(6.2vw,72px); line-height: .86; letter-spacing: .01em;
+  color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.5);
+  overflow: hidden; padding-bottom: 6px; margin-bottom: 14px;
+}
+/* Split-letters : chaque lettre remonte depuis le bas, en cascade (--i posé par JS).
+   Même principe que le reveal .is-in existant ailleurs sur le site — état caché posé
+   par JS, dégradation propre si le JS échoue (texte visible, juste sans le split). */
+/* Mot insécable : empêche un retour à la ligne au milieu d'un mot (les lettres
+   sont des inline-block, cassables entre elles sans ce conteneur). */
+.showcase__word { display: inline-block; white-space: nowrap; }
+.showcase__letter {
+  display: inline-block; transform: translateY(102%); opacity: 0;
+  transition: transform var(--dur-med) var(--ease-out), opacity var(--dur-fast) ease;
+  transition-delay: calc(var(--i, 0) * 20ms + 60ms);
+}
+.showcase__content.is-in .showcase__letter { transform: translateY(0); opacity: 1; }
+
+/* Lead = l'accroche `intro` du projet (déjà rédigée premium dans js/projects.js,
+   double-emploi SEO). Clampée à 2 lignes pour tenir dans le bas de la stage. */
+.showcase__lead {
+  font: 300 14px/1.55 var(--sans); color: rgba(255,255,255,.84); max-width: 480px; margin-bottom: 16px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--dur-fast) ease .16s, transform var(--dur-med) var(--ease-out) .16s;
+}
+.showcase__content.is-in .showcase__lead { opacity: 1; transform: none; }
+
+.showcase__meta {
+  font: 500 11px/1.5 var(--mono); letter-spacing: .06em; color: rgba(255,255,255,.6); margin-bottom: 22px;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--dur-fast) ease .24s, transform var(--dur-med) var(--ease-out) .24s;
+}
+.showcase__content.is-in .showcase__meta { opacity: 1; transform: none; }
+
+.showcase__cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 20px; border: 1px solid rgba(255,255,255,.35);
+  font: 600 11px/1 var(--mono); letter-spacing: .16em; color: #fff;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--dur-fast) ease .32s, transform var(--dur-med) var(--ease-out) .32s,
+    background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.showcase__content.is-in .showcase__cta { opacity: 1; transform: none; }
+.showcase__cta:hover { background: var(--red); border-color: var(--red); }
+.showcase__cta-arrow { display: inline-block; transition: transform var(--dur-fast) ease; }
+.showcase__cta:hover .showcase__cta-arrow { transform: translate(3px,-3px); }
+
+/* ——— Cluster vignettes « roulette », overlay bas-droite de la stage ———
+   Le scale (roulette) est posé par JS en `transform` inline, continu, dérivé de la
+   distance au centre de la track (scroll) OU forcé au pic au survol — .is-active
+   (couleur/rail/label) suit indépendamment quel projet est actuellement affiché
+   dans le hero (confirmé par clic/scroll stabilisé, ou prévisualisé au survol). */
+.showcase__thumbs {
+  position: absolute; right: 32px; bottom: 28px; z-index: 5;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
+  max-width: min(58vw, 640px);
+}
+/* Pas de scroll-behavior:smooth ici : il entrait en conflit avec le recentrage
+   programmatique (double lissage → jank). Le lissage est géré en JS (lerp).
+   En mode lock, overflow-x passe à hidden (piloté par scrollLeft depuis le JS). */
+.showcase__thumbs-track {
+  width: 100%; display: flex; gap: 22px; overflow-x: auto;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  padding: 30px 4px 22px; /* marge : laisse respirer le scale + l'ombre-lift sans clip */
+}
+.showcase__thumbs-track::-webkit-scrollbar { display: none; }
+.showcase.is-locked .showcase__thumbs-track { overflow-x: hidden; }
+
+/* Aucune transition sur `transform` : le scale (roulette + boost au survol) est
+   piloté 100% en JS, interpolé chaque frame (lerp). Une transition CSS par-dessus
+   rajouterait un lissage/retard "poisseux" (même écueil documenté sur .card). */
+.showcase__thumb {
+  flex: none; width: 128px; aspect-ratio: 3/4;
+  position: relative; overflow: hidden; cursor: pointer;
+  background: #131313; border: 1px solid rgba(255,255,255,.08);
+  transform-origin: 50% 100%; will-change: transform;
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-med) var(--ease-out);
+}
+.showcase__thumb-img {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  filter: grayscale(55%) brightness(.6);
+  transition: filter var(--dur-med) var(--ease-out);
+}
+.showcase__thumb-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,10,.85) 0%, transparent 60%); }
+.showcase__thumb-rail {
+  position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background: var(--red);
+  transform: scaleX(0); transform-origin: left; transition: transform var(--dur-fast) var(--ease-out);
+}
+.showcase__thumb-label {
+  position: absolute; left: 10px; right: 10px; bottom: 10px;
+  font: 600 9px/1.3 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.65);
+  text-transform: uppercase; opacity: .7;
+  transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.showcase__thumb-num { position: absolute; top: 8px; left: 10px; font: 600 9px/1 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.35); }
+
+/* Survol : feedback visuel (bord + image) — le grossissement lui-même est en JS
+   (boost lerpé) pour rester cohérent avec la roulette et éviter tout à-coup. */
+.showcase__thumb:hover { border-color: rgba(255,255,255,.35); }
+.showcase__thumb:hover .showcase__thumb-img { filter: grayscale(12%) brightness(.85); }
+
+.showcase__thumb.is-active { border-color: rgba(255,255,255,.45); box-shadow: 0 16px 34px -10px rgba(0,0,0,.7); }
+.showcase__thumb.is-active .showcase__thumb-img { filter: grayscale(0%) brightness(1); }
+.showcase__thumb.is-active .showcase__thumb-rail { transform: scaleX(1); }
+.showcase__thumb.is-active .showcase__thumb-label { opacity: 1; color: #fff; }
+.showcase__thumb:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+.showcase__thumbs-controls { display: flex; align-items: center; gap: 12px; }
+.showcase__thumbs-btn {
+  width: 40px; height: 40px; flex: none;
+  border: 1px solid rgba(255,255,255,.25); background: rgba(10,10,10,.35); backdrop-filter: blur(6px);
+  color: #fff; font-size: 15px; cursor: pointer; font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease, transform .2s ease;
+}
+.showcase__thumbs-btn:hover { border-color: var(--red); background: rgba(217,4,41,.25); }
+.showcase__thumbs-btn:active { transform: scale(.94); }
+
+.showcase__counter {
+  font-family: var(--display); font-size: 30px; line-height: 1; letter-spacing: .02em;
+  color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.6);
+  display: flex; align-items: baseline; gap: 6px; margin-left: 4px;
+}
+.showcase__counter span { font: 500 11px/1 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.55); }
+
+/* ——— Indice de scroll : incitation à faire défiler la roulette. Posé par JS,
+   masqué (.is-hidden) dès le 1er geste dans la section. Label piloté en JS
+   ("SCROLLER" en mode lock / "GLISSER" en natif). ——— */
+.showcase__hint {
+  position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); z-index: 4;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font: 500 9px/1 var(--mono); letter-spacing: .24em; color: rgba(255,255,255,.62);
+  text-shadow: 0 1px 8px rgba(0,0,0,.7); pointer-events: none;
+  transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+}
+.showcase__hint.is-hidden { opacity: 0; transform: translate(-50%, -8px); }
+.showcase__hint-track { width: 1px; height: 26px; background: rgba(255,255,255,.28); position: relative; overflow: hidden; }
+.showcase__hint-dot { position: absolute; left: 0; top: 0; width: 1px; height: 9px; background: var(--red); }
+@media (prefers-reduced-motion: no-preference) {
+  .showcase__hint-dot { animation: showcaseHint 1.8s var(--ease-out) infinite; }
+}
+@keyframes showcaseHint { 0% { top: -9px; } 55%, 100% { top: 26px; } }
+
+/* ——— Barre de progression (position dans les N projets), pilotée en JS (scaleX). ——— */
+.showcase__progress { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255,255,255,.12); z-index: 4; }
+.showcase__progress-fill { height: 100%; width: 100%; background: var(--red); transform: scaleX(0); transform-origin: left; }
 
 /* ============================== ABOUT ============================== */
 .about { background: #0c0c0c; padding: 160px 56px; position: relative; overflow: hidden; }
@@ -568,7 +615,7 @@ img { display: block; max-width: 100%; }
    généreuse ici (28px vs 18px mobile) vu l'espace disponible en desktop. */
 .svc:focus-visible, .svc:active { background: rgba(217,4,41,.06); }
 /* Barre d'accent verticale : 0 → pleine hauteur au survol/focus/tap, ancrée au
-   bord gauche de la rangée (même logique que .card__bar du carrousel, en vertical). */
+   bord gauche de la rangée (même logique que .showcase__thumb-rail, en vertical). */
 .svc::before {
   content: ''; position: absolute; left: -1px; top: 50%; width: 2px; height: 0;
   background: var(--red); transform: translateY(-50%);
@@ -829,29 +876,29 @@ a.contact__detail-value:hover { color: var(--red-text); }
   }
   .btn-primary--lg .btn-primary__arrow { width: 22px; height: 22px; font-size: 11px; }
   .hero__scroll { right: 24px; }
-  .carousel-header { padding: 96px 24px 24px; flex-wrap: wrap; gap: 20px; }
-
-  /* Carrousel : scroll horizontal natif avec snap au lieu du scroll-lock 3D desktop
-     (illisible/impossible à cliquer au tactile, cf. retours utilisateur + audit a11y). */
-  .carousel-sticky { position: static; height: auto; display: block; }
-  .carousel-stage {
-    perspective: none; overflow-x: auto; overflow-y: hidden;
-    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    /* Sans touch-action, le navigateur doit "deviner" si un toucher est un début
-       de scroll ou un tap avant de le traiter — source connue de taps ratés sur
-       les carrousels à scroll-snap horizontal (remonté par l'utilisateur : cartes
-       "difficilement cliquables"). pan-x lève l'ambiguïté : seul le geste
-       horizontal est un scroll natif, un tap est traité immédiatement. */
-    touch-action: pan-x;
+  /* Sécurité : même si is-locked traînait après un redimensionnement desktop→mobile
+     (mode décidé une fois au load), on neutralise le sticky en mobile — sinon un
+     sticky 100vh casserait la mise en page tactile (cf. garde JS qui efface aussi
+     la hauteur inline, comme l'ancien carrousel). */
+  .showcase.is-locked .showcase__sticky { position: static; height: auto; overflow: visible; display: block; }
+  .showcase.is-locked .showcase__stage { flex: none; height: 52vh; min-height: 400px; margin: 0 20px; }
+  .showcase__header { padding: 96px 24px 20px; }
+  .showcase__stage { margin: 0 20px; height: 52vh; min-height: 400px; }
+  /* Texte replié en haut de la photo (au lieu de bas-gauche) pour ne pas entrer en
+     collision avec le cluster vignettes qui reste en overlay bas — même construction
+     "photo unique" qu'en desktop, juste réagencée pour un hero plus court. */
+  .showcase__scrim {
+    background: linear-gradient(to bottom, rgba(10,10,10,.8) 0%, rgba(10,10,10,.15) 32%, rgba(10,10,10,.15) 58%, rgba(10,10,10,.85) 100%);
   }
-  .carousel-stage::-webkit-scrollbar { display: none; }
-  .carousel-track { position: static; padding: 12px 7vw; }
-  .card {
-    width: 86vw; height: 64vh; min-height: 380px; scroll-snap-align: center;
-    touch-action: manipulation; /* supprime aussi le délai de détection double-tap-zoom sur le lien lui-même */
-  }
-  .carousel-progress { margin: 0 24px 20px; }
+  .showcase__content { left: 20px; right: 20px; top: 20px; bottom: auto; max-width: none; }
+  .showcase__title { font-size: 9.5vw; }
+  .showcase__lead { display: none; } /* accroche masquée sur mobile (dispo sur la page projet) — garde le hero court lisible */
+  .showcase__hint { display: none; } /* le peek des vignettes suffit comme affordance tactile */
+  .showcase__thumbs { left: 16px; right: 16px; bottom: 16px; max-width: none; align-items: stretch; }
+  .showcase__thumbs-controls { justify-content: flex-end; }
+  .showcase__thumbs-btn { display: none; }
+  .showcase__counter { font-size: 24px; }
+  .showcase__thumb { width: 84px; touch-action: manipulation; }
   .about, .gallery, .services, .contact { padding: 100px 24px; }
   .gallery__lead { margin: 20px 0 40px; }
   .gallery__grid { column-gap: 12px; }
@@ -876,7 +923,7 @@ a.contact__detail-value:hover { color: var(--red-text); }
 @media (max-width: 560px) {
   .about__stats { flex-wrap: wrap; gap: 24px; }
   .footer__bottom { flex-direction: column; gap: 12px; align-items: flex-start; }
-  .carousel-header__titles { flex-direction: column; gap: 6px; align-items: flex-start; }
+  .showcase__titles { flex-direction: column; gap: 6px; align-items: flex-start; }
 }
 
 /* ============================================================
@@ -912,7 +959,7 @@ a.is-magnetic { display: inline-flex; }
    On retire donc "transform" de la transition CSS de ces éléments pour ne pas
    doubler le lissage (sinon rendu mou/laggy). On conserve leurs autres transitions. */
 .btn-primary.is-magnetic, .nav__cta.is-magnetic { transition: background var(--dur-base) var(--ease-out); }
-.carousel-nav__btn.is-magnetic { transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease; }
+.showcase__thumbs-btn.is-magnetic { transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease; }
 
 /* Liens nav : soulignement rouge qui se déroule depuis la gauche (transform only) */
 .nav__link { position: relative; }
