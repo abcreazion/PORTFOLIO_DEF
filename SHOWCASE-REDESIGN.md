@@ -56,7 +56,7 @@ Pas de capture : la bande de vignettes est en **scroll horizontal natif** (`over
 le hero est confirmé **à l'arrêt** (debounce 140 ms). Molette verticale redirigée en
 horizontal quand le curseur est sur la bande.
 - Respecte l'**interdit « pas de scroll-jack mobile »** du `CLAUDE.md` et la règle
-  `prefers-reduced-motion` du skill UI/UX (capture désactivée = aucun risque de nausée).
+  `prefers-reduced-motion` (capture désactivée = aucun risque de nausée).
 
 ---
 
@@ -187,8 +187,9 @@ Priorisées. Les 🟢 sont des gains rapides, les 🟡 plus ambitieux.
   hors du cadre pour signaler qu'il y en a d'autres (affordance de défilement).
 - 🟡 **Transition partagée vignette → hero** (shared-element) : au changement, faire « monter »
   la vignette active vers le hero plutôt qu'un simple cross-fade — très premium, plus coûteux.
-- 🟡 **Spring physics** sur le snap (au lieu du lerp linéaire) pour un arrêt plus organique
-  (skill UI/UX : `spring-physics` > cubic-bezier pour le ressenti naturel).
+- 🟡 **Spring physics** sur le snap (au lieu du lerp linéaire) pour un arrêt plus organique :
+  une courbe à ressort donne un ressenti plus naturel qu'un `cubic-bezier` fixe, dont la durée
+  ne s'adapte pas à la distance parcourue.
 
 ### Contenu & conversion
 - 🟢 **Chiffres-clés** : réafficher les `stats` du projet (ex. « 465K vues ») en surimpression
@@ -201,7 +202,8 @@ Priorisées. Les 🟢 sont des gains rapides, les 🟡 plus ambitieux.
 
 ### Performance & technique
 - 🟢 **Lazy-load des fonds** : les 12 images hero sont toutes en `background-image` d'emblée.
-  Charger en priorité les 2-3 premières, différer le reste (skill : `lazy-load-below-fold`).
+  Charger en priorité les 2-3 premières, différer le reste (les `background-image` CSS échappent
+  au `loading="lazy"` natif — il faut les injecter en JS à l'approche).
 - 🟢 **`content-visibility: auto`** sur la section pour alléger le rendu hors écran.
 - 🟡 **Re-init au franchissement du breakpoint 900px** : aujourd'hui le mode (lock/natif) est
   décidé une fois au load (limitation connue, comme l'ancien carrousel). Un vrai re-init au

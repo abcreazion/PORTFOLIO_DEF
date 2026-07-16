@@ -116,5 +116,28 @@ Les images de galerie ont été générées via un script **Pillow** (redimensio
 
 ## Outils
 
-- Skill **`ui-ux-pro-max`** installé (design intelligence : styles, palettes, guidelines UX, typo, charts). Sûr (audité). L'invoquer pour les décisions de style/couleur/UX.
-- Skill **`design:accessibility-review`** disponible pour un audit WCAG 2.1 AA formel (déjà utilisé cette session — voir historique de conversation pour le rapport détaillé si besoin de reprendre un audit).
+### `ui-ux-pro-max` — installé dans le projet
+
+Skill maison de design intelligence (50+ styles, 161 palettes, 57 pairings de polices, 99 guidelines UX). **Installé dans le repo** : `.claude/skills/ui-ux-pro-max/` (~5,3 Mo, CSV + scripts Python, aucune dépendance npm). L'invoquer pour les décisions de style/couleur/UX.
+
+Il vit désormais **dans le projet** (et non dans `~/.claude/skills`) pour survivre aux changements de profil Windows : la source de référence est `F:/BASTIEN/SKILLS/claude-skills/ui-ux-pro-max`. Historique utile — ce fichier l'a longtemps annoncé « installé » alors qu'il ne l'était plus : il avait été installé sous un **ancien profil** (`C:/Users/test/.claude/skills`, cf. les entrées périmées de `.claude/settings.local.json`), profil remplacé depuis par `bagus`. La doc a survécu à l'installation, pas l'inverse. D'où l'installation *dans le repo* : le skill suit le projet.
+
+⚠️ `.claude/` est exclu du déploiement via `.vercelignore` — ne pas l'en retirer, sous peine de publier 5,3 Mo de CSV sur le site.
+
+### Skills du plugin `design`
+
+Le plugin `design` est **déjà actif** : ces skills s'invoquent directement via l'outil Skill, **aucune installation n'est requise**.
+
+| Skill | Quand l'invoquer sur ce projet |
+|---|---|
+| `design:design-critique` | Retour structuré sur une section (hero, carrousel, page projet) : hiérarchie, lisibilité, cohérence. Le réflexe par défaut pour une décision de style/UX. |
+| `design:accessibility-review` | Audit WCAG 2.1 AA formel. Déjà passé et corrigé le 2026-07-04 — ne relancer que sur une **nouvelle** zone (ex. le carrousel redesigné), pas sur l'existant validé. |
+| `design:design-system` | Cohérence des tokens `:root` (`--red-text`, `--ink-dim`, polices) et des classes BEM-ish ; repérer les valeurs codées en dur au lieu des variables CSS. |
+| `design:ux-copy` | Microcopie française : libellés de CTA, messages du formulaire Formspree (succès/erreur/repli mailto), états vides, textes de nav. |
+| `design:design-handoff` | Spéc d'implémentation quand une maquette doit devenir du HTML/CSS (états, breakpoints 900/560px, détails d'animation). |
+| `design:user-research` / `design:research-synthesis` | Si un vrai retour utilisateur est collecté un jour. Pas de données de recherche sur ce projet à ce jour. |
+| `dataviz` | Aucun graphique sur le site (les `stats` sont des chiffres en texte). À ne sortir que si une dataviz est réellement ajoutée. |
+
+⚠️ **Contexte à rappeler au skill** : site vitrine dark éditorial (`--bg:#0a0a0a`), **coins nets** (aucun `border-radius`), contenu **en français**, vanilla sans build. Les skills ne connaissent pas ces contraintes — les énoncer dans l'invocation, sinon leurs recommandations par défaut (coins arrondis, palettes claires, composants React) sont hors sujet.
+
+Les autres skills locaux disponibles : `graphify` (`~/.claude/skills/graphify`, base de connaissances du code, déclencheur `/graphify`).
