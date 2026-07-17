@@ -483,6 +483,11 @@
   }
 
   /* ——— Hero video ——— */
+  /* Le choix de source (720p/1080p, AV1/H.264) est fait par un script INLINE dans
+     index.html, juste après l'élément : ici on tournerait au DOMContentLoaded, soit
+     après que le scanner de préchargement a déjà lancé le téléchargement. Il ne
+     reste donc que la garde reduced-motion, doublée de celle du script inline (qui
+     ne pose alors aucune source du tout — le poster suffit et rien n'est téléchargé). */
   function initHeroVideo() {
     var video = document.getElementById('heroVideo');
     if (!video) return;

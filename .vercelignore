@@ -7,3 +7,7 @@ assets/img/_originals/
 # docks40 est passé à un embed YouTube (champ `youtube` dans js/projects.js) :
 # le .mp4 local n'est plus référencé nulle part.
 assets/video/docks40.mp4
+# Vestiges du hero d'avant la vidéo (slideshow d'images) : plus aucune référence
+# dans le HTML/JS/CSS. hero-1.jpg reste, LUI, utilisé comme poster de la vidéo.
+assets/img/hero-2.jpg
+assets/img/hero-3.jpg

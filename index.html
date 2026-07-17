@@ -72,10 +72,55 @@
   <div class="hero__ghost" id="heroGhost" aria-hidden="true">DA</div>
 
   <div class="hero__video-wrap">
-    <video class="hero__video" id="heroVideo" poster="assets/img/hero-1.jpg" autoplay muted loop playsinline aria-hidden="true">
-      <source src="assets/video/hero_slideshow.mp4" type="video/mp4">
-    </video>
+    <!-- Aucun <source> en dur : ils sont posés par le script inline juste en dessous.
+         La vidéo est décorative (aria-hidden) et a un poster — sans JS, le poster
+         reste affiché, ce qui est une dégradation parfaitement acceptable. -->
+    <!-- ⚠️ Suffixes -hd/-sd et non -1080/-720 : `data-src-1080` ne se convertirait PAS
+         en `dataset.src1080` (le DOM ne remonte un tiret en majuscule que devant une
+         lettre, jamais devant un chiffre) — l'accès renverrait undefined. -->
+    <video class="hero__video" id="heroVideo" poster="assets/img/hero-1.jpg" autoplay muted loop playsinline aria-hidden="true"
+           data-src-hd="assets/video/hero_slideshow" data-src-sd="assets/video/hero_slideshow-720"></video>
   </div>
+  <script>
+  /* Choix de la source du hero — INLINE et non dans js/main.js, délibérément.
+     `initHeroVideo()` tourne au DOMContentLoaded : le scanner de préchargement du
+     navigateur aurait déjà lancé le téléchargement d'un <source> écrit en dur, et
+     réécrire l'URL après coup ferait payer deux fichiers. Ici on pose les sources
+     avant que le parseur n'ait quoi que ce soit à précharger.
+
+     Deux axes de choix :
+     1. RÉSOLUTION — 720p sous 900px (le hero mobile n'affiche jamais plus large ;
+        4,6 Mo au lieu de 9 Mo sur un réseau mobile).
+     2. CODEC — AV1 d'abord (≈35% plus léger à qualité égale), H.264 en repli.
+        Le paramètre `codecs=` est ce qui permet à Safari sans décodeur AV1 de
+        sauter DIRECTEMENT au repli : sans lui les deux sources annoncent
+        « video/mp4 », le navigateur prend la première, télécharge, échoue, puis
+        recommence — soit le pire des deux mondes.
+
+     Sous prefers-reduced-motion, on ne pose AUCUNE source : le poster suffit, et
+     l'utilisateur économise le téléchargement entier (la vidéo serait figée). */
+  (function () {
+    var v = document.getElementById('heroVideo');
+    if (!v) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      v.removeAttribute('autoplay');
+      return;
+    }
+    var small = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+    var base = small ? v.dataset.srcSd : v.dataset.srcHd;
+    if (!base) return;
+    var av1Level = small ? '05' : '08'; // niveau AV1 réel du fichier (mesuré à l'encodage)
+    [
+      ['.av1.mp4', 'video/mp4; codecs="av01.0.' + av1Level + 'M.08"'],
+      ['.mp4', 'video/mp4; codecs="avc1.640032"']
+    ].forEach(function (s) {
+      var el = document.createElement('source');
+      el.src = base + s[0];
+      el.type = s[1];
+      v.appendChild(el);
+    });
+  })();
+  </script>
 
   <div class="hero__scrim"></div>
 
