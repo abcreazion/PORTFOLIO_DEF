@@ -259,9 +259,28 @@
     if (!el || !label) return;
 
     var tx = -100, ty = -100, cx = tx, cy = ty;
+
+    // Extension différée : tant que le pointeur BOUGE, le badge reste un point
+    // rouge (il accompagne le geste sans le commenter) ; il ne s'étend en
+    // « VOIR ↗ » qu'après IDLE_DELAY sans mouvement au-dessus d'une cible
+    // [data-cursor] — le moment où l'utilisateur se pose et peut le lire.
+    var IDLE_DELAY = 300;
+    var overTarget = null, idleTimer = null;
+    function expand() {
+      if (!overTarget) return;
+      label.textContent = overTarget.dataset.cursor;
+      el.classList.add('is-label');
+    }
+    function armIdle() {
+      window.clearTimeout(idleTimer);
+      if (overTarget) idleTimer = window.setTimeout(expand, IDLE_DELAY);
+    }
+
     document.addEventListener('mousemove', function (e) {
       tx = e.clientX; ty = e.clientY;
       el.classList.add('is-on');
+      el.classList.remove('is-label'); // en mouvement → point rouge
+      armIdle();
     }, { passive: true });
 
     raf.add(function () {
@@ -277,8 +296,9 @@
 
     document.addEventListener('mouseover', function (e) {
       var t = e.target.closest ? e.target.closest('[data-cursor]') : null;
-      if (t) { label.textContent = t.dataset.cursor; el.classList.add('is-label'); }
-      else el.classList.remove('is-label');
+      overTarget = t;
+      if (!t) el.classList.remove('is-label');
+      armIdle();
     }, { passive: true });
   }
 

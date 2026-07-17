@@ -125,6 +125,12 @@
         <!-- .showcase__bg (une par projet, cross-fade) injectées depuis js/main.js -->
         <div class="showcase__scrim"></div>
 
+        <!-- Lien plein cadre (desktop) : toute la scène ouvre le projet affiché
+             (href synchronisé par showDisplay dans js/main.js). aria-hidden +
+             tabindex=-1 volontaires : c'est un doublon POINTEUR du CTA réel juste
+             en dessous — l'exposer ferait tabuler deux fois vers la même page. -->
+        <a class="showcase__stage-link" id="showcaseStageLink" href="#" data-cursor="VOIR ↗" aria-hidden="true" tabindex="-1"></a>
+
         <!-- aria-live : le hero changeait de projet en silence total pour un
              lecteur d'écran (le seul indice était visuel). -->
         <div class="showcase__content" id="showcaseContent" aria-live="polite" aria-atomic="true">
@@ -135,6 +141,9 @@
           <h3 class="showcase__title" id="showcaseTitle"></h3>
           <p class="showcase__lead" id="showcaseLead"></p>
           <p class="showcase__meta" id="showcaseMeta"></p>
+          <!-- Stats du projet (paires ["CHIFFRE","légende"] de js/projects.js),
+               peuplées par showDisplay — masquées quand le projet n'en a pas. -->
+          <div class="showcase__stats" id="showcaseStats"></div>
           <a class="showcase__cta" id="showcaseCta" href="#">
             VOIR LE PROJET <span class="showcase__cta-arrow">↗</span>
           </a>

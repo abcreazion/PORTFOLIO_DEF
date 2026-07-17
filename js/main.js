@@ -85,18 +85,25 @@
         ' style="' + (eager ? 'background-image:url(\'' + cardImage(p) + '\');' : '') + 'background-position:' + focal + '"></div>';
     }).join(''));
 
+    // Vignettes en <a> (et non <button>) : la vignette ACTIVE navigue vers la
+    // page projet — en laissant le lien faire, on garde la navigation native
+    // (View Transition cross-document, ctrl/cmd+clic et clic-molette → nouvel
+    // onglet, URL visible au survol). Le clic sur une vignette non centrée est
+    // intercepté dans initLock/initNative (preventDefault → sélection roulette).
     track.innerHTML = data.map(function (p, i) {
       var num = String(i + 1).padStart(2, '0');
       var label = stripTags(p.client) + ' — ' + stripTags(p.title);
       var yt = (p.youtube && isYoutubeThumbUrl(cardImage(p))) ? p.youtube : '';
+      var href = p.url || (p.slug ? 'projet.html?p=' + p.slug : '#');
+      var ext = p.url ? ' target="_blank" rel="noopener noreferrer"' : '';
       return '' +
-        '<button class="showcase__thumb" type="button" data-showcase-thumb data-idx="' + i + '" data-cursor="VOIR ↗" aria-label="Voir ' + label + '">' +
+        '<a class="showcase__thumb" href="' + href + '"' + ext + ' data-showcase-thumb data-idx="' + i + '" data-cursor="VOIR ↗" aria-label="Voir ' + label + '">' +
           '<div class="showcase__thumb-img" data-yt="' + yt + '" style="background-image:url(\'' + cardImage(p) + '\')"></div>' +
           '<div class="showcase__thumb-scrim"></div>' +
           '<div class="showcase__thumb-num">' + num + '</div>' +
           '<div class="showcase__thumb-rail"></div>' +
           '<div class="showcase__thumb-label">' + stripTags(p.client) + '</div>' +
-        '</button>';
+        '</a>';
     }).join('');
 
     fixYtFallback(stage.querySelectorAll('[data-showcase-bg][data-yt]:not([data-yt=""])'));
@@ -588,6 +595,8 @@
     var titleEl = document.getElementById('showcaseTitle');
     var leadEl = document.getElementById('showcaseLead');
     var metaEl = document.getElementById('showcaseMeta');
+    var statsEl = document.getElementById('showcaseStats');
+    var stageLink = document.getElementById('showcaseStageLink');
     var ctaEl = document.getElementById('showcaseCta');
     var counterEl = document.getElementById('showcaseCounter');
     var progressFill = document.getElementById('showcaseProgress');
@@ -696,7 +705,25 @@
       splitTitle(titleEl, stripTags(p.title));
       if (leadEl) leadEl.textContent = p.intro || '';
       metaEl.textContent = (p.role || '') + (p.year ? ' · ' + p.year : '');
-      ctaEl.href = p.url || (p.slug ? 'projet.html?p=' + p.slug : '#');
+      // Stats (paires ["CHIFFRE","légende"]) — bloc retiré du flux si le projet n'en a pas.
+      if (statsEl) {
+        var stats = p.stats || [];
+        statsEl.innerHTML = stats.map(function (s) {
+          return '<span class="showcase__stat"><b>' + s[0] + '</b><i>' + s[1] + '</i></span>';
+        }).join('');
+        statsEl.style.display = stats.length ? '' : 'none';
+      }
+      var href = p.url || (p.slug ? 'projet.html?p=' + p.slug : '#');
+      ctaEl.href = href;
+      // Projet externe (champ `url`) → nouvel onglet, comme les vignettes/panneaux.
+      if (p.url) { ctaEl.target = '_blank'; ctaEl.rel = 'noopener noreferrer'; }
+      else { ctaEl.removeAttribute('target'); ctaEl.removeAttribute('rel'); }
+      // Le lien plein cadre suit le projet AFFICHÉ (donc aussi la prévisualisation au survol).
+      if (stageLink) {
+        stageLink.href = href;
+        if (p.url) { stageLink.target = '_blank'; stageLink.rel = 'noopener noreferrer'; }
+        else { stageLink.removeAttribute('target'); stageLink.removeAttribute('rel'); }
+      }
       requestAnimationFrame(function () { content.classList.add('is-in'); });
     }
 
@@ -907,7 +934,17 @@
 
       // Clic vignette / flèches / clavier → déplacent le SCROLL PAGE (source de vérité
       // en lock), pour que roulette et hero restent synchronisés.
-      thumbs.forEach(function (t, i) { t.addEventListener('click', function () { dismissHint(); snapTo(i); }); });
+      // Vignette NON centrée → sélection (le <a> est neutralisé) ; vignette ACTIVE
+      // → on laisse le lien naviguer vers la page projet. Un clic modifié
+      // (ctrl/cmd/maj/alt → nouvel onglet, etc.) n'est jamais intercepté.
+      thumbs.forEach(function (t, i) {
+        t.addEventListener('click', function (e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          if (i === confirmedIdx) return;
+          e.preventDefault();
+          dismissHint(); snapTo(i);
+        });
+      });
       if (prevBtn) prevBtn.addEventListener('click', function () { dismissHint(); snapTo(confirmedIdx - 1); });
       if (nextBtn) nextBtn.addEventListener('click', function () { dismissHint(); snapTo(confirmedIdx + 1); });
       document.addEventListener('keydown', function (e) {
@@ -957,7 +994,16 @@
         showDisplay(confirmedIdx);
         centerTo(confirmedIdx);
       };
-      thumbs.forEach(function (t, i) { t.addEventListener('click', function () { dismissHint(); go(i); }); });
+      // Même logique de lien qu'en mode lock : sélection si non active, navigation
+      // native (le <a> suit son href) si la vignette est déjà la vignette active.
+      thumbs.forEach(function (t, i) {
+        t.addEventListener('click', function (e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          if (i === confirmedIdx) return;
+          e.preventDefault();
+          dismissHint(); go(i);
+        });
+      });
       if (prevBtn) prevBtn.addEventListener('click', function () { dismissHint(); go(confirmedIdx - 1); });
       if (nextBtn) nextBtn.addEventListener('click', function () { dismissHint(); go(confirmedIdx + 1); });
       document.addEventListener('keydown', function (e) {
