@@ -7,11 +7,52 @@
   var EASE = 'cubic-bezier(.22,.61,.36,1)';
   var REDUCE = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
+  // Tranché UNE fois au chargement, comme l'ancien carrousel. Ce n'est pas qu'un
+  // habillage CSS : mobile et desktop ont des structures DOM entièrement
+  // différentes (panneaux plein écran vs hero + roulette), d'où un branchement
+  // dès le rendu. Conséquence assumée et documentée : franchir 900px en cours de
+  // session (rotation d'écran) ne rebascule pas le mode.
+  var IS_MOBILE = !!(window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
+
   function showAll(items) {
     items.forEach(function (el) { el.style.opacity = '1'; el.style.transform = 'none'; });
   }
 
   function stripTags(s) { return String(s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
+
+  // Retard d'entrée en scène des reveals, posé par initCurtain() et lu par
+  // initReveals(). Sans lui, la cascade du hero jouerait DERRIÈRE le rideau et
+  // serait finie avant qu'il ne se lève : le visiteur découvrirait un hero déjà
+  // figé. 0 dès qu'il n'y a pas de rideau (2e page vue, reduced-motion).
+  var REVEAL_DELAY = 0;
+
+  /* ——— Rideau d'entrée : le nom se dévoile en masque, puis le rideau se lève ———
+     Une seule fois par session : la signature vaut au premier contact, elle
+     devient un péage dès la deuxième page vue. Séquence : dévoilement (0→950ms)
+     → levée (950→1850ms) → display:none.
+
+     Tout est séquencé au setTimeout, jamais au transitionend : `transform` est
+     aussi transitionné sur .curtain__word, dont l'événement REMONTE jusqu'au
+     rideau et le ferait disparaître d'un coup. Et dans un onglet ouvert en
+     arrière-plan, un transitionend qui ne vient jamais laisserait un calque
+     opaque bloquant toute la page — un timer, lui, finit toujours par tomber. */
+  function initCurtain() {
+    var el = document.getElementById('curtain');
+    if (!el) return;
+    var seen = false;
+    // sessionStorage lève en navigation privée / cookies bloqués : le rideau
+    // rejouerait à chaque page, il vaut mieux ne pas le jouer du tout.
+    try {
+      seen = !!window.sessionStorage.getItem('curtainSeen');
+      window.sessionStorage.setItem('curtainSeen', '1');
+    } catch (e) { seen = true; }
+    if (REDUCE || seen) { el.remove(); return; }
+
+    REVEAL_DELAY = 1700; // la cascade du hero démarre juste avant la fin de la levée
+    requestAnimationFrame(function () { el.classList.add('is-in'); });   // dévoile le nom
+    window.setTimeout(function () { el.classList.add('is-done'); }, 950); // lève le rideau
+    window.setTimeout(function () { el.classList.add('is-gone'); }, 1900);
+  }
 
   // Miniature YouTube (maxres HD par défaut). Un projet avec un champ `youtube`
   // ET sans image personnalisée affiche cette miniature sur sa carte carrousel
@@ -29,11 +70,19 @@
     var track = document.getElementById('showcaseThumbs');
     var data = window.PROJECTS;
     if (!stage || !track || !data || !data.length) return;
+    if (IS_MOBILE) { renderShowcasePanels(stage, data); return; }
 
+    // Les `background-image` CSS échappent au loading="lazy" natif : les 12 fonds
+    // partaient tous au chargement de l'accueil, en concurrence avec la vidéo du
+    // hero. Seuls les 3 premiers sont posés d'emblée ; les autres attendent
+    // `loadDeferredBgs()`, appelé au premier geste dans le showcase.
     stage.insertAdjacentHTML('afterbegin', data.map(function (p, i) {
       var focal = p.focal || 'center';
       var yt = (p.youtube && isYoutubeThumbUrl(cardImage(p))) ? p.youtube : '';
-      return '<div class="showcase__bg" data-showcase-bg data-idx="' + i + '" data-yt="' + yt + '" style="background-image:url(\'' + cardImage(p) + '\'); background-position:' + focal + '"></div>';
+      var eager = i < 3;
+      return '<div class="showcase__bg" data-showcase-bg data-idx="' + i + '" data-yt="' + yt + '"' +
+        (eager ? '' : ' data-bg-src="' + cardImage(p) + '"') +
+        ' style="' + (eager ? 'background-image:url(\'' + cardImage(p) + '\');' : '') + 'background-position:' + focal + '"></div>';
     }).join(''));
 
     track.innerHTML = data.map(function (p, i) {
@@ -41,7 +90,7 @@
       var label = stripTags(p.client) + ' — ' + stripTags(p.title);
       var yt = (p.youtube && isYoutubeThumbUrl(cardImage(p))) ? p.youtube : '';
       return '' +
-        '<button class="showcase__thumb" type="button" data-showcase-thumb data-idx="' + i + '" aria-label="Voir ' + label + '">' +
+        '<button class="showcase__thumb" type="button" data-showcase-thumb data-idx="' + i + '" data-cursor="VOIR ↗" aria-label="Voir ' + label + '">' +
           '<div class="showcase__thumb-img" data-yt="' + yt + '" style="background-image:url(\'' + cardImage(p) + '\')"></div>' +
           '<div class="showcase__thumb-scrim"></div>' +
           '<div class="showcase__thumb-num">' + num + '</div>' +
@@ -52,6 +101,102 @@
 
     fixYtFallback(stage.querySelectorAll('[data-showcase-bg][data-yt]:not([data-yt=""])'));
     fixYtFallback(track.querySelectorAll('.showcase__thumb-img[data-yt]:not([data-yt=""])'));
+  }
+
+  /* ——— MOBILE : un projet = un panneau plein écran ———————————————————————————
+     Structure DOM entièrement distincte du desktop, et pas par confort : le
+     concept « grande image + cluster de vignettes à survoler » suppose une scène
+     large, un survol et un pointeur fin. Aucun des trois n'existe sur un
+     téléphone. Comprimé, il produisait exactement l'inverse de ce qu'on veut
+     pour un portfolio (mesuré en 390×844) : une bande de vignettes de 202px PLUS
+     HAUTE que le contenu qu'elle sert à naviguer, un titre à 38px, une section à
+     52% de l'écran, et la photo — l'œuvre — réduite à un fond entrevu derrière
+     deux calques.
+
+     Ici : la photo occupe tout le panneau, on glisse (scroll-snap natif, aucun
+     scroll-jack), et le panneau ENTIER est le lien — plus de parcours en deux
+     temps (sélectionner une vignette, puis viser un CTA séparé).
+     ————————————————————————————————————————————————————————————————————————— */
+  function renderShowcasePanels(stage, data) {
+    var outer = document.getElementById('showcaseOuter');
+    var sticky = stage.parentNode;
+
+    // La structure desktop est DÉMONTÉE, pas masquée : la laisser en place
+    // chargerait 12 fonds pour rien et garderait des cibles tactiles fantômes
+    // par-dessus les panneaux.
+    ['#showcaseContent', '#showcaseHint', '.showcase__thumbs', '.showcase__scrim', '.showcase__progress']
+      .forEach(function (sel) {
+        var el = stage.querySelector(sel);
+        if (el) el.remove();
+      });
+
+    if (outer) outer.classList.add('is-panels');
+    stage.classList.add('showcase__stage--panels');
+
+    stage.innerHTML = data.map(function (p, i) {
+      var href = p.url || (p.slug ? 'projet.html?p=' + p.slug : '#');
+      var ext = p.url ? ' target="_blank" rel="noopener noreferrer"' : '';
+      var yt = (p.youtube && isYoutubeThumbUrl(cardImage(p))) ? p.youtube : '';
+      var meta = stripTags(p.role || '') + (p.year ? ' · ' + p.year : '');
+      // alt="" volontaire : le lien porte déjà le client et le titre en texte
+      // réel juste en dessous — un alt redondant ferait tout lire deux fois.
+      return '' +
+        '<a class="showcase__panel" href="' + href + '"' + ext + ' data-showcase-panel data-idx="' + i + '">' +
+          '<img class="showcase__panel-img" src="' + cardImage(p) + '" alt="" data-yt="' + yt + '"' +
+            ' loading="' + (i === 0 ? 'eager' : 'lazy') + '" decoding="async"' +
+            ' style="object-position:' + (p.focal || 'center') + '">' +
+          '<div class="showcase__panel-scrim"></div>' +
+          '<div class="showcase__panel-body">' +
+            '<span class="showcase__eyebrow"><span class="showcase__dot"></span>' +
+              '<span class="showcase__client">' + stripTags(p.client) + '</span></span>' +
+            '<h3 class="showcase__panel-title">' + stripTags(p.title) + '</h3>' +
+            '<span class="showcase__panel-meta">' + meta + '</span>' +
+            '<span class="showcase__panel-cta">VOIR LE PROJET <span class="showcase__cta-arrow">↗</span></span>' +
+          '</div>' +
+        '</a>';
+    }).join('');
+
+    // Repère de position : 12 segments + compteur, ~10px de haut — contre 202px
+    // pour l'ancienne bande de vignettes, pour la même information utile
+    // (« où j'en suis dans les 12 »). Hors de la stage, qui est le conteneur de
+    // défilement : un enfant absolu y défilerait avec les panneaux.
+    sticky.insertAdjacentHTML('beforeend',
+      '<div class="showcase__mnav">' +
+        '<div class="showcase__segs" id="showcaseSegs" aria-hidden="true">' +
+          data.map(function () { return '<span class="showcase__seg"></span>'; }).join('') +
+        '</div>' +
+        '<div class="showcase__counter" id="showcaseCounter">01<span>/ ' + String(data.length).padStart(2, '0') + '</span></div>' +
+      '</div>');
+
+    fixYtImgs(stage.querySelectorAll('.showcase__panel-img[data-yt]:not([data-yt=""])'));
+  }
+
+  /* Même repli maxres→hqdefault que fixYtFallback, mais pour de vraies <img>
+     (panneaux mobiles) au lieu d'un background CSS. Aucun projet n'en dépend
+     aujourd'hui — tous ont leur `image` propre — c'est un filet pour un futur
+     projet qui n'aurait qu'un `youtube`. */
+  function fixYtImgs(els) {
+    Array.prototype.forEach.call(els, function (img) {
+      var hq = ytThumb(img.getAttribute('data-yt'), 'hqdefault');
+      var swap = function () { if (img.src !== hq) img.src = hq; };
+      img.addEventListener('error', swap);
+      img.addEventListener('load', function () { if (img.naturalWidth <= 120) swap(); });
+    });
+  }
+
+  /* ——— Chargement différé des fonds du showcase ———
+     Pose la vraie image d'un fond resté en attente (`data-bg-src`). Idempotent :
+     une fois posée, l'attribut disparaît et l'élément est ignoré. Le fallback
+     miniature YouTube ne peut être branché qu'ICI pour ces fonds — il lit le
+     `background-image` courant, qui n'existait pas tant que le fond était différé. */
+  function loadBg(el) {
+    if (!el || !el.dataset.bgSrc) return;
+    el.style.backgroundImage = "url('" + el.dataset.bgSrc + "')";
+    delete el.dataset.bgSrc;
+    if (el.getAttribute('data-yt')) fixYtFallback([el]);
+  }
+  function loadDeferredBgs() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-showcase-bg][data-bg-src]'), loadBg);
   }
 
   /* ——— Fallback miniature YouTube (fonds background-image) ———
@@ -113,7 +258,11 @@
         el.style.transform = on ? 'none' : 'translateY(28px)';
       });
     }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
-    items.forEach(function (el) { io.observe(el); });
+    // Observation retardée tant qu'un rideau est en scène (cf. REVEAL_DELAY) :
+    // l'état masqué est déjà posé, le hero attend simplement derrière le rideau
+    // et sa cascade se déclenche au moment où il devient visible.
+    var observe = function () { items.forEach(function (el) { io.observe(el); }); };
+    if (REVEAL_DELAY) window.setTimeout(observe, REVEAL_DELAY); else observe();
     // Pas de failsafe "reveal-all" ici : contrairement à l'ancien modèle "once"
     // (unobserve au 1er passage), l'observateur reste attaché et bascule .is-in /
     // .is-split-in dans les DEUX sens — un éventuel "miss" se corrige de lui-même
@@ -239,9 +388,17 @@
     if (!form || !status || !submitBtn) return;
 
     var fields = Array.prototype.slice.call(form.querySelectorAll('[required]'));
+    // aria-invalid double l'état visuel .is-invalid : la bordure rouge ne dit
+    // rien à un lecteur d'écran, qui annonce alors un champ « valide » qu'on
+    // vient de lui refuser.
+    var setValid = function (f, valid) {
+      f.classList.toggle('is-invalid', !valid);
+      if (valid) f.removeAttribute('aria-invalid');
+      else f.setAttribute('aria-invalid', 'true');
+    };
     fields.forEach(function (f) {
       ['input', 'change'].forEach(function (evt) {
-        f.addEventListener(evt, function () { f.classList.remove('is-invalid'); });
+        f.addEventListener(evt, function () { setValid(f, true); });
       });
     });
 
@@ -262,7 +419,7 @@
       var firstInvalid = null;
       fields.forEach(function (f) {
         var valid = f.checkValidity();
-        f.classList.toggle('is-invalid', !valid);
+        setValid(f, valid);
         if (!valid && !firstInvalid) firstInvalid = f;
       });
       if (firstInvalid) {
@@ -356,7 +513,73 @@
      calcul mathématique pur (aucun getBoundingClientRect par vignette et par frame →
      plus de layout thrashing) et sans transition CSS sur `transform` (le lissage est
      fait en amont par lerp — une transition par-dessus retraînerait, cf. .card). */
+  /* ——— MOBILE : pilotage des panneaux ———
+     Volontairement minuscule comparé au mode desktop : il n'y a AUCUNE animation
+     JS ici, donc aucune boucle rAF, aucun lerp, aucun transform posé par le JS.
+     Le défilement est 100% natif (scroll-snap), la navigation est un simple <a>.
+     Le JS ne fait que LIRE scrollLeft pour mettre à jour le repère de position —
+     c'est tout ce qu'il reste à faire quand la structure est juste. */
+  function initShowcasePanels() {
+    var stage = document.getElementById('showcaseStage');
+    var counterEl = document.getElementById('showcaseCounter');
+    var segsWrap = document.getElementById('showcaseSegs');
+    if (!stage || !counterEl || !segsWrap) return;
+
+    var panels = Array.prototype.slice.call(stage.querySelectorAll('[data-showcase-panel]'));
+    var segs = Array.prototype.slice.call(segsWrap.children);
+    var n = panels.length;
+    if (!n) return;
+
+    // Le pas est MESURÉ sur le DOM plutôt que recalculé depuis les valeurs CSS
+    // (largeur du panneau + gap) : il reste juste si le CSS change.
+    var step = 1;
+    function measure() {
+      step = (n > 1 ? panels[1].offsetLeft - panels[0].offsetLeft : panels[0].offsetWidth) || 1;
+    }
+
+    var current = -1;
+    function setCurrent(i) {
+      if (i === current) return;
+      current = i;
+      counterEl.innerHTML = String(i + 1).padStart(2, '0') + '<span>/ ' + String(n).padStart(2, '0') + '</span>';
+      segs.forEach(function (s, j) { s.classList.toggle('is-on', j === i); });
+      panels.forEach(function (p, j) {
+        if (j === i) p.setAttribute('aria-current', 'true');
+        else p.removeAttribute('aria-current');
+      });
+    }
+
+    // Throttle rAF : `scroll` tire bien plus souvent qu'on ne repeint.
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        setCurrent(Math.max(0, Math.min(n - 1, Math.round(stage.scrollLeft / step))));
+      });
+    }
+    stage.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { measure(); onScroll(); });
+
+    // Un clavier peut être branché sur n'importe quel appareil, et ce mode sert
+    // aussi aux fenêtres desktop étroites.
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      var r = stage.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight) return;
+      e.preventDefault();
+      var i = Math.max(0, Math.min(n - 1, current + (e.key === 'ArrowRight' ? 1 : -1)));
+      stage.scrollTo({ left: i * step, behavior: REDUCE ? 'auto' : 'smooth' });
+    });
+
+    measure();
+    setCurrent(0);
+  }
+
   function initShowcase() {
+    if (IS_MOBILE) { initShowcasePanels(); return; }
+
     var outer = document.getElementById('showcaseOuter');
     var stage = document.getElementById('showcaseStage');
     var track = document.getElementById('showcaseThumbs');
@@ -380,8 +603,10 @@
     var bgs = Array.prototype.slice.call(stage.querySelectorAll('[data-showcase-bg]'));
     var thumbs = Array.prototype.slice.call(track.querySelectorAll('[data-showcase-thumb]'));
 
-    var IS_MOBILE = !!(window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
-    var LOCK = !REDUCE && !IS_MOBILE;
+    // Le mobile est déjà parti sur initShowcasePanels() : ici on est forcément en
+    // desktop. Reste à distinguer la capture sticky du repli natif sous
+    // prefers-reduced-motion (scroll horizontal de la roulette, sans capture).
+    var LOCK = !REDUCE;
 
     // Roulette : scale au pic (centre / survol) → plancher (loin). Delta doux pour
     // éviter tout chevauchement (le gap CSS de 22px absorbe le +14%) et rester fluide.
@@ -392,8 +617,8 @@
     // sèche sur écran rapide) et à chaque frame sautée il avance d'un à-coup —
     // c'est une des causes du rendu haché. La conversion rend la course identique
     // en temps réel quelle que soit la cadence (60, 120, 144Hz) ou les frames perdues.
-    var PROG_LERP = 0.20;   // rattrapage de la position de bande (~120ms)
-    var BOOST_LERP = 0.22;  // rattrapage du pic de survol
+    var PROG_LERP = 0.14;   // rattrapage de la position de bande (~750ms de course)
+    var BOOST_LERP = 0.22;  // rattrapage du pic de survol — délibérément plus vif : le hover doit rester réactif
     function smooth(k, dt) { return 1 - Math.pow(1 - k, dt / 16.667); }
 
     // ——— Géométrie (mesurée une fois, recalculée au resize) ———
@@ -448,8 +673,21 @@
       displayIdx = idx;
       var p = data[idx];
 
+      // Filet de sécurité du chargement différé : si le fond demandé n'est pas
+      // encore posé (l'utilisateur a sauté directement ici), on le pose maintenant
+      // plutôt que d'activer une div vide.
+      loadBg(bgs[idx]);
       bgs.forEach(function (bg, i) { bg.classList.toggle('is-active', i === idx); });
-      thumbs.forEach(function (t, i) { t.classList.toggle('is-active', i === idx); });
+      thumbs.forEach(function (t, i) {
+        t.classList.toggle('is-active', i === idx);
+        // aria-current plutôt que role="tab"/aria-selected : sans tabpanel associé
+        // ni roving tabindex, une fausse tablist annoncerait « onglet 1 sur 12 »
+        // puis enverrait Tab sur l'onglet suivant au lieu du panneau — plus
+        // trompeur que pas de sémantique du tout. Ces vignettes sont des boutons,
+        // aria-current dit simplement lequel est actif.
+        if (i === idx) t.setAttribute('aria-current', 'true');
+        else t.removeAttribute('aria-current');
+      });
       if (counterEl) counterEl.innerHTML = String(idx + 1).padStart(2, '0') + '<span>/ ' + String(n).padStart(2, '0') + '</span>';
 
       content.classList.remove('is-in');
@@ -583,7 +821,38 @@
           showDisplay(confirmedIdx); kick();
         });
       }
+      // Symétrie clavier : le focus prévisualise le hero exactement comme le
+      // survol. Avant, seul mouseenter le faisait — on pouvait tabuler sur les
+      // 12 vignettes sans que rien ne change à l'écran. Hors du garde
+      // hasFinePointer : un clavier peut être branché sur n'importe quel appareil.
+      t.addEventListener('focus', function () {
+        hoveredIdx = i; boostTarget[i] = 1;
+        showDisplay(i); kick();
+      });
+      t.addEventListener('blur', function () {
+        hoveredIdx = null; boostTarget[i] = 0;
+        showDisplay(confirmedIdx); kick();
+      });
     });
+
+    // Préchargement en bloc des 9 fonds différés quand la stage entre à l'écran.
+    // rootMargin volontairement à 0 : la stage ne commence qu'à ~200px sous le
+    // pli (mesuré à 1280×800), donc la MOINDRE marge de préchargement rendrait
+    // l'observateur intersectant dès le chargement — le report ne servirait plus
+    // à rien. À 0, il faut un vrai geste de scroll pour déclencher, ce qui laisse
+    // la fenêtre de chargement initiale à la vidéo du hero. Le temps de traverser
+    // la roulette couvre le chargement, et showDisplay() garde son filet de
+    // sécurité par fond si l'utilisateur saute directement à un projet lointain.
+    if ('IntersectionObserver' in window) {
+      var bgIo = new IntersectionObserver(function (entries) {
+        if (!entries.some(function (e) { return e.isIntersecting; })) return;
+        loadDeferredBgs();
+        bgIo.disconnect();
+      });
+      bgIo.observe(stage);
+    } else {
+      loadDeferredBgs();
+    }
 
     if (LOCK) initLock(); else initNative();
 
@@ -731,9 +1000,20 @@
     M.magnetic('.btn-primary, .nav__cta, .showcase__thumbs-btn', { strength: 0.3, ease: 0.16 });
     // Parallax scrubbé : uniquement les grands mots décoratifs de fond.
     M.parallax('.about__bgword, .services__bgword, .contact__bgword', { speed: 0.14 });
+    // Révélation en essuyage des images (portrait About) — l'image est découverte,
+    // pas allumée. Bidirectionnel comme le reste des reveals. On ARME d'abord
+    // l'état masqué depuis le JS : le CSS ne découpe que [data-clip-reveal="armed"],
+    // pour qu'un JS absent laisse l'image visible au lieu de la faire disparaître.
+    Array.prototype.forEach.call(document.querySelectorAll('[data-clip-reveal]'), function (el) {
+      el.dataset.clipReveal = 'armed';
+    });
+    M.reveal('[data-clip-reveal]');
+    // Curseur-badge contextuel : lit [data-cursor], posé sur les vignettes du showcase.
+    M.cursor();
   }
 
   function init() {
+    initCurtain(); // en premier : il pose REVEAL_DELAY, lu par initReveals()
     renderShowcase();
     initReveals();
     initNav();

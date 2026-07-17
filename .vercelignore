@@ -1,2 +1,9 @@
 project/
 .claude/
+
+# Sources de travail et médias orphelins : présents dans le repo au cas où, mais
+# jamais servis par le site — inutile de les téléverser à chaque déploiement.
+assets/img/_originals/
+# docks40 est passé à un embed YouTube (champ `youtube` dans js/projects.js) :
+# le .mp4 local n'est plus référencé nulle part.
+assets/video/docks40.mp4

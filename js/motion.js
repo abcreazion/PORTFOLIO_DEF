@@ -239,6 +239,49 @@
     });
   }
 
+  /* ============================================================
+     5. CURSEUR-BADGE contextuel
+     ------------------------------------------------------------
+     Un carré rouge suit le pointeur (lerp, boucle rAF partagée) et s'étend en
+     badge libellé au survol de tout élément portant [data-cursor="VOIR ↗"].
+     L'affordance se déplace sur le curseur lui-même plutôt que de surcharger
+     la vignette.
+
+     Le curseur natif n'est jamais masqué (`cursor:none`) : le badge amorti
+     accompagne le vrai curseur, il ne le remplace pas — le masquer donnerait
+     une latence perçue à chaque geste et casserait l'accessibilité.
+     Pointeur fin uniquement, coupé sous reduced-motion.
+     ============================================================ */
+  function cursor() {
+    if (REDUCE || !FINE) return;
+    var el = document.getElementById('cursor');
+    var label = document.getElementById('cursorLabel');
+    if (!el || !label) return;
+
+    var tx = -100, ty = -100, cx = tx, cy = ty;
+    document.addEventListener('mousemove', function (e) {
+      tx = e.clientX; ty = e.clientY;
+      el.classList.add('is-on');
+    }, { passive: true });
+
+    raf.add(function () {
+      cx = lerp(cx, tx, 0.22); cy = lerp(cy, ty, 0.22);
+      // Le `translate(-50%,-50%)` final centre le badge sur le pointeur SANS
+      // lire la moindre géométrie : un pourcentage de translate se résout sur
+      // la propre boîte de l'élément, il suit donc tout seul l'animation de
+      // taille de .is-label. Un centrage par offsetWidth marcherait aussi mais
+      // forcerait un calcul de layout à chaque frame — interdit dans une
+      // boucle de rendu ici (cf. le layout thrashing de l'ancien carrousel).
+      el.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px) translate(-50%,-50%)';
+    });
+
+    document.addEventListener('mouseover', function (e) {
+      var t = e.target.closest ? e.target.closest('[data-cursor]') : null;
+      if (t) { label.textContent = t.dataset.cursor; el.classList.add('is-label'); }
+      else el.classList.remove('is-label');
+    }, { passive: true });
+  }
+
   window.Motion = {
     reduce: REDUCE,
     fine: FINE,
@@ -248,6 +291,7 @@
     splitText: splitText,
     reveal: reveal,
     magnetic: magnetic,
-    parallax: parallax
+    parallax: parallax,
+    cursor: cursor
   };
 })();

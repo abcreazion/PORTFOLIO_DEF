@@ -22,9 +22,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Ms+Madi&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=dev3">
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+
+<!-- Rideau d'entrée : dévoilement du nom puis levée. Une fois par session,
+     retiré d'emblée sous prefers-reduced-motion (cf. js/main.js initCurtain). -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="curtain__brand">
+    <span class="curtain__word">BASTIEN<span class="red">&nbsp;AGUS</span></span>
+  </div>
+</div>
 
 <a href="#main-content" class="skip-link">Aller au contenu</a>
 
@@ -117,7 +125,9 @@
         <!-- .showcase__bg (une par projet, cross-fade) injectées depuis js/main.js -->
         <div class="showcase__scrim"></div>
 
-        <div class="showcase__content" id="showcaseContent">
+        <!-- aria-live : le hero changeait de projet en silence total pour un
+             lecteur d'écran (le seul indice était visuel). -->
+        <div class="showcase__content" id="showcaseContent" aria-live="polite" aria-atomic="true">
           <div class="showcase__eyebrow">
             <span class="showcase__dot"></span>
             <span class="showcase__client" id="showcaseClient">CLIENT</span>
@@ -156,8 +166,11 @@
   <div class="about__bgword" aria-hidden="true">AGUS</div>
   <div class="about__grid">
     <div data-reveal data-d="0">
-      <div class="about__portrait-wrap">
-        <div class="about__portrait"></div>
+      <!-- L'essuyage est porté par le wrap (observé) et subi par le portrait
+           (data-clip-target) : un élément découpé à zéro devient invisible à
+           l'IntersectionObserver, cf. css/styles.css. -->
+      <div class="about__portrait-wrap" data-clip-reveal>
+        <div class="about__portrait" data-clip-target></div>
         <div class="about__badge">
           <div class="about__badge-num">+10 ANS</div>
           <div class="about__badge-label">d'expérience en<br>direction artistique</div>
@@ -304,11 +317,11 @@
       <div class="contact__fields">
         <div class="field">
           <label class="field__label" for="f-name">NOM / ENTREPRISE</label>
-          <input class="field__input" id="f-name" name="name" type="text" placeholder="Votre nom ou raison sociale" required>
+          <input class="field__input" id="f-name" name="name" type="text" placeholder="Votre nom ou raison sociale" autocomplete="name" required>
         </div>
         <div class="field">
           <label class="field__label" for="f-email">EMAIL</label>
-          <input class="field__input" id="f-email" name="email" type="email" placeholder="votre@email.com" required>
+          <input class="field__input" id="f-email" name="email" type="email" placeholder="votre@email.com" autocomplete="email" inputmode="email" required>
         </div>
         <div class="field">
           <label class="field__label" for="f-type">TYPE DE PROJET</label>
@@ -377,8 +390,12 @@
   </div>
 </footer>
 
-<script src="js/projects.js?v=dev3"></script>
-<script src="js/motion.js?v=dev3"></script>
-<script src="js/main.js?v=dev3"></script>
+<!-- Curseur-badge (desktop) : masqué en CSS sur tactile / reduced-motion,
+     jamais peuplé par JS dans ces cas (cf. js/motion.js cursor). -->
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
+
+<script src="js/projects.js"></script>
+<script src="js/motion.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

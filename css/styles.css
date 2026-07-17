@@ -14,10 +14,14 @@
   --cream: #f0ede8;
   --mono: 'JetBrains Mono', monospace;
   --sans: 'Inter', system-ui, sans-serif;
-  --display: 'Bebas Neue', sans-serif;
+  --display: 'Bebas Neue', 'Bebas Fallback', sans-serif;
   --script: 'Ms Madi', cursive;
 
   --ease-out: cubic-bezier(.22, .61, .36, 1);
+  /* easeOutExpo : départ vif, atterrissage très long. Réservé aux ENTRÉES en
+     scène (≥400ms : rideau, cross-fade du hero, cascade des lettres). Sur une
+     réaction au pointeur (≤300ms) il paraît cassant — y garder --ease-out. */
+  --ease-expo: cubic-bezier(.16, 1, .3, 1);
   --dur-fast: .3s;
   --dur-base: .35s;
   --dur-med: .4s;
@@ -35,6 +39,18 @@
   --glass-shadow: 0 8px 30px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .06);
 }
 
+/* Fallback métrique de Bebas Neue. `display=swap` (Google Fonts) affiche d'abord
+   une fallback système puis permute — sur des titres à 128px, l'écart de largeur
+   entre la fallback et Bebas provoque un reflow visible (CLS). Arial Narrow est
+   la condensée la plus universellement présente ; size-adjust la resserre vers
+   la métrique de Bebas pour que la permutation ne déplace quasiment rien. */
+@font-face {
+  font-family: 'Bebas Fallback';
+  src: local('Arial Narrow'), local('Haettenschweiler'), local('DejaVu Sans Condensed');
+  size-adjust: 82%;
+  font-display: swap;
+}
+
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
@@ -44,6 +60,9 @@ body {
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  /* Le flash gris du tap système casse le noir profond. Retiré seulement parce
+     que chaque élément interactif porte désormais son propre état :active. */
+  -webkit-tap-highlight-color: transparent;
 }
 ::selection { background: var(--red); color: #fff; }
 a { text-decoration: none; color: inherit; }
@@ -69,7 +88,6 @@ img { display: block; max-width: 100%; }
   letter-spacing: .16em;
   color: rgba(245,245,245,.25);
 }
-.media-tag--dark { font-size: 10px; color: rgba(245,245,245,.3); }
 
 /* keyframes */
 @keyframes k-pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
@@ -147,6 +165,21 @@ img { display: block; max-width: 100%; }
 }
 .nav__mobile-link:last-child { border-bottom: none; }
 .nav__mobile-link:hover { color: var(--ink); }
+/* Cascade d'ouverture : les liens tombent l'un après l'autre au lieu
+   d'apparaître d'un bloc avec le panneau. Purement décoratif — les liens
+   restent cliquables et dans le flux dès l'ouverture. */
+.nav__mobile-link {
+  opacity: 0; transform: translateY(-8px);
+  transition: color var(--dur-fast) ease, opacity .3s var(--ease-out), transform .3s var(--ease-expo);
+}
+.nav__mobile-panel.is-open .nav__mobile-link { opacity: 1; transform: none; }
+.nav__mobile-panel.is-open .nav__mobile-link:nth-child(2) { transition-delay: 40ms; }
+.nav__mobile-panel.is-open .nav__mobile-link:nth-child(3) { transition-delay: 80ms; }
+.nav__mobile-panel.is-open .nav__mobile-link:nth-child(4) { transition-delay: 120ms; }
+.nav__mobile-panel.is-open .nav__mobile-link:nth-child(5) { transition-delay: 160ms; }
+@media (prefers-reduced-motion: reduce) {
+  .nav__mobile-link { opacity: 1; transform: none; transition: color var(--dur-fast) ease; }
+}
 
 /* ============================== HERO ============================== */
 .hero {
@@ -182,8 +215,11 @@ img { display: block; max-width: 100%; }
 .hero__eyebrow-text {
   font: 600 11px/1 var(--mono); letter-spacing: .28em; color: var(--red-text);
 }
+/* clamp() plutôt que min() : min(10vw,…) n'a pas de borne basse et tombait à
+   37px sur un écran de 375px — timide pour un titre-manifeste. Le plafond
+   desktop est inchangé. */
 .hero__title {
-  font-family: var(--display); font-size: min(10vw,128px); line-height: .84;
+  font-family: var(--display); font-size: clamp(52px, 10vw, 128px); line-height: .84;
   letter-spacing: .01em; color: var(--ink); margin-bottom: 36px;
   text-shadow: 0 4px 32px rgba(0,0,0,.55);
 }
@@ -262,8 +298,11 @@ img { display: block; max-width: 100%; }
 }
 .showcase__header { padding: 88px 56px 24px; }
 .showcase__titles { display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap; }
-.projets .section-title--dark { font-size: min(7vw,76px); }
-.projets .script--muted { font-size: min(3.5vw,38px); }
+/* clamp et non min() : à 390px, min(7vw,76px) donnait 27px — un titre de SECTION
+   plus petit que les titres de projet qu'il chapeaute (33px), hiérarchie
+   inversée. Le plafond desktop est inchangé. */
+.projets .section-title--dark { font-size: clamp(44px, 7vw, 76px); }
+.projets .script--muted { font-size: clamp(24px, 3.5vw, 38px); }
 /* --red-text (#ff3b5c) tombe à 2.98:1 sur le crème (échoue AA) — on bascule sur
    la variante AA dédiée au fond crème (documentée dans :root). */
 .projets .eyebrow__text { color: var(--red-text-on-cream); }
@@ -280,17 +319,28 @@ img { display: block; max-width: 100%; }
 
 /* Fonds cross-fade — une div par projet, superposées, seule .is-active visible.
    Ken Burns en CSS pur (compositor, gratuit). */
+/* Le fond entrant se "pose" : micro-dézoom 1.045 → 1 en même temps que le
+   fondu. La transition devient SPATIALE et plus seulement lumineuse — chaque
+   projet arrive, il ne s'allume pas. */
 .showcase__bg {
   position: absolute; inset: 0;
   background-size: cover; background-position: center;
-  opacity: 0; transition: opacity var(--dur-slow) var(--ease-out);
+  opacity: 0; transform: scale(1.045);
+  transition: opacity var(--dur-slow) var(--ease-out), transform 1.1s var(--ease-expo);
   pointer-events: none;
 }
-.showcase__bg.is-active { opacity: 1; }
+.showcase__bg.is-active { opacity: 1; transform: scale(1); }
+/* Ken Burns décalé de 1.1s : une `animation` écrase le `transform` de la
+   transition dès qu'elle est active — sans ce délai elle tuerait le dézoom
+   d'entrée. Elle démarre à scale(1), exactement là où le dézoom finit : le
+   relais est invisible. */
 @media (prefers-reduced-motion: no-preference) {
-  .showcase__bg.is-active { animation: showcaseKenBurns 10s var(--ease-out) forwards; }
+  .showcase__bg.is-active { animation: showcaseKenBurns 10s var(--ease-out) 1.1s forwards; }
 }
 @keyframes showcaseKenBurns { from { transform: scale(1); } to { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) {
+  .showcase__bg { transform: none; transition: opacity var(--dur-slow) ease; }
+}
 
 .showcase__scrim {
   position: absolute; inset: 0; pointer-events: none;
@@ -300,12 +350,28 @@ img { display: block; max-width: 100%; }
 }
 
 /* ——— Contenu (client / titre / meta / CTA), bas-gauche de la stage ——— */
-.showcase__content { position: absolute; left: 40px; bottom: 40px; z-index: 3; max-width: 560px; }
+/* Le texte (z-index 3) et le cluster de vignettes (z-index 5) sont deux calques
+   absolus qui se croisaient sur les stages étroites — mesuré jusqu'à 119px de
+   chevauchement en 1280×800, titre et accroche passant SOUS les vignettes (à
+   1920px il n'y en a aucun, d'où le fait que ce soit passé inaperçu).
+
+   La largeur du texte est déduite de la place réellement laissée par les
+   vignettes, avec LEURS unités : `100%` = la stage, et `min(58vw,640px)` est
+   recopié tel quel depuis .showcase__thumbs. Une borne en % de la stage seule
+   (42% etc.) ne tient pas : les vignettes se dimensionnent en vw, le texte en %
+   d'une stage à marges fixes — les deux référentiels divergent et le
+   recouvrement revient dès qu'on quitte la largeur sur laquelle on a réglé
+   (vérifié : une borne à 42% laissait encore 47px de chevauchement à 1100px).
+   96px = ancrage left (40) + décalage droit des vignettes (32) + gouttière (24). */
+.showcase__content {
+  position: absolute; left: 40px; bottom: 40px; z-index: 3;
+  max-width: min(560px, calc(100% - 96px - min(58vw, 640px)));
+}
 .showcase__eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .showcase__dot { width: 7px; height: 7px; background: var(--red); flex: none; }
 .showcase__client { font: 600 11px/1 var(--mono); letter-spacing: .2em; color: var(--red-text); }
 .showcase__title {
-  font-family: var(--display); font-size: min(6.2vw,72px); line-height: .86; letter-spacing: .01em;
+  font-family: var(--display); font-size: clamp(34px, 6.2vw, 72px); line-height: .86; letter-spacing: .01em;
   color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.5);
   overflow: hidden; padding-bottom: 6px; margin-bottom: 14px;
 }
@@ -317,7 +383,7 @@ img { display: block; max-width: 100%; }
 .showcase__word { display: inline-block; white-space: nowrap; }
 .showcase__letter {
   display: inline-block; transform: translateY(102%); opacity: 0;
-  transition: transform var(--dur-med) var(--ease-out), opacity var(--dur-fast) ease;
+  transition: transform var(--dur-med) var(--ease-expo), opacity var(--dur-fast) ease;
   transition-delay: calc(var(--i, 0) * 20ms + 60ms);
 }
 .showcase__content.is-in .showcase__letter { transform: translateY(0); opacity: 1; }
@@ -399,12 +465,23 @@ img { display: block; max-width: 100%; }
   text-transform: uppercase; opacity: .7;
   transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease;
 }
-.showcase__thumb-num { position: absolute; top: 8px; left: 10px; font: 600 9px/1 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.35); }
+/* .35 mesuré à 3.12:1 sur le scrim (échoue AA) — .55 remonte à ~4.6:1. */
+.showcase__thumb-num { position: absolute; top: 8px; left: 10px; font: 600 9px/1 var(--mono); letter-spacing: .1em; color: rgba(255,255,255,.55); }
 
 /* Survol : feedback visuel (bord + image) — le grossissement lui-même est en JS
    (boost lerpé) pour rester cohérent avec la roulette et éviter tout à-coup. */
 .showcase__thumb:hover { border-color: rgba(255,255,255,.35); }
 .showcase__thumb:hover .showcase__thumb-img { filter: grayscale(12%) brightness(.85); }
+
+/* Retour tactile : la vignette s'enfonce sous le doigt. Transition uniquement
+   au relâchement (l'enfoncement est instantané → zéro latence perçue).
+   Cantonné à (hover:none) : en tactile les vignettes ne reçoivent AUCUN
+   transform JS (mode natif), ce :active ne se bat donc avec personne — en
+   desktop il écraserait le scale lerpé de la roulette. */
+@media (hover: none) {
+  .showcase__thumb:active { transform: scale(.96); transition: transform .08s ease; }
+  .showcase__thumb:active .showcase__thumb-img { filter: grayscale(0%) brightness(1); }
+}
 
 .showcase__thumb.is-active { border-color: rgba(255,255,255,.45); box-shadow: 0 16px 34px -10px rgba(0,0,0,.7); }
 .showcase__thumb.is-active .showcase__thumb-img { filter: grayscale(0%) brightness(1); }
@@ -502,7 +579,7 @@ img { display: block; max-width: 100%; }
    entre les deux seuls endroits du site où des icônes ponctuelles apparaissent. */
 .about__social { display: flex; gap: 16px; margin-top: 32px; }
 .about__social-link {
-  width: 40px; height: 40px; border: 1px solid rgba(255,255,255,.15);
+  width: 44px; height: 44px; border: 1px solid rgba(255,255,255,.15); /* cible tactile WCAG 2.5.5 */
   display: flex; align-items: center; justify-content: center; flex: none;
   color: var(--red); transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
@@ -863,6 +940,104 @@ a.contact__detail-value:hover { color: var(--red-text); }
      (mode décidé une fois au load), on neutralise le sticky en mobile — sinon un
      sticky 100vh casserait la mise en page tactile (cf. garde JS qui efface aussi
      la hauteur inline, comme l'ancien carrousel). */
+  /* ============================================================
+     SHOWCASE MOBILE — un projet = un panneau plein écran.
+     ------------------------------------------------------------
+     Tout ce bloc est scopé à `.is-panels` / `.showcase__stage--panels`, posées
+     par renderShowcasePanels() UNIQUEMENT quand la page a été chargée sous
+     900px. Si elle a été chargée en desktop puis réduite (le mode est tranché
+     une fois au load), c'est la structure desktop qui est en place : elle garde
+     ses propres règles mobiles de repli, plus bas, et rien d'ici ne l'atteint.
+     ============================================================ */
+  .showcase.is-panels .showcase__sticky {
+    /* La section fait exactement la hauteur du téléphone.
+       ⚠️ 100svh, PAS 100vh : sur iOS Safari et Chrome Android, 100vh compte la
+       zone située SOUS la barre d'URL — le bas du panneau (donc le CTA) serait
+       coupé tant que la barre est affichée. Le 100vh au-dessus n'est qu'un repli
+       pour les moteurs sans unités svh. */
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex; flex-direction: column;
+  }
+  .showcase.is-panels .showcase__header { padding: 92px 24px 14px; }
+
+  .showcase__stage--panels {
+    flex: 1; min-height: 0; height: auto; max-height: none;
+    margin: 0 20px 14px; padding: 0;
+    display: flex; flex-direction: row; align-items: stretch; gap: 10px;
+    overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    border: none; box-shadow: none; background: none; /* le cadre passe sur chaque panneau */
+  }
+  .showcase__stage--panels::-webkit-scrollbar { display: none; }
+  /* Cale de fin, et pas un padding-right : le padding de FIN d'un conteneur de
+     défilement en flex est ignoré par plusieurs moteurs (le contenu s'arrête net
+     au dernier enfant). Sans elle, le dernier panneau ne peut jamais atteindre
+     son alignement de snap — il reste décalé de la largeur du peek. */
+  .showcase__stage--panels::after { content: ''; flex: none; width: 40px; }
+
+  /* Largeur < 100% volontaire : le bord du panneau suivant dépasse, et c'est CE
+     débord qui dit qu'il y a une suite. Un panneau exactement plein écran ne
+     donne aucun indice qu'on peut glisser — le compteur seul n'est pas une
+     affordance. Même rôle que le peek de la roulette desktop. */
+  /* Pas de `height:100%` : la stage est un flex-item en `flex:1`, sa hauteur
+     n'est définie qu'APRÈS layout — un pourcentage s'y résout à zéro (mesuré :
+     panneau de 2px de haut). C'est l'`align-items:stretch` du conteneur qui
+     étire les panneaux sur toute la hauteur, sans rien avoir à calculer. */
+  .showcase__panel {
+    flex: none; width: calc(100% - 40px);
+    scroll-snap-align: start;
+    position: relative; overflow: hidden; display: block;
+    background: #131313;
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 24px 60px -30px rgba(10,10,10,.6);
+  }
+  .showcase__panel-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; /* object-position posé par projet via le champ `focal` */
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .showcase__panel-scrim {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to top, rgba(10,10,10,.93) 0%, rgba(10,10,10,.6) 30%, rgba(10,10,10,.08) 56%, rgba(10,10,10,.4) 100%);
+  }
+  .showcase__panel-body {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 20px 24px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  }
+  .showcase__panel-title {
+    font-family: var(--display); font-size: clamp(30px, 8.4vw, 46px); line-height: .9;
+    letter-spacing: .01em; color: #fff; margin: 0;
+    text-shadow: 0 4px 30px rgba(0,0,0,.55);
+  }
+  .showcase__panel-meta {
+    font: 500 10px/1.4 var(--mono); letter-spacing: .08em; color: rgba(255,255,255,.62);
+  }
+  .showcase__panel-cta {
+    display: inline-flex; align-items: center; gap: 10px; min-height: 44px;
+    padding: 12px 18px; margin-top: 2px;
+    border: 1px solid rgba(255,255,255,.4);
+    font: 600 11px/1 var(--mono); letter-spacing: .16em; color: #fff;
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+  /* Le lien, c'est le panneau ENTIER — donc c'est le panneau qui réagit au doigt,
+     pas seulement le libellé. Le CTA n'est plus qu'un repère visuel : on peut
+     taper n'importe où. */
+  .showcase__panel:active .showcase__panel-cta { background: var(--red); border-color: var(--red); }
+  .showcase__panel:active .showcase__panel-img { transform: scale(1.03); }
+
+  /* Repère de position, sur le crème (hors de la stage) → encre sombre. */
+  .showcase__mnav { display: flex; align-items: center; gap: 16px; margin: 0 20px; padding-bottom: 20px; }
+  .showcase__segs { display: flex; align-items: center; gap: 4px; flex: 1; }
+  .showcase__seg { flex: 1; height: 2px; background: rgba(10,10,10,.16); transition: background var(--dur-fast) ease; }
+  .showcase__seg.is-on { background: var(--red); }
+  .showcase.is-panels .showcase__counter { font-size: 22px; color: var(--bg); text-shadow: none; margin: 0; }
+  .showcase.is-panels .showcase__counter span { color: rgba(10,10,10,.5); }
+
+  /* ——— Repli de la structure DESKTOP passée sous 900px (fenêtre réduite après
+     chargement) : le mode n'est pas recalculé, ces règles gardent la mise en
+     page utilisable. Elles ne concernent PAS les panneaux. ——— */
   .showcase.is-locked .showcase__sticky { position: static; height: auto; overflow: visible; display: block; }
   .showcase.is-locked .showcase__stage { flex: none; margin: 0 20px; }
   .showcase__header { padding: 96px 24px 20px; }
@@ -882,7 +1057,7 @@ a.contact__detail-value:hover { color: var(--red-text); }
      plancher `min-height` : la stage s'allonge si besoin au lieu de laisser deux calques
      se marcher dessus. Fonds et scrim restent en absolute derrière et la couvrent
      toujours entièrement. Ne pas revenir à une hauteur fixe + overlays absolus ici. */
-  .showcase__stage {
+  .showcase__stage:not(.showcase__stage--panels) {
     margin: 0 20px;
     height: auto; min-height: max(52vh, 400px);
     display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
@@ -932,6 +1107,19 @@ a.contact__detail-value:hover { color: var(--red-text); }
   .about__stats { flex-wrap: wrap; gap: 24px; }
   .footer__bottom { flex-direction: column; gap: 12px; align-items: flex-start; }
   .showcase__titles { flex-direction: column; gap: 6px; align-items: flex-start; }
+
+  /* ——— Panneaux sur écran court : chaque pixel repris à l'habillage revient à
+     la photo. Mesuré à 360×640 avant resserrage : l'en-tête prenait 31% de la
+     hauteur avant la moindre image, et le texte 53% du panneau.
+     Le titre et le script REPASSENT sur une même ligne (la règle générique
+     ci-dessus les empile) : à 44px + 24px ils tiennent largement côte à côte
+     dans 320px, l'empilement coûtait ~30px de haut pour rien. ——— */
+  .showcase.is-panels .showcase__header { padding: 84px 20px 10px; }
+  .showcase.is-panels .showcase__titles { flex-direction: row; align-items: baseline; gap: 12px; }
+  .showcase.is-panels .showcase__header .eyebrow { margin-bottom: 10px; }
+  .showcase.is-panels .showcase__stage--panels { margin: 0 16px 10px; }
+  .showcase.is-panels .showcase__panel-body { padding: 18px 16px 18px; gap: 8px; }
+  .showcase.is-panels .showcase__mnav { margin: 0 16px; padding-bottom: 14px; }
 }
 
 /* ============================================================
@@ -957,6 +1145,40 @@ a.is-magnetic { display: inline-flex; }
    pour les blocs hors système [data-reveal] de l'accueil. ——— */
 .m-reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); will-change: opacity, transform; }
 .m-reveal.is-in { opacity: 1; transform: none; }
+
+/* ——— Révélation d'image en essuyage vertical (clip-path, animable GPU).
+   Plus cinématographique qu'un fondu : l'image est DÉCOUVERTE, pas allumée.
+
+   DEUX éléments distincts, et ce n'est pas un caprice :
+   - [data-clip-reveal] est OBSERVÉ (Motion.reveal y bascule .is-in) et n'est
+     jamais découpé ;
+   - [data-clip-target], à l'intérieur, est ce qui se fait essuyer.
+   Les fusionner ne marche pas : un élément découpé à `inset(100%)` a une aire
+   visible nulle, et un IntersectionObserver le rapporte alors à ratio 0 même
+   quand il est en plein écran (vérifié en direct). L'élément se cacherait donc
+   de l'observateur censé le révéler — il ne s'ouvrirait jamais.
+
+   ="armed" : l'état masqué n'est JAMAIS posé par le CSS seul. La valeur est
+   écrite par initMotion() ; si le JS échouait, l'attribut resterait vide et
+   l'image s'afficherait normalement au lieu de rester découpée à zéro, donc
+   invisible pour toujours (même dégradation sûre que initReveals). ——— */
+[data-clip-reveal="armed"] [data-clip-target] {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 1s var(--ease-expo);
+}
+[data-clip-reveal="armed"].is-in [data-clip-target] { clip-path: inset(0 0 0 0); }
+/* Le dézoom est porté par l'IMAGE INTERNE, jamais par la cible elle-même : un
+   scale sur la boîte déborde sa place (clip-path s'applique avant le transform,
+   donc il ne le rattrape pas) — sur .about__portrait il ferait bomber le
+   portrait par-dessus son badge et son équerre. */
+[data-clip-reveal="armed"] [data-clip-target] > img {
+  transform: scale(1.08); transition: transform 1.2s var(--ease-expo);
+}
+[data-clip-reveal="armed"].is-in [data-clip-target] > img { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-clip-reveal="armed"] [data-clip-target] { clip-path: none; transition: none; }
+  [data-clip-reveal="armed"] [data-clip-target] > img { transform: none; transition: none; }
+}
 
 /* ============================================================
    MICRO-DESIGN — finitions d'interaction (quiet & precise)
@@ -991,10 +1213,15 @@ a.is-magnetic { display: inline-flex; }
 /* Flèche des boutons (↗) : léger décalage diagonal + halo au survol du bouton.
    La flèche est un enfant — ne rentre pas en conflit avec le magnétique du bouton. */
 .btn-primary__arrow, .btn-submit__arrow {
-  transition: transform var(--dur-base) var(--ease-out), background var(--dur-base) ease;
+  transition: transform var(--dur-base) var(--ease-expo), background var(--dur-base) var(--ease-out), color var(--dur-base) ease;
 }
-.btn-primary:hover .btn-primary__arrow,
 .btn-submit:hover .btn-submit__arrow { transform: translate(2px, -2px); background: rgba(255,255,255,.34); }
+/* Le cercle se remplit et la flèche ↗ pivote de 45° → elle pointe vers la
+   droite : « on y va ». La pastille passe en blanc plein, l'inverse du bouton. */
+.btn-primary:hover .btn-primary__arrow {
+  transform: translate(2px, -2px) rotate(45deg);
+  background: #fff; color: var(--red);
+}
 
 /* Inputs : transitions de focus adoucies (durée base + easing), survol qui éclaire
    discrètement la bordure. Non destructif pour l'état :focus (rouge) et .is-invalid. */
@@ -1002,9 +1229,70 @@ a.is-magnetic { display: inline-flex; }
 .field__input:hover:not(:focus):not(.is-invalid) { border-color: rgba(255,255,255,.26); }
 .field__input:focus { background: #0d0d0d; }
 
+/* ============================================================
+   RIDEAU D'ENTRÉE — le nom se dévoile en masque, puis le rideau se lève.
+   Une seule fois par session (sessionStorage, cf. js/main.js initCurtain) :
+   ~1,8s à la première visite, 0ms ensuite. Pas de spinner — un loader qui
+   « charge » est un aveu, un rideau est une signature.
+   ============================================================ */
+.curtain {
+  position: fixed; inset: 0; z-index: 900; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  /* Aucun transition-delay ici : c'est le setTimeout de initCurtain (950ms) qui
+     fait attendre la levée jusqu'à la fin du dévoilement du nom. Un délai CSS
+     en plus s'ajouterait au sien — 2,75s d'attente au lieu de 1,85s. */
+  transition: transform .9s var(--ease-expo);
+}
+.curtain__brand { overflow: hidden; } /* le masque dans lequel le nom remonte */
+.curtain__word {
+  display: inline-block; font-family: var(--display); font-size: clamp(44px, 8vw, 110px);
+  letter-spacing: .04em; color: var(--ink); line-height: 1.1;
+  transform: translateY(110%);
+  transition: transform .8s var(--ease-expo) .15s;
+}
+.curtain.is-in .curtain__word { transform: none; }
+.curtain.is-done { transform: translateY(-100%); }
+.curtain.is-gone { display: none; }
+@media (prefers-reduced-motion: reduce) { .curtain { display: none; } }
+
+/* ============================================================
+   CURSEUR-BADGE — carré rouge qui suit le pointeur (lerp, boucle rAF
+   partagée de motion.js) et s'étend avec un label sur les éléments portant
+   [data-cursor]. Le curseur natif n'est JAMAIS masqué (`cursor:none` = latence
+   perçue + piège d'accessibilité) : le badge accompagne, il ne remplace pas.
+   Coins nets assumés — c'est un carré, pas une bulle.
+   ============================================================ */
+.cursor {
+  position: fixed; top: 0; left: 0; z-index: 950; pointer-events: none;
+  width: 10px; height: 10px; background: var(--red);
+  opacity: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: width var(--dur-base) var(--ease-expo), height var(--dur-base) var(--ease-expo), opacity .2s ease;
+}
+.cursor.is-on { opacity: 1; }
+.cursor.is-label { width: 74px; height: 74px; }
+.cursor__label {
+  font: 600 10px/1 var(--mono); letter-spacing: .14em; color: #fff; white-space: nowrap;
+  opacity: 0; transition: opacity .18s ease .08s;
+}
+.cursor.is-label .cursor__label { opacity: 1; }
+@media (hover: none), (prefers-reduced-motion: reduce) { .cursor { display: none; } }
+
+/* ============================================================
+   TRANSITIONS DE PAGE (accueil ↔ pages projet) — View Transitions API
+   cross-document, sans JS ni framework. Les navigateurs non compatibles
+   (Safari/Firefox à ce jour) ignorent tout le bloc et naviguent normalement.
+   ============================================================ */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: vt-out .35s var(--ease-out) both; }
+::view-transition-new(root) { animation: vt-in .5s var(--ease-expo) both; }
+@keyframes vt-out { to { opacity: 0; transform: translateY(-12px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(18px); } }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
   html { scroll-behavior: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
   /* Toute cinématique motion figée sur son état final */
   .m-word__i { transform: none !important; transition: none !important; }
   .m-reveal { opacity: 1 !important; transform: none !important; }
