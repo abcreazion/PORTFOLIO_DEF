@@ -71,36 +71,50 @@
     var frag = document.createDocumentFragment();
     var index = 0;
 
-    function wrapUnit(content) {
+    // ⚠️ Une « unité » = tout ce qui se suit SANS espace intermédiaire (mot +
+    // <span class="red">.</span> collé, par ex.) et partage donc UN masque.
+    // Avant, chaque élément inline devenait son propre masque inline-block — et
+    // deux inline-blocks adjacents peuvent casser la ligne ENTRE eux même sans
+    // espace : sur un petit écran, le point rouge de « l'unique. » passait seul
+    // à la ligne (bug vu sur téléphone réel). Seule une espace ferme l'unité.
+    var current = null; // parties (textes/éléments) de l'unité en cours
+
+    function flush() {
+      if (!current || !current.length) { current = null; return; }
       var mask = document.createElement('span');
       mask.className = 'm-word';
       var inner = document.createElement('span');
       inner.className = 'm-word__i';
-      // stagger : chaque mot part légèrement après le précédent
+      // stagger : chaque unité part légèrement après la précédente
       inner.style.transitionDelay = (index * 34) + 'ms';
-      if (typeof content === 'string') inner.textContent = content;
-      else inner.appendChild(content);
+      current.forEach(function (part) {
+        if (typeof part === 'string') inner.appendChild(document.createTextNode(part));
+        else inner.appendChild(part);
+      });
       mask.appendChild(inner);
       frag.appendChild(mask);
       index++;
+      current = null;
     }
 
     nodes.forEach(function (node) {
       if (node.nodeType === 3) {
-        // nœud texte → découpe en mots (on garde les espaces entre les masques)
+        // nœud texte → découpe en mots ; l'espace ferme l'unité en cours
         var parts = node.textContent.split(/(\s+)/);
         parts.forEach(function (p) {
           if (p === '') return;
-          if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(' ')); return; }
-          wrapUnit(p);
+          if (/^\s+$/.test(p)) { flush(); frag.appendChild(document.createTextNode(' ')); return; }
+          (current = current || []).push(p);
         });
       } else if (node.nodeType === 1) {
         var tag = node.tagName.toLowerCase();
-        if (tag === 'br') { frag.appendChild(node.cloneNode(true)); return; }
-        // élément inline (ex: <span class="red">.</span>) → unité à part entière
-        wrapUnit(node.cloneNode(true));
+        if (tag === 'br') { flush(); frag.appendChild(node.cloneNode(true)); return; }
+        // élément inline (ex: <span class="red">.</span>) → rejoint l'unité en
+        // cours s'il est collé au texte précédent, sinon en ouvre une nouvelle
+        (current = current || []).push(node.cloneNode(true));
       }
     });
+    flush();
 
     el.innerHTML = '';
     el.appendChild(frag);

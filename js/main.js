@@ -939,13 +939,20 @@
 
       // Clic vignette / flèches / clavier → déplacent le SCROLL PAGE (source de vérité
       // en lock), pour que roulette et hero restent synchronisés.
-      // Vignette NON centrée → sélection (le <a> est neutralisé) ; vignette ACTIVE
-      // → on laisse le lien naviguer vers la page projet. Un clic modifié
-      // (ctrl/cmd/maj/alt → nouvel onglet, etc.) n'est jamais intercepté.
+      // ⚠️ Le critère de navigation est `displayIdx` (le projet AFFICHÉ — bordure
+      // active, hero, badge VOIR), pas `confirmedIdx` : pendant un survol le commit
+      // de confirmedIdx est gelé (cf. renderFrame), et comparer à lui faisait
+      // qu'un clic sur une vignette visuellement active ne naviguait pas (bug
+      // signalé sur mobile/desktop réels : « le bouton VOIR ne répond pas par
+      // moment »). Règle simple : ce que l'écran montre comme actif est ce que le
+      // clic ouvre. Au pointeur fin, le survol prévisualise → tout clic survolé
+      // navigue ; au tactile (pas de survol), displayIdx = projet confirmé → un
+      // tap sur une vignette non active sélectionne, un second tap ouvre.
+      // Un clic modifié (ctrl/cmd/maj/alt → nouvel onglet) n'est jamais intercepté.
       thumbs.forEach(function (t, i) {
         t.addEventListener('click', function (e) {
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-          if (i === confirmedIdx) return;
+          if (i === displayIdx) return;
           e.preventDefault();
           dismissHint(); snapTo(i);
         });
@@ -999,12 +1006,13 @@
         showDisplay(confirmedIdx);
         centerTo(confirmedIdx);
       };
-      // Même logique de lien qu'en mode lock : sélection si non active, navigation
-      // native (le <a> suit son href) si la vignette est déjà la vignette active.
+      // Même logique de lien qu'en mode lock : navigation si la vignette est le
+      // projet AFFICHÉ (displayIdx — survol inclus), sélection sinon. Voir le
+      // commentaire du mode lock pour le pourquoi (confirmedIdx peut être périmé).
       thumbs.forEach(function (t, i) {
         t.addEventListener('click', function (e) {
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-          if (i === confirmedIdx) return;
+          if (i === displayIdx) return;
           e.preventDefault();
           dismissHint(); go(i);
         });
