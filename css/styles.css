@@ -286,7 +286,11 @@ img { display: block; max-width: 100%; }
 /* ============================== PROJETS — SHOWCASE (hero select + roulette) ============================== */
 /* Fond crème : rupture éditoriale hero(dark) → showcase(clair) → about(dark).
    La stage reste une "fenêtre" sombre cadrée qui claque sur le crème. */
-.projets { position: relative; background: var(--cream); }
+/* padding-bottom : respiration crème sous la scène avant la rupture crème→noir de
+   « À propos ». Sans lui, il ne restait que les 64px de margin de la stage entre
+   deux blocs sombres (scène + about) → effet « collés ». Neutralisé en mobile
+   (panneaux plein écran, cf. media query 900px). */
+.projets { position: relative; background: var(--cream); padding-bottom: 88px; }
 .showcase { position: relative; }
 .showcase__sticky { display: block; }
 /* Capture sticky (desktop, hors reduced-motion) : la section se fige, le scroll
@@ -303,6 +307,16 @@ img { display: block; max-width: 100%; }
    inversée. Le plafond desktop est inchangé. */
 .projets .section-title--dark { font-size: clamp(44px, 7vw, 76px); }
 .projets .script--muted { font-size: clamp(24px, 3.5vw, 38px); }
+/* align-items:baseline aligne déjà les lignes de base calculées (mesuré : les deux
+   à la même Y, bas de glyphes à ~1px près). Reste un très léger flottement optique :
+   Ms Madi (script, ascendants ~24px) est bien plus court que les capitales pleines
+   de Bebas (~53px) et, calé sur la baseline, paraît « posé sur le fil » de façon un
+   peu rigide. Micro-descente optique (~3px) pour l'« asseoir » dans le mot — ses
+   boucles/ascendants chevauchent alors le bas de TRAVAUX, effet volontaire et plus
+   harmonieux. `position/top` et NON `transform` : le canal transform de cet élément
+   [data-reveal] est piloté inline par initReveals (js/main.js) et écraserait la
+   règle. Scopé au header showcase — n'affecte pas .services__script. */
+.showcase__titles .script--muted { position: relative; top: 0.08em; }
 /* --red-text (#ff3b5c) tombe à 2.98:1 sur le crème (échoue AA) — on bascule sur
    la variante AA dédiée au fond crème (documentée dans :root). */
 .projets .eyebrow__text { color: var(--red-text-on-cream); }
@@ -476,6 +490,10 @@ img { display: block; max-width: 100%; }
 }
 .showcase__thumbs-track::-webkit-scrollbar { display: none; }
 .showcase.is-locked .showcase__thumbs-track { overflow-x: hidden; }
+/* Mode scrub (desktop, pointeur fin) : la position de bande est pilotée par JS
+   (scrollLeft lissé), overflow masqué pour ne pas laisser une barre horizontale
+   sous les vignettes — même principe que le lock, sans la capture sticky. */
+.showcase.is-scrub .showcase__thumbs-track { overflow-x: hidden; }
 
 /* Aucune transition sur `transform` : le scale (roulette + boost au survol) est
    piloté 100% en JS, interpolé chaque frame (lerp). Une transition CSS par-dessus
@@ -738,6 +756,7 @@ img { display: block; max-width: 100%; }
 .svc__cta {
   display: inline-flex; align-items: center; gap: 8px; margin-top: 20px;
   font: 600 11px/1 var(--mono); letter-spacing: .12em; color: var(--red-text-on-cream);
+  text-decoration: none; /* désormais un <a href="#contact"> (cf. index.html) */
 }
 .svc__cta-arrow { display: inline-block; transition: transform var(--dur-fast) var(--ease-out); }
 .svc:focus-visible .svc__cta-arrow, .svc:active .svc__cta-arrow { transform: translateX(4px); }
@@ -768,6 +787,48 @@ img { display: block; max-width: 100%; }
 /* .55 tombait à 4.22:1 sur crème (échoue AA de peu pour un texte 15px). .6 → 5.0:1.
    NB : seul le contraste est touché ici, pas l'esthétique de la section (à revoir). */
 .svc__text { font: 400 15px/1.7 var(--sans); color: rgba(10,10,10,.6); max-width: 640px; }
+
+/* ——— Bande de projets par service (remplie par js/main.js initServicesConnector) ———
+   Réponse à « voir des exemples » : un index compact de vignettes cliquables vers
+   les pages projet, sous chaque service. Grayscale au repos (l'index reste discret
+   sur la liste éditoriale), couleur + léger zoom + filet rouge au survol/focus.
+   Visible dès que la ligne est révélée (pas de hover-gate → aucun décalage de
+   layout au survol), placée AVANT le CTA pour que l'apparition du CTA (desktop)
+   ne pousse pas les vignettes. */
+.svc__projects {
+  display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+  transition-delay: 180ms;
+}
+.svc.is-revealed .svc__projects { opacity: 1; transform: none; }
+.svc__project { display: block; width: 104px; text-decoration: none; }
+.svc__project-thumb {
+  display: block; position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden;
+  border: 1px solid rgba(10,10,10,.16); background: #111;
+}
+.svc__project-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(65%) brightness(.85);
+  transition: filter var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+}
+.svc__project:hover .svc__project-thumb img,
+.svc__project:focus-visible .svc__project-thumb img { filter: none; transform: scale(1.06); }
+/* filet rouge net au survol/focus (coins nets, cohérent charte) */
+.svc__project-thumb::after {
+  content: ''; position: absolute; inset: 0; border: 1px solid transparent;
+  transition: border-color var(--dur-fast) ease; pointer-events: none;
+}
+.svc__project:hover .svc__project-thumb::after,
+.svc__project:focus-visible .svc__project-thumb::after { border-color: var(--red); }
+.svc__project-name {
+  display: block; margin-top: 8px;
+  font: 600 9px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(10,10,10,.5);
+  transition: color var(--dur-fast) ease;
+}
+.svc__project:hover .svc__project-name,
+.svc__project:focus-visible .svc__project-name { color: var(--red-text-on-cream); }
 
 /* ——— Reveal scroll bidirectionnel (cascade num → titre → texte → icône/cta) ———
    Piloté par un IntersectionObserver dédié (js/main.js initServicesReveal) qui
@@ -1081,6 +1142,9 @@ a.contact__detail-value:hover { color: var(--red-text); }
      page utilisable. Elles ne concernent PAS les panneaux. ——— */
   .showcase.is-locked .showcase__sticky { position: static; height: auto; overflow: visible; display: block; }
   .showcase.is-locked .showcase__stage { flex: none; margin: 0 20px; }
+  /* Mode panneaux : pas de respiration crème ajoutée (les panneaux occupent tout
+     l'écran, le mnav ferme la section). Le padding-bottom desktop est neutralisé. */
+  .projets { padding-bottom: 0; }
   .showcase__header { padding: 96px 24px 20px; }
   /* Mobile : le texte ET le cluster vignettes sortent du positionnement absolu et
      sont empilés en flux par flexbox.

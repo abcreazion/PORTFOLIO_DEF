@@ -25,6 +25,13 @@
      stats           bloc rouge de la carte : paires ["CHIFFRE","légende"] — [] pour aucun
      year            année (affichée sur la page détail)
      role            prestation (ex. "Direction artistique · Photographie")
+     categories      expertise(s) de la section « Services » que ce projet illustre —
+                     tableau d'un ou plusieurs libellés PARMI window.PROJECT_CATEGORIES
+                     ("Direction artistique", "Production vidéo", "Photographie",
+                     "Motion design"). Doit correspondre AU CARACTÈRE PRÈS au data-type
+                     des blocs .svc (index.html) et aux <option> du select de contact.
+                     C'est le lien technique service → bibliothèque de projets
+                     (window.projectsByCategory) : taguer un projet suffit à l'associer.
      intro           phrase d'accroche en haut de la page détail — sert AUSSI de meta
                      description SEO + de description Open Graph/Twitter. Vise 110-160
                      caractères, riche en mots-clés (direction artistique, production
@@ -52,6 +59,7 @@
 window.PROJECTS = [
   {
     slug: "hakai-allumer",
+    categories: ["Direction artistique", "Production vidéo"],
     image: "assets/img/hakai-allumer.jpg",
     watermark: "HAKAI ALLUMER",
     watermarkScript: "hakai",
@@ -73,6 +81,7 @@ window.PROJECTS = [
   },
   {
     slug: "mathieu-tsunami",
+    categories: ["Production vidéo", "Photographie"],
     image: "assets/img/mathieu-tsunami.jpg",
     watermark: "TSUNAMI",
     watermarkScript: "Freestyle",
@@ -92,6 +101,7 @@ window.PROJECTS = [
   },
   {
     slug: "wsc-affichage",
+    categories: ["Direction artistique", "Photographie"],
     image: "assets/img/wsc-affichage.jpg",
     watermark: "WELLNESS",
     watermarkScript: "Sport Club",
@@ -111,6 +121,7 @@ window.PROJECTS = [
   },
   {
     slug: "maison-lyne-st-andre",
+    categories: ["Photographie", "Production vidéo"],
     image: "assets/img/maison-lyne-st-andre.jpg",
     watermark: "Maison Lyne St. André",
     watermarkScript: "Direction artistique",
@@ -132,6 +143,7 @@ window.PROJECTS = [
   },
   {
     slug: "docks40",
+    categories: ["Photographie"],
     image: "assets/img/docks40.jpg",
     watermark: "DOCKS40",
     watermarkScript: "Lyon",
@@ -152,6 +164,7 @@ window.PROJECTS = [
   },
   {
     slug: "wsc-boutique",
+    categories: ["Photographie"],
     image: "assets/img/wsc-boutique.jpg",
     watermark: "WELLNESS",
     watermarkScript: "Boutique",
@@ -171,6 +184,7 @@ window.PROJECTS = [
   },
   {
     slug: "97-cafe",
+    categories: ["Direction artistique", "Production vidéo", "Photographie"],
     image: "assets/img/97-cafe.jpg",
     watermark: "97 CAFÉ",
     watermarkScript: "97cafe",
@@ -190,6 +204,7 @@ window.PROJECTS = [
   },
   {
     slug: "smaa-alterations",
+    categories: ["Direction artistique", "Photographie"],
     image: "assets/img/card-10-smaa-alterations.jpg",
     watermark: "SMAA ALTERATIONS",
     watermarkScript: "smaa",
@@ -209,6 +224,7 @@ window.PROJECTS = [
   },
   {
     slug: "hakai-lune",
+    categories: ["Direction artistique", "Production vidéo"],
     image: "assets/img/hakai-lune.jpg",
     watermark: "HAKAI LUNE",
     watermarkScript: "hakai",
@@ -229,6 +245,7 @@ window.PROJECTS = [
   },
   {
     slug: "loan-cc",
+    categories: ["Direction artistique", "Photographie"],
     image: "assets/img/card-9-loan-cc.jpg",
     watermark: "LOAN",
     watermarkScript: "Conatus",
@@ -248,6 +265,7 @@ window.PROJECTS = [
   },
   {
     slug: "ludeo",
+    categories: ["Direction artistique", "Production vidéo"],
     image: "assets/img/ludeo.jpg",
     watermark: "LUDEO",
     watermarkScript: "LUDEO",
@@ -268,6 +286,7 @@ window.PROJECTS = [
   },
   {
     slug: "wsc-spot",
+    categories: ["Direction artistique", "Production vidéo", "Motion design"],
     image: "assets/img/wsc-spot.jpg",
     watermark: "WELLNESS",
     watermarkScript: "Sport Club",
@@ -287,3 +306,26 @@ window.PROJECTS = [
     youtube: "8XN_C3yKQ9Y"
   }
 ];
+
+/* ============================================================
+   CATÉGORIES DE SERVICE ⇄ PROJETS
+   ============================================================
+   Les 4 expertises de la section « Services » (index.html) sont reliées à leurs
+   projets par le champ `categories` de chaque projet ci-dessus. C'est LA source
+   unique du lien : taguer un projet suffit à l'associer à la bonne expertise,
+   sans toucher au HTML ni au JS de rendu. Les libellés sont identiques au
+   caractère près sur les trois surfaces (bloc .svc[data-type], <option> du
+   select de contact, ce champ) pour que la correspondance soit exacte.
+
+   NB Motion design : à ce jour seul `wsc-spot` (spot national TV/cinéma, qui
+   implique un habillage/titrage broadcast) y est rattaché — valeur par défaut
+   à confirmer/ajuster par Bastien selon ses projets réels. */
+window.PROJECT_CATEGORIES = ['Direction artistique', 'Production vidéo', 'Photographie', 'Motion design'];
+
+/* Renvoie la liste des projets rattachés à une catégorie (dans l'ordre de la
+   bibliothèque). Tolérant : un projet sans `categories` n'est jamais retenu. */
+window.projectsByCategory = function (category) {
+  return (window.PROJECTS || []).filter(function (p) {
+    return (p.categories || []).indexOf(category) !== -1;
+  });
+};

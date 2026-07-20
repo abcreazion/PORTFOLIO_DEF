@@ -85,11 +85,12 @@
         ' style="' + (eager ? 'background-image:url(\'' + cardImage(p) + '\');' : '') + 'background-position:' + focal + '"></div>';
     }).join(''));
 
-    // Vignettes en <a> (et non <button>) : la vignette ACTIVE navigue vers la
-    // page projet — en laissant le lien faire, on garde la navigation native
-    // (View Transition cross-document, ctrl/cmd+clic et clic-molette → nouvel
-    // onglet, URL visible au survol). Le clic sur une vignette non centrée est
-    // intercepté dans initLock/initNative (preventDefault → sélection roulette).
+    // Vignettes en <a> (et non <button>) : le clic ouvre la page projet — en
+    // laissant le lien faire, on garde la navigation native (View Transition
+    // cross-document, ctrl/cmd+clic et clic-molette → nouvel onglet, URL visible
+    // au survol). En mode scrub, tout clic navigue directement (le badge « VOIR ↗ »
+    // l'annonce) ; seul le repli natif reduced-motion (initNative) intercepte encore
+    // une vignette non centrée pour la sélectionner d'abord.
     track.innerHTML = data.map(function (p, i) {
       var num = String(i + 1).padStart(2, '0');
       var label = stripTags(p.client) + ' — ' + stripTags(p.title);
@@ -325,38 +326,62 @@
     });
   }
 
-  /* ——— Services → formulaire : chaque bloc .svc est un vrai <a href="#contact">
-     (jump natif + scroll-behavior:smooth déjà global) ; on se contente d'en profiter
-     pour pré-sélectionner l'option correspondante du select #f-type. data-type
-     correspond exactement au texte des <option> du select (pas de value= explicite
-     dessus, donc option.value === texte).
-
-     Feedback tactile (B) : sur tactile/mobile (pas de hover), le seul retour visuel
-     possible est :active — mais il ne se déclenche de façon fiable sur iOS Safari
-     que s'il existe un listener touchstart quelque part dans le document. Sur ces
-     appareils on retarde aussi légèrement la navigation (~150ms) pour laisser le
-     temps de voir le flash :active avant que la page saute vers #contact — sur
-     desktop (hover:hover + pointer:fine) le survol a déjà montré l'état enrichi
-     avant le clic, donc pas de délai ajouté là. ——— */
+  /* ——— Services → projets + formulaire ———
+     Chaque bloc .svc[data-type] (data-type = libellé EXACT de la catégorie, aligné
+     sur les <option> du select) est relié à sa bibliothèque de projets via
+     window.projectsByCategory (source unique = le champ `categories` de
+     js/projects.js). On en fait deux choses :
+       1. Remplir la bande de vignettes .svc__projects (jusqu'à 4 projets), chacune
+          un lien vers sa page projet — l'utilisateur voit des exemples sans quitter
+          la section. Data-driven : taguer un projet le fait apparaître ici, zéro HTML.
+       2. Le lien « Demander un devis » (.svc__cta → #contact) pré-remplit l'option
+          correspondante du select #f-type au clic.
+     Le bloc .svc n'est PLUS un <a> global (il contient maintenant des liens : les
+     vignettes ET le CTA) — c'était la condition pour rendre les projets cliquables. */
   function initServicesConnector() {
     var svcs = Array.prototype.slice.call(document.querySelectorAll('.svc[data-type]'));
     var select = document.getElementById('f-type');
     if (!svcs.length) return;
 
+    // iOS : un listener touchstart quelque part rend :active fiable au tap (retour
+    // tactile sur les blocs service / vignettes). Inoffensif au pointeur fin.
     var hasFinePointer = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
     if (!hasFinePointer) {
       document.addEventListener('touchstart', function () {}, { passive: true });
     }
 
+    var byCat = (typeof window.projectsByCategory === 'function')
+      ? window.projectsByCategory : function () { return []; };
+
     svcs.forEach(function (svc) {
-      svc.addEventListener('click', function (e) {
-        if (select) select.value = svc.dataset.type;
-        if (hasFinePointer) return;
-        e.preventDefault();
-        setTimeout(function () {
-          window.location.hash = 'contact';
-        }, REDUCE ? 0 : 150);
-      });
+      var type = svc.dataset.type;
+      var list = byCat(type);
+      svc._projects = list;
+      svc.setAttribute('data-project-count', String(list.length));
+
+      // Bande de vignettes : jusqu'à 4 projets de ce service → page projet.
+      var wrap = svc.querySelector('.svc__projects');
+      if (wrap) {
+        wrap.innerHTML = list.slice(0, 4).map(function (p) {
+          var href = p.url || (p.slug ? 'projet.html?p=' + p.slug : '#');
+          var ext = p.url ? ' target="_blank" rel="noopener noreferrer"' : '';
+          var client = stripTags(p.client);
+          return '<a class="svc__project" href="' + href + '"' + ext +
+                   ' aria-label="Voir le projet ' + client + '">' +
+                   '<span class="svc__project-thumb">' +
+                     '<img src="' + cardImage(p) + '" alt="" loading="lazy" decoding="async">' +
+                   '</span>' +
+                   '<span class="svc__project-name">' + client + '</span>' +
+                 '</a>';
+        }).join('');
+      }
+
+      // « Demander un devis » : pré-remplit le type de projet. Le lien <a href="#contact">
+      // fait la navigation nativement (jump + scroll-behavior:smooth global), pas de preventDefault.
+      var cta = svc.querySelector('.svc__cta');
+      if (cta && select) {
+        cta.addEventListener('click', function () { select.value = type; });
+      }
     });
   }
 
@@ -510,12 +535,14 @@
   /* ——— Showcase projets : hero plein cadre + cluster de vignettes « roulette » ———
      Deux modes tranchés une fois au chargement (comme l'ancien carrousel) :
 
-     • DESKTOP hors reduced-motion → CAPTURE STICKY (`initLock`) : la section se fige
-       (`.showcase.is-locked` → `.showcase__sticky` sticky), le scroll VERTICAL de la
-       page pilote la roulette. Aucune rotation de carte (donc pas le défaut de
-       l'ancien carrousel 3D) : seul un scale continu + un translate horizontal de la
-       bande. Le hero change projet par projet (au franchissement du milieu), et le
-       scroll s'aimante sur le projet le plus proche à l'arrêt.
+     • DESKTOP hors reduced-motion → SCRUB (`initScrub`) : PLUS de capture sticky. La
+       page défile normalement ; la molette ne pilote la roulette que lorsque le
+       curseur survole le cluster de vignettes (bas-droite) — sinon le geste
+       appartient à la page. Aux deux extrémités de la roulette (1er / dernier projet), la molette
+       rend la main au scroll page (fall-through), pour qu'on puisse toujours
+       traverser la section. Aucune hauteur factice n'est posée sur #showcaseOuter :
+       la barre de défilement dit la vérité. Position de bande lissée en JS (lerp),
+       comme avant ; le hero change projet par projet (au franchissement du milieu).
 
      • MOBILE ou reduced-motion → NATIF (`initNative`) : pas de capture, scroll
        horizontal natif de la bande (overflow-x), hero confirmé à l'arrêt (debounce).
@@ -618,9 +645,10 @@
     var thumbs = Array.prototype.slice.call(track.querySelectorAll('[data-showcase-thumb]'));
 
     // Le mobile est déjà parti sur initShowcasePanels() : ici on est forcément en
-    // desktop. Reste à distinguer la capture sticky du repli natif sous
-    // prefers-reduced-motion (scroll horizontal de la roulette, sans capture).
-    var LOCK = !REDUCE;
+    // desktop. Reste à distinguer le scrub (molette sur la scène pilote une
+    // position de bande lissée par JS) du repli natif sous prefers-reduced-motion
+    // (scroll horizontal natif de la roulette).
+    var SCRUB = !REDUCE;
 
     // Roulette : scale au pic (centre / survol) → plancher (loin). Delta doux pour
     // éviter tout chevauchement (le gap CSS de 22px absorbe le +14%) et rester fluide.
@@ -734,25 +762,23 @@
 
     // ——— État partagé + boucle de rendu unique ———
     var confirmedIdx = 0;
+    // hoveredIdx : conservé pour la garde du commit hero, mais le survol ne le
+    // renseigne PLUS (le hero ne se prévisualise plus au survol — cf. handlers).
+    // Il reste donc null, la garde est toujours vraie : le hero suit la roulette.
     var hoveredIdx = null;
     var currentProgress = 0;     // position float de la bande (index centré)
+    var scrubProgress = 0;       // cible de position en mode scrub (0..n-1), pilotée à la molette
     var boost = [];              // pic de survol courant par vignette
     var boostTarget = [];
     for (var b = 0; b < n; b++) { boost.push(0); boostTarget.push(0); }
     var rafId = null;
 
-    // Cible de progression : dérivée du scroll page en lock, du scrollLeft en natif.
-    // La lecture de rect reste volontairement ici : elle est faite UNE fois, tout en
-    // haut de la frame, avant la moindre écriture — le layout vient d'être peint, elle
-    // ne force donc aucun recalcul. La mettre en cache au chargement la figerait, et
-    // tout décalage ultérieur de la page (polices, images) désynchroniserait la
-    // roulette du scroll. Ce qu'il ne faut pas faire, c'est lire de la géométrie DANS
-    // la boucle des vignettes, entre deux écritures (cf. § layout thrashing).
+    // Cible de progression : l'accumulateur `scrubProgress` (molette sur la scène)
+    // en mode scrub, le `scrollLeft` natif en repli reduced-motion. Aucune lecture
+    // de géométrie ici : la source scrub est un simple nombre tenu par le handler
+    // wheel (voir initScrub), donc pas de rect à lire par frame.
     function progressTarget() {
-      if (LOCK) {
-        var scrolled = Math.max(0, -outer.getBoundingClientRect().top);
-        return Math.min(1, scrolled / lockScrollDist()) * (n - 1);
-      }
+      if (SCRUB) return scrubProgress;
       return track.scrollLeft / step;
     }
 
@@ -778,7 +804,7 @@
       }
       var animating = Math.abs(tgt - currentProgress) > 0.0006;
 
-      // 2) En lock, la bande est positionnée par JS (overflow-x:hidden) pour centrer
+      // 2) En scrub, la bande est positionnée par JS (overflow-x:hidden) pour centrer
       //    `currentProgress`. En natif, c'est le scroll natif qui l'a déjà positionnée.
       //    ⚠️ Ne PAS remplacer ce `scrollLeft` par un `transform` sur `track` : les deux
       //    ne sont pas équivalents. `scrollLeft` fait défiler le CONTENU du conteneur,
@@ -789,7 +815,7 @@
       //    scroll pour le mode natif : le gain compositor ne vaut pas ce détour.
       //    `trackMaxSL`/`trackClientW` sont mis en cache par `measure()` pour ne pas
       //    relire de géométrie ici.
-      if (LOCK) {
+      if (SCRUB) {
         var sl = padSide + currentProgress * step + thumbW / 2 - trackClientW / 2;
         sl = Math.max(0, Math.min(trackMaxSL, sl));
         if (sl !== lastSL) { track.scrollLeft = sl; lastSL = sl; }
@@ -818,9 +844,10 @@
         if (pw !== lastProgW) { progressFill.style.transform = 'scaleX(' + pw + ')'; lastProgW = pw; }
       }
 
-      // 5) Hero. En lock : commit projet par projet (au franchissement du milieu),
-      //    sauf pendant un survol qui prévisualise. En natif : géré au settle (debounce).
-      if (LOCK && hoveredIdx === null) {
+      // 5) Hero. En scrub : commit projet par projet, au franchissement du milieu
+      //    (le survol ne prévisualise plus → hoveredIdx reste null, la garde passe
+      //    toujours). En natif : géré au settle (debounce).
+      if (SCRUB && hoveredIdx === null) {
         var idxRound = Math.max(0, Math.min(n - 1, Math.round(currentProgress)));
         if (idxRound !== confirmedIdx) confirmedIdx = idxRound;
         showDisplay(confirmedIdx);
@@ -838,33 +865,25 @@
       hintDismissed = true;
       hint.classList.add('is-hidden');
     }
-    if (hint) hint.querySelector('.showcase__hint-label').textContent = LOCK ? 'SCROLLER' : 'GLISSER';
+    if (hint) hint.querySelector('.showcase__hint-label').textContent = SCRUB ? 'SCROLLER' : 'GLISSER';
 
-    // ——— Survol (pointer fin) : pic de scale lerpé + prévisualisation hero ———
+    // ——— Survol / focus (pointeur fin + clavier) : SEUL le pic de scale lerpé ———
+    //     Le hero ne se prévisualise PLUS au survol d'une AUTRE vignette (demande
+    //     explicite) : survoler met la vignette en avant (scale + curseur-badge
+    //     « VOIR ↗ »), mais l'arrière-plan et le contenu du hero restent sur le
+    //     projet centré par la roulette. Le clic sur une vignette ouvre directement
+    //     son projet (lien <a> natif), exactement ce que le badge « VOIR ↗ » annonce.
     var hasFinePointer = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
     thumbs.forEach(function (t, i) {
       if (hasFinePointer) {
-        t.addEventListener('mouseenter', function () {
-          hoveredIdx = i; boostTarget[i] = 1;
-          showDisplay(i); kick();
-        });
-        t.addEventListener('mouseleave', function () {
-          hoveredIdx = null; boostTarget[i] = 0;
-          showDisplay(confirmedIdx); kick();
-        });
+        t.addEventListener('mouseenter', function () { boostTarget[i] = 1; kick(); });
+        t.addEventListener('mouseleave', function () { boostTarget[i] = 0; kick(); });
       }
-      // Symétrie clavier : le focus prévisualise le hero exactement comme le
-      // survol. Avant, seul mouseenter le faisait — on pouvait tabuler sur les
-      // 12 vignettes sans que rien ne change à l'écran. Hors du garde
-      // hasFinePointer : un clavier peut être branché sur n'importe quel appareil.
-      t.addEventListener('focus', function () {
-        hoveredIdx = i; boostTarget[i] = 1;
-        showDisplay(i); kick();
-      });
-      t.addEventListener('blur', function () {
-        hoveredIdx = null; boostTarget[i] = 0;
-        showDisplay(confirmedIdx); kick();
-      });
+      // Symétrie clavier : le focus met aussi la vignette en avant (scale), sans
+      // toucher au hero. Hors du garde hasFinePointer : un clavier peut être
+      // branché sur n'importe quel appareil.
+      t.addEventListener('focus', function () { boostTarget[i] = 1; kick(); });
+      t.addEventListener('blur', function () { boostTarget[i] = 0; kick(); });
     });
 
     // Préchargement en bloc des 9 fonds différés quand la stage entre à l'écran.
@@ -886,88 +905,97 @@
       loadDeferredBgs();
     }
 
-    if (LOCK) initLock(); else initNative();
+    if (SCRUB) initScrub(); else initNative();
 
-    // ============================ MODE LOCK (desktop) ============================
-    function lockScrollDist() { return Math.max(1, (n - 1) * window.innerHeight * 0.5); }
-
-    function initLock() {
-      outer.classList.add('is-locked');
-
-      var setHeight = function () {
-        // Garde : si le viewport repasse sous 900px après un load desktop, le CSS
-        // neutralise le sticky — on efface la hauteur inline pour ne pas laisser un
-        // grand vide (même correctif que l'ancien carrousel).
-        if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
-          outer.style.height = '';
-          return;
-        }
-        outer.style.height = (window.innerHeight + lockScrollDist()) + 'px';
-      };
+    // ============================ MODE SCRUB (desktop, pointeur fin) ============================
+    // Plus de capture sticky ni de hauteur factice : la page défile normalement.
+    // La roulette n'avance que quand la molette agit au-dessus du cluster de
+    // vignettes (bas-droite). Aux extrémités, la molette repasse la main au scroll page.
+    function initScrub() {
+      outer.classList.add('is-scrub');
       measure();
-      setHeight();
 
-      window.addEventListener('scroll', function () { dismissHint(); kick(); }, { passive: true });
-      window.addEventListener('resize', function () { measure(); setHeight(); kick(); });
-
-      // Snap : aimante le scroll page sur le projet le plus proche à l'arrêt, mais
-      // uniquement dans la zone épinglée (jamais pendant l'entrée/sortie de section).
-      var isSnapping = false, snapTimer = null, releaseTimer = null;
-      var outerTop = function () { return window.scrollY + outer.getBoundingClientRect().top; };
-      var scrollYForIdx = function (idx) {
-        idx = Math.max(0, Math.min(n - 1, idx));
-        return outerTop() + (idx / (n - 1)) * lockScrollDist();
-      };
-      var snapTo = function (idx) {
-        isSnapping = true;
-        window.scrollTo({ top: scrollYForIdx(idx), behavior: REDUCE ? 'auto' : 'smooth' });
-        window.clearTimeout(releaseTimer);
-        releaseTimer = window.setTimeout(function () { isSnapping = false; }, REDUCE ? 60 : 650);
-      };
-      window.addEventListener('scroll', function () {
-        if (isSnapping) return;
+      // Snap doux à l'arrêt : après 140ms sans molette, la cible se recale sur
+      // l'entier le plus proche ; le lerp de renderFrame l'y amène en douceur.
+      var snapTimer = null;
+      function scheduleSnap() {
         window.clearTimeout(snapTimer);
         snapTimer = window.setTimeout(function () {
-          if (isSnapping) return;
-          var scrolled = -outer.getBoundingClientRect().top;
-          var dist = lockScrollDist();
-          if (scrolled <= 0 || scrolled >= dist) return;
-          var idx = Math.round((scrolled / dist) * (n - 1));
-          if (Math.abs(scrollYForIdx(idx) - window.scrollY) > 4) snapTo(idx);
+          scrubProgress = Math.max(0, Math.min(n - 1, Math.round(scrubProgress)));
+          kick();
         }, 140);
-      }, { passive: true });
+      }
 
-      // Clic vignette / flèches / clavier → déplacent le SCROLL PAGE (source de vérité
-      // en lock), pour que roulette et hero restent synchronisés.
-      // ⚠️ Le critère de navigation est `displayIdx` (le projet AFFICHÉ — bordure
-      // active, hero, badge VOIR), pas `confirmedIdx` : pendant un survol le commit
-      // de confirmedIdx est gelé (cf. renderFrame), et comparer à lui faisait
-      // qu'un clic sur une vignette visuellement active ne naviguait pas (bug
-      // signalé sur mobile/desktop réels : « le bouton VOIR ne répond pas par
-      // moment »). Règle simple : ce que l'écran montre comme actif est ce que le
-      // clic ouvre. Au pointeur fin, le survol prévisualise → tout clic survolé
-      // navigue ; au tactile (pas de survol), displayIdx = projet confirmé → un
-      // tap sur une vignette non active sélectionne, un second tap ouvre.
-      // Un clic modifié (ctrl/cmd/maj/alt → nouvel onglet) n'est jamais intercepté.
-      thumbs.forEach(function (t, i) {
-        t.addEventListener('click', function (e) {
-          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-          if (i === displayIdx) return;
-          e.preventDefault();
-          dismissHint(); snapTo(i);
-        });
-      });
-      if (prevBtn) prevBtn.addEventListener('click', function () { dismissHint(); snapTo(confirmedIdx - 1); });
-      if (nextBtn) nextBtn.addEventListener('click', function () { dismissHint(); snapTo(confirmedIdx + 1); });
+      // La molette ne pilote la roulette QUE si le curseur est sur le cluster de
+      // vignettes (bas-droite) — demande explicite : « locké si et seulement si la
+      // souris est au niveau des cartes ». Le listener est donc posé sur
+      // .showcase__thumbs (et non la scène) : partout ailleurs (grande image, texte,
+      // reste de la page) le scroll vertical appartient à la page, sans capture.
+      var wheelZone = stage.querySelector('.showcase__thumbs') || track;
+      wheelZone.addEventListener('wheel', function (e) {
+        // Normalisation deltaMode : certaines molettes envoient des « lignes »
+        // (deltaMode 1) ou des « pages » (2) au lieu de pixels → sans conversion,
+        // un cran ferait à peine bouger la roulette.
+        var unit = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? window.innerHeight : 1);
+        var raw = (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) * unit;
+        if (!raw) return;
+        var atStart = scrubProgress <= 0.0005;
+        var atEnd = scrubProgress >= (n - 1) - 0.0005;
+        // Fall-through aux bornes : même le curseur sur les cartes, au 1er/dernier
+        // projet la molette est rendue à la page (on peut toujours sortir de la section).
+        if ((raw < 0 && atStart) || (raw > 0 && atEnd)) return;
+        e.preventDefault();
+        dismissHint();
+        // Clamp par événement : évite qu'un « fling » trackpad saute 5 projets d'un coup.
+        var dp = Math.max(-1.2, Math.min(1.2, raw / step));
+        scrubProgress = Math.max(0, Math.min(n - 1, scrubProgress + dp));
+        scheduleSnap();
+        kick();
+      }, { passive: false });
+
+      // Flèches ← → , boutons prev/next, clavier → avancent d'un projet (source =
+      // scrubProgress, l'entier le plus proche sert de point de départ).
+      var goTo = function (idx) {
+        scrubProgress = Math.max(0, Math.min(n - 1, idx));
+        dismissHint(); kick();
+      };
+      if (prevBtn) prevBtn.addEventListener('click', function () { goTo(Math.round(scrubProgress) - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { goTo(Math.round(scrubProgress) + 1); });
       document.addEventListener('keydown', function (e) {
         var rect = stage.getBoundingClientRect();
         if (rect.bottom < 0 || rect.top > window.innerHeight) return;
-        if (e.key === 'ArrowRight') { e.preventDefault(); dismissHint(); snapTo(confirmedIdx + 1); }
-        if (e.key === 'ArrowLeft') { e.preventDefault(); dismissHint(); snapTo(confirmedIdx - 1); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); goTo(Math.round(scrubProgress) + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(Math.round(scrubProgress) - 1); }
       });
 
-      currentProgress = progressTarget();
-      showDisplay(Math.round(currentProgress));
+      // Appareils hybrides (écran tactile + pointeur fin > 900px) : un glissement
+      // horizontal sur la scène avance / recule d'un projet. Le scroll vertical
+      // tactile reste à la page (aucune capture touch).
+      var tX = 0, tY = 0, tOn = false;
+      stage.addEventListener('touchstart', function (e) {
+        if (!e.touches[0]) return;
+        tX = e.touches[0].clientX; tY = e.touches[0].clientY; tOn = true;
+      }, { passive: true });
+      stage.addEventListener('touchend', function (e) {
+        if (!tOn || !e.changedTouches[0]) return;
+        tOn = false;
+        var dx = e.changedTouches[0].clientX - tX;
+        var dy = e.changedTouches[0].clientY - tY;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          dismissHint(); goTo(Math.round(scrubProgress) + (dx < 0 ? 1 : -1));
+        }
+      }, { passive: true });
+
+      window.addEventListener('resize', function () { measure(); kick(); });
+
+      // Clic sur une vignette : navigation DIRECTE (le lien <a> fait foi, aucun
+      // preventDefault). Plus de « sélectionner puis ouvrir » : au pointeur fin le
+      // badge « VOIR ↗ » annonce l'ouverture, le clic la tient — et ctrl/cmd+clic,
+      // clic-molette, View Transition restent nativement intacts sur les 12 liens.
+
+      scrubProgress = 0;
+      currentProgress = 0;
+      showDisplay(0);
       kick();
     }
 
