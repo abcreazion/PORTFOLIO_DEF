@@ -11,3 +11,6 @@ assets/video/docks40.mp4
 # dans le HTML/JS/CSS. hero-1.jpg reste, LUI, utilisé comme poster de la vidéo.
 assets/img/hero-2.jpg
 assets/img/hero-3.jpg
+# GIF sources des galeries animées : conservés en local comme masters, JAMAIS servis
+# (le site lit les .mp4/.webm convertis — voir assets/img/projets/README.txt).
+assets/img/projets/**/*.gif

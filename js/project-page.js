@@ -52,12 +52,28 @@
 
   function galleryHtml(p) {
     if (!p.galleryCount) return '';
+    var motion = p.galleryMotion || [];
     var items = '';
     for (var i = 1; i <= p.galleryCount; i++) {
-      var src = 'assets/img/projets/' + p.slug + '/' + (i < 10 ? '0' + i : i) + '.jpg';
+      var base = 'assets/img/projets/' + p.slug + '/' + (i < 10 ? '0' + i : i);
+      var isMotion = motion.indexOf(i) !== -1;
+      var label = stripTags(p.client) + ' — ' + stripTags(p.title) + ', ' +
+        (isMotion ? 'animation ' : 'photographie ') + i;
+      // Item ANIMÉ : boucle vidéo muette. preload="none" + poster → la page ne télécharge
+      // que l'affiche au chargement ; la vidéo ne part qu'une fois l'item à l'écran
+      // (initGallery), et jamais sous prefers-reduced-motion (l'affiche suffit).
+      // Pas d'attribut controls : sans lui, <video> reste du contenu phrasing, donc
+      // légalement imbricable dans le <button> qui ouvre la lightbox.
+      var media = isMotion
+        ? '<video class="pgal__video" poster="' + base + '.jpg" preload="none" muted loop playsinline ' +
+            'aria-label="' + label + '" data-motion>' +
+            '<source src="' + base + '.webm" type="video/webm">' +
+            '<source src="' + base + '.mp4" type="video/mp4">' +
+          '</video>'
+        : '<img src="' + base + '.jpg" alt="' + label + '" loading="lazy">';
       items += '<figure class="pgal__item" data-reveal>' +
-        '<button class="pgal__btn" type="button" aria-label="Agrandir la photo ' + i + '">' +
-          '<img src="' + src + '" alt="' + stripTags(p.client) + ' — ' + stripTags(p.title) + ', photographie ' + i + '" loading="lazy">' +
+        '<button class="pgal__btn" type="button" aria-label="Agrandir : ' + label + '">' +
+          media +
         '</button>' +
       '</figure>';
     }
@@ -74,6 +90,7 @@
       '<button class="lightbox__close" type="button" aria-label="Fermer la visionneuse">✕</button>' +
       '<button class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Photo précédente">←</button>' +
       '<img class="lightbox__img" id="lightboxImg" alt="">' +
+      '<video class="lightbox__video" id="lightboxVideo" controls loop playsinline hidden></video>' +
       '<button class="lightbox__nav lightbox__nav--next" type="button" aria-label="Photo suivante">→</button>' +
       '<div class="lightbox__counter" id="lightboxCounter"></div>' +
     '</div>';
@@ -262,12 +279,39 @@
     });
   }
 
+  // Boucles animées de la galerie : rien n'est téléchargé tant que l'item n'approche pas
+  // de l'écran (preload="none" + .load() différé), et la lecture s'arrête dès qu'il en sort
+  // — 5 vidéos qui tournent hors champ, c'est du décodage payé pour rien sur mobile.
+  // Sous prefers-reduced-motion on ne charge RIEN : le poster reste, définitivement.
+  function initGalleryMotion(root) {
+    var vids = Array.prototype.slice.call(root.querySelectorAll('video[data-motion]'));
+    if (!vids.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var v = e.target;
+        if (e.isIntersecting) {
+          if (v.preload === 'none') { v.preload = 'auto'; v.load(); }
+          var play = v.play();
+          if (play && play.catch) play.catch(function () {});
+        } else {
+          v.pause();
+        }
+      });
+    }, { rootMargin: '200px 0px' });
+
+    vids.forEach(function (v) { io.observe(v); });
+  }
+
   function initGallery(root) {
     var lightbox = document.getElementById('lightbox');
     var buttons = Array.prototype.slice.call(root.querySelectorAll('.pgal__btn'));
     if (!lightbox || !buttons.length) return;
 
     var lbImg = document.getElementById('lightboxImg');
+    var lbVideo = document.getElementById('lightboxVideo');
     var counter = document.getElementById('lightboxCounter');
     var closeBtn = lightbox.querySelector('.lightbox__close');
     var prevBtn = lightbox.querySelector('.lightbox__nav--prev');
@@ -278,9 +322,30 @@
 
     function show(i) {
       current = (i + buttons.length) % buttons.length;
-      var img = buttons[current].querySelector('img');
-      lbImg.src = img.src;
-      lbImg.alt = img.alt;
+      var vid = buttons[current].querySelector('video');
+      // Un seul des deux médias est visible à la fois. La vidéo agrandie, elle, prend
+      // ses controls (on est en consultation volontaire, plus en aperçu de grille).
+      lbVideo.pause();
+      if (vid) {
+        lbImg.hidden = true;
+        lbImg.removeAttribute('src');
+        lbVideo.hidden = false;
+        lbVideo.poster = vid.poster;
+        lbVideo.innerHTML = vid.innerHTML;
+        lbVideo.setAttribute('aria-label', vid.getAttribute('aria-label') || '');
+        lbVideo.load();
+        var play = lbVideo.play();
+        if (play && play.catch) play.catch(function () {});
+      } else {
+        var img = buttons[current].querySelector('img');
+        lbVideo.hidden = true;
+        lbVideo.innerHTML = '';
+        lbVideo.removeAttribute('poster');
+        lbVideo.load(); // vide le buffer : sans ça la piste précédente reste en mémoire
+        lbImg.hidden = false;
+        lbImg.src = img.src;
+        lbImg.alt = img.alt;
+      }
       counter.textContent = (current + 1) + ' / ' + buttons.length;
     }
     function open(i) {
@@ -292,6 +357,7 @@
     }
     function close() {
       lightbox.hidden = true;
+      lbVideo.pause();
       document.body.style.overflow = '';
       if (lastFocused && lastFocused.focus) lastFocused.focus();
     }
@@ -299,6 +365,8 @@
     buttons.forEach(function (btn, i) {
       btn.addEventListener('click', function () { open(i); });
     });
+
+    initGalleryMotion(root);
     closeBtn.addEventListener('click', close);
     prevBtn.addEventListener('click', function () { show(current - 1); });
     nextBtn.addEventListener('click', function () { show(current + 1); });

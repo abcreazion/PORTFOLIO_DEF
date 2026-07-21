@@ -40,6 +40,14 @@
                      une étude de cas : contexte / défi → direction artistique / solution
                      → résultat. Ne jamais inventer de métrique chiffrée.
      galleryCount    nombre de photos dans assets/img/projets/SLUG/ (01.jpg…)
+     galleryMotion   items de galerie ANIMÉS (boucle vidéo au lieu d'une photo fixe) —
+                     tableau des numéros concernés, ex. [1,2,3]. Chaque numéro N attend
+                     TROIS fichiers dans assets/img/projets/SLUG/ : 0N.mp4 + 0N.webm
+                     (les deux sources) + 0N.jpg (l'affiche, = 1re image). Absent = tout
+                     en photo fixe (.jpg), comportement historique.
+                     ⚠️ NE JAMAIS mettre de .gif : un GIF pèse 5 à 20× un MP4 équivalent
+                     pour une qualité inférieure. Conversion documentée dans
+                     assets/img/projets/README.txt.
      video           projet VIDÉO (fichier local) : { src:"assets/video/SLUG.mp4", poster:"..." }
                      — mets  null  pour un projet sans vidéo locale
      youtube         projet VIDÉO (YouTube) : l'ID de la vidéo (la partie après v= dans l'URL,
@@ -204,7 +212,7 @@ window.PROJECTS = [
   },
   {
     slug: "smaa-alterations",
-    categories: ["Direction artistique", "Photographie"],
+    categories: ["Direction artistique", "Photographie", "Motion design"],
     image: "assets/img/card-10-smaa-alterations.jpg",
     watermark: "SMAA ALTERATIONS",
     watermarkScript: "smaa",
@@ -212,11 +220,11 @@ window.PROJECTS = [
     title: "POCHETTE<br>D'ALBUM",
     stats: [["360°", "ACCOMPAGNEMENT"], ["EP", "6 TITRES INÉDITS"]],
     year: "2022",
-    role: "Direction artistique · Photographie",
-    intro: "Direction artistique et photographie pour la pochette et les visuels de l'EP « Alterations » de SMAA — six titres, deux visages d'un artiste.",
+    role: "Direction artistique · Photographie · Motion design",
+    intro: "Direction artistique, photographie et motion design pour la pochette et les visuels de l'EP « Alterations » de SMAA — six titres, deux visages d'un artiste.",
     context: [
       "SMAA arrive avec un EP intime : six morceaux inédits qui basculent de l'ombre à la lumière. Le brief — une direction artistique capable de porter cette dualité sans la trahir.",
-      "Direction artistique et photographie pensées comme un fil narratif : une palette sombre et texturée sur les titres introspectifs, qui glisse vers des tons plus chauds et colorés à mesure que le projet s'éclaire.",
+      "Direction artistique, photographie et motion design pensés comme un fil narratif : une palette sombre et texturée sur les titres introspectifs, qui glisse vers des tons plus chauds et colorés à mesure que le projet s'éclaire.",
       "Résultat : une pochette d'album et une série de visuels promotionnels cohérents, déclinables sur toutes les plateformes de streaming et les réseaux, qui donnent un visage à l'univers de l'artiste."
     ],
     galleryCount: 1,
@@ -242,6 +250,28 @@ window.PROJECTS = [
     galleryCount: 4,
     video: null,
     youtube: "46kiss-VKco"
+  },
+  {
+    slug: "solerys",
+    categories: ["Direction artistique", "Motion design"],
+    image: "assets/img/hero_solerysjpg0.jpg",
+    watermark: "Solerys RSE",
+    watermarkScript: "Solerys",
+    client: "Solerys",
+    title: "BILAN<br>RSE 2026",
+    stats: [["FR", "diffusion à l'ensemble du groupe"], ["+400", "salariés sensibilisés"]],
+    year: "2026",
+    role: "Direction artistique · Motion design",
+    intro: "Un bilan RSE pour le groupe Solerys, pensé pour retracer l'engagement des salariés autour des enjeux environnementaux et sociaux.",
+    context: [
+      "Solerys souhaitait un bilan RSE qui ne se limite pas à un document statique, mais qui engage et sensibilise ses salariés à travers une narration visuelle dynamique.",
+      "Il fallait créer une vidéo retraçant les nombreuses actions de l'entreprise. Une approche mélant motion design et humain qui synthétise les actions et les résultats du groupe, tout en restant fidèle à l'identité visuelle de Solerys.",
+      "Un bilan RSE animé, diffusé à l'ensemble du groupe, qui sensibilise plus de 400 salariés aux enjeux environnementaux et sociaux, tout en renforçant la culture d'entreprise."
+    ],
+    galleryCount: 5,
+    galleryMotion: [1, 2, 3, 4, 5],
+    video: null,
+    youtube: "2Qbz0dZI4n0"
   },
   {
     slug: "loan-cc",
@@ -286,7 +316,7 @@ window.PROJECTS = [
   },
   {
     slug: "wsc-spot",
-    categories: ["Direction artistique", "Production vidéo", "Motion design"],
+    categories: ["Direction artistique", "Production vidéo"],
     image: "assets/img/wsc-spot.jpg",
     watermark: "WELLNESS",
     watermarkScript: "Sport Club",

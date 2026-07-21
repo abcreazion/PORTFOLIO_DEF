@@ -95,8 +95,10 @@
 .pgal__grid { max-width: 1340px; margin: 0 auto; column-count: 3; column-gap: 16px; }
 .pgal__item { break-inside: avoid; overflow: hidden; margin: 0 0 16px; }
 .pgal__btn { display: block; width: 100%; border: none; background: none; padding: 0; cursor: pointer; }
-.pgal__item img { width: 100%; height: auto; display: block; transition: transform var(--dur-slowest) var(--ease-out); }
-.pgal__item:hover img { transform: scale(1.04); }
+.pgal__item img,
+.pgal__item video { width: 100%; height: auto; display: block; transition: transform var(--dur-slowest) var(--ease-out); }
+.pgal__item:hover img,
+.pgal__item:hover video { transform: scale(1.04); }
 @media (max-width: 1100px) { .pgal__grid { column-count: 2; } }
 
 /* ——— LIGHTBOX GALERIE ——— */
@@ -106,7 +108,9 @@
   display: flex; align-items: center; justify-content: center;
 }
 .lightbox[hidden] { display: none; }
-.lightbox__img { max-width: 88vw; max-height: 82vh; object-fit: contain; }
+.lightbox__img,
+.lightbox__video { max-width: 88vw; max-height: 82vh; object-fit: contain; }
+.lightbox__img[hidden], .lightbox__video[hidden] { display: none; }
 .lightbox__close {
   position: absolute; top: 24px; right: 24px; width: 44px; height: 44px;
   background: transparent; border: 1px solid rgba(255,255,255,.25); color: var(--ink);
